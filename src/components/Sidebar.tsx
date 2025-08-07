@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface UserProfile {
   id: string
@@ -21,8 +21,13 @@ interface SidebarProps {
 
 export default function Sidebar({ userProfile }: SidebarProps) {
   const [loading, setLoading] = useState(false)
+  const [isReady, setIsReady] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    setIsReady(true)
+  }, [])
 
   const handleLogout = async () => {
     setLoading(true)
@@ -37,7 +42,7 @@ export default function Sidebar({ userProfile }: SidebarProps) {
       approved: 'bg-green-100 text-green-800',
       rejected: 'bg-red-100 text-red-800'
     }
-    
+
     const statusText = {
       pending: 'รอการอนุมัติ',
       approved: 'อนุมัติแล้ว',
@@ -54,16 +59,11 @@ export default function Sidebar({ userProfile }: SidebarProps) {
   return (
     <div className="bg-white w-64 min-h-screen shadow-lg flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-4 flex justify-center items-center border-b border-gray-200">
         <h1 className="text-xl font-bold text-gray-900">
           {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
         </h1>
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-900">{userProfile.full_name || 'ไม่มีชื่อ'}</p>
-          <p className="text-xs text-gray-500">{userProfile.phone || 'ไม่มีเบอร์โทร'}</p>
-          <div className="mt-2">
-            {userProfile.status && getStatusBadge(userProfile.status)}
-          </div>
         </div>
       </div>
 
@@ -102,15 +102,6 @@ export default function Sidebar({ userProfile }: SidebarProps) {
         ) : (
           <>
             <Link
-              href="/dashboard"
-              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
-            >
-              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-              </svg>
-              Dashboard
-            </Link>
-            <Link
               href="/dashboard/trips"
               className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
             >
@@ -120,6 +111,16 @@ export default function Sidebar({ userProfile }: SidebarProps) {
               </svg>
               ข้อมูล Trips
             </Link>
+            <Link
+              href="/dashboard"
+              className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
+            >
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+              </svg>
+              Dashboard
+            </Link>
+
             {userProfile.status === 'approved' && (
               <Link
                 href="/dashboard/reports"

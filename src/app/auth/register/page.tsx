@@ -8,8 +8,7 @@ import Link from 'next/link'
 export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [phone, setPhone] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -21,16 +20,18 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
 
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('รหัสผ่านไม่ตรงกัน')
+      setLoading(false)
+      return
+    }
+
     try {
       // Register user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-          }
-        }
       })
 
       if (authError) {
@@ -39,13 +40,11 @@ export default function RegisterPage() {
       }
 
       if (authData.user) {
-        // Create user profile
+        // Create basic user profile (without full_name and phone)
         const { error: profileError } = await supabase
           .from('user_profiles')
           .insert({
             id: authData.user.id,
-            full_name: fullName,
-            phone: phone,
             role: 'seller',
             status: 'pending'
           })
@@ -113,36 +112,6 @@ export default function RegisterPage() {
         <form className="mt-8 space-y-6" onSubmit={handleEmailRegister}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                ชื่อ-นามสกุล
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="กรอกชื่อ-นามสกุลของคุณ"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                เบอร์โทรศัพท์
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="กรอกเบอร์โทรศัพท์ของคุณ"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 อีเมล
               </label>
@@ -171,6 +140,22 @@ export default function RegisterPage() {
                 placeholder="กรอกรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                ยืนยันรหัสผ่าน
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                minLength={6}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="กรอกรหัสผ่านอีกครั้ง"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
           </div>
@@ -211,7 +196,8 @@ export default function RegisterPage() {
         </form>
 
         <div className="text-xs text-gray-500 text-center">
-          หลังจากสมัครสมาชิกแล้ว บัญชีของคุณจะอยู่ในสถานะรอการอนุมัติจากผู้ดูแลระบบ
+          หลังจากสมัครสมาชิกแล้ว คุณจะต้องกรอกข้อมูลส่วนตัวเพิ่มเติม<br/>
+          และบัญชีจะอยู่ในสถานะรอการอนุมัติจากผู้ดูแลระบบ
         </div>
       </div>
     </div>

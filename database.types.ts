@@ -321,6 +321,23 @@ export type Database = {
         Args: { schedule_id: string }
         Returns: number
       }
+      get_sellers_with_emails: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          full_name: string | null
+          phone: string | null
+          role: string | null
+          status: string | null
+          commission_goal: number | null
+          referral_code: string | null
+          approved_by: string | null
+          approved_at: string | null
+          created_at: string | null
+          updated_at: string | null
+          email: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

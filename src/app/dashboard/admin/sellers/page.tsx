@@ -15,6 +15,8 @@ interface UserProfile {
   approved_by: string | null
   approved_at: string | null
   created_at: string | null
+  updated_at: string | null
+  email: string | null // Email from auth.users via RPC
 }
 
 export default function SellersManagement() {
@@ -33,24 +35,27 @@ export default function SellersManagement() {
 
   const fetchSellers = async () => {
     try {
-      let query = supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('role', 'seller')
-        .order('created_at', { ascending: false })
-
-      if (filter !== 'all') {
-        query = query.eq('status', filter)
-      }
-
-      const { data, error } = await query
+      setError('')
+      
+      // Use RPC function to get sellers with emails from auth.users
+      const { data, error } = await supabase
+        .rpc('get_sellers_with_emails')
 
       if (error) {
-        setError(error.message)
-      } else {
-        setSellers((data || []) as UserProfile[])
+        console.error('RPC Error:', error)
+        setError(`เกิดข้อผิดพลาด: ${error.message}`)
+        return
       }
+
+      // Filter by status if needed (data is array of sellers)
+      let filteredData = data || []
+      if (filter !== 'all' && Array.isArray(filteredData)) {
+        filteredData = filteredData.filter((seller) => seller.status === filter)
+      }
+
+      setSellers(filteredData as UserProfile[])
     } catch (err) {
+      console.error('Fetch Error:', err)
       setError('เกิดข้อผิดพลาดในการโหลดข้อมูล')
     } finally {
       setLoading(false)
@@ -62,6 +67,16 @@ export default function SellersManagement() {
     setError('')
 
     try {
+      // Check if seller has complete profile before approving
+      if (newStatus === 'approved') {
+        const seller = sellers.find(s => s.id === sellerId)
+        if (!seller?.full_name || !seller?.phone) {
+          setError('ไม่สามารถอนุมัติได้: Seller ยังกรอกข้อมูลไม่ครบถ้วน (ชื่อ-นามสกุล และเบอร์โทรศัพท์)')
+          setActionLoading(null)
+          return
+        }
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       
       const { error } = await supabase
@@ -123,7 +138,6 @@ export default function SellersManagement() {
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">จัดการ Sellers</h1>
-        <p className="text-gray-600">อนุมัติหรือปฏิเสธการสมัครสมาชิกของ seller</p>
       </div>
 
       {error && (
@@ -162,40 +176,46 @@ export default function SellersManagement() {
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         {sellers.length > 0 ? (
           <ul className="divide-y divide-gray-200">
-            {sellers.map((seller) => (
+            {sellers.map((seller) => {
+              const isProfileComplete = seller.full_name && seller.phone
+              const canApprove = isProfileComplete && seller.status === 'pending'
+              
+              return (
               <li key={seller.id}>
-                <div className="px-4 py-4 sm:px-6">
+                <div className={`px-4 py-4 sm:px-6 ${!isProfileComplete ? 'bg-gray-50 border-l-4 border-orange-400' : ''}`}>
+                  {!isProfileComplete && (
+                    <div className="mb-3 flex items-center">
+                      <svg className="h-5 w-5 text-orange-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm text-orange-800 font-medium">
+                        ข้อมูลไม่ครบถ้วน - ไม่สามารถอนุมัติได้
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center">
-                        <p className="text-sm font-medium text-blue-600 truncate">
-                          {seller.full_name}
+                        <p className={`text-sm font-medium truncate ${isProfileComplete ? 'text-blue-600' : 'text-gray-500'}`}>
+                          {seller.full_name || 'ยังไม่กรอกชื่อ'}
                         </p>
                         <div className="ml-4">
                           {seller.status && getStatusBadge(seller.status)}
                         </div>
                       </div>
                       <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className={`flex items-center text-sm ${seller.email ? 'text-gray-500' : 'text-orange-600'}`}>
                           <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                           </svg>
-                          ID: {seller.id.slice(0, 8)}...
+                          {seller.email || 'ไม่มีอีเมล'}
                         </div>
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className={`flex items-center text-sm ${seller.phone ? 'text-gray-500' : 'text-orange-600'}`}>
                           <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                           </svg>
-                          {seller.phone}
+                          {seller.phone || 'ยังไม่กรอกเบอร์โทร'}
                         </div>
-                        {seller.commission_goal && (
-                          <div className="flex items-center text-sm text-gray-500">
-                            <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            เป้าหมาย: ฿{Number(seller.commission_goal).toLocaleString()}
-                          </div>
-                        )}
                         {seller.referral_code && (
                           <div className="flex items-center text-sm text-gray-500">
                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,8 +239,13 @@ export default function SellersManagement() {
                         <>
                           <button
                             onClick={() => handleStatusChange(seller.id, 'approved')}
-                            disabled={actionLoading === seller.id}
-                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!canApprove || actionLoading === seller.id}
+                            className={`inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              canApprove 
+                                ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                                : 'bg-gray-400 cursor-not-allowed'
+                            }`}
+                            title={!canApprove ? 'ต้องกรอกข้อมูลครบก่อนอนุมัติ' : 'อนุมัติ seller'}
                           >
                             {actionLoading === seller.id ? (
                               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
@@ -265,8 +290,12 @@ export default function SellersManagement() {
                       {seller.status === 'rejected' && (
                         <button
                           onClick={() => handleStatusChange(seller.id, 'approved')}
-                          disabled={actionLoading === seller.id}
-                          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={!canApprove || actionLoading === seller.id}
+                          className={`inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            canApprove 
+                              ? 'text-gray-700 bg-white hover:bg-gray-50'
+                              : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          }`}
                         >
                           อนุมัติ
                         </button>
@@ -275,7 +304,8 @@ export default function SellersManagement() {
                   </div>
                 </div>
               </li>
-            ))}
+              )
+            })}
           </ul>
         ) : (
           <div className="text-center py-12">

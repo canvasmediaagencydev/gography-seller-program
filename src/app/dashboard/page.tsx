@@ -1,31 +1,139 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
 
-export default async function SellerDashboard() {
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return null
+import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import ProfileCompletionModal from '@/components/ProfileCompletionModal'
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+interface UserProfile {
+  id: string
+  full_name: string | null
+  phone: string | null
+  role: string | null
+  status: string | null
+  commission_goal: number | null
+  referral_code: string | null
+}
 
-  // Get some basic stats
-  const { count: tripsCount } = await supabase
-    .from('trips')
-    .select('*', { count: 'exact', head: true })
+export default function SellerDashboard() {
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [tripsCount, setTripsCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        // Get profile
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        setProfile(profileData)
+
+        // Get trips count
+        const { count } = await supabase
+          .from('trips')
+          .select('*', { count: 'exact', head: true })
+
+        setTripsCount(count || 0)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [supabase])
+
+    const getStatusBadge = (status: string) => {
+    const statusColors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      approved: 'bg-green-100 text-green-800',
+      rejected: 'bg-red-100 text-red-800'
+    }
+
+    const statusText = {
+      pending: 'รอการอนุมัติ',
+      approved: 'อนุมัติแล้ว',
+      rejected: 'ถูกปฏิเสธ'
+    }
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-lg font-medium ${statusColors[status as keyof typeof statusColors]}`}>
+        {statusText[status as keyof typeof statusText]}
+      </span>
+    )
+  }
+
+  const isProfileIncomplete = !profile?.full_name || !profile?.phone
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-gray-200 h-24 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) return null
 
   return (
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          สวัสดี, {profile?.full_name}
+          สวัสดี, {profile?.full_name || 'User'}
+            <p className="ml-4 inline">
+              {profile.status && getStatusBadge(profile.status)}
+            </p>
         </h1>
         <p className="text-gray-600">ยินดีต้อนรับสู่ Seller Dashboard</p>
       </div>
+
+      {/* Profile Incomplete Alert */}
+      {isProfileIncomplete && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-blue-800">
+                กรุณากรอกข้อมูลส่วนตัว
+              </h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <p>
+                  คุณยังไม่ได้กรอกข้อมูลส่วนตัวให้ครบถ้วน กรุณากรอกชื่อ-นามสกุล และเบอร์โทรศัพท์
+                </p>
+              </div>
+              <div className="mt-3">
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="bg-blue-100 px-3 py-2 rounded-md text-sm font-medium text-blue-800 hover:bg-blue-200 transition-colors"
+                >
+                  กรอกข้อมูลเลย
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Status Alert */}
       {profile?.status === 'pending' && (
@@ -87,7 +195,7 @@ export default async function SellerDashboard() {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">จำนวน Trips ทั้งหมด</dt>
-                  <dd className="text-lg font-medium text-gray-900">{tripsCount || 0}</dd>
+                  <dd className="text-lg font-medium text-gray-900">{tripsCount}</dd>
                 </dl>
               </div>
             </div>
@@ -133,56 +241,13 @@ export default async function SellerDashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="mt-8">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">เมนูด่วน</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <a
-            href="/dashboard/trips"
-            className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <div className="flex-shrink-0">
-              <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">ดูข้อมูล Trips</p>
-              <p className="text-sm text-gray-500">รายละเอียดทริปและสถานที่ท่องเที่ยว</p>
-            </div>
-          </a>
 
-          {profile?.status === 'approved' ? (
-            <a
-              href="/dashboard/reports"
-              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">รายงานยอดขาย</p>
-                <p className="text-sm text-gray-500">ดูสถิติและรายงานการขาย</p>
-              </div>
-            </a>
-          ) : (
-            <div className="relative rounded-lg border border-gray-200 bg-gray-50 px-6 py-5 shadow-sm flex items-center space-x-3 cursor-not-allowed">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-500">รายงานยอดขาย</p>
-                <p className="text-sm text-gray-400">ต้องได้รับการอนุมัติก่อน</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Profile Completion Modal */}
+      <ProfileCompletionModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        userId={profile.id}
+      />
     </div>
   )
 }
