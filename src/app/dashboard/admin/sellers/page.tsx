@@ -1,0 +1,294 @@
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+interface UserProfile {
+  id: string
+  full_name: string | null
+  phone: string | null
+  role: string | null
+  status: 'pending' | 'approved' | 'rejected' | null
+  commission_goal: number | null
+  referral_code: string | null
+  approved_by: string | null
+  approved_at: string | null
+  created_at: string | null
+}
+
+export default function SellersManagement() {
+  const [sellers, setSellers] = useState<UserProfile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [error, setError] = useState('')
+
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    fetchSellers()
+  }, [filter])
+
+  const fetchSellers = async () => {
+    try {
+      let query = supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('role', 'seller')
+        .order('created_at', { ascending: false })
+
+      if (filter !== 'all') {
+        query = query.eq('status', filter)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        setError(error.message)
+      } else {
+        setSellers((data || []) as UserProfile[])
+      }
+    } catch (err) {
+      setError('เกิดข้อผิดพลาดในการโหลดข้อมูล')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleStatusChange = async (sellerId: string, newStatus: 'approved' | 'rejected') => {
+    setActionLoading(sellerId)
+    setError('')
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          status: newStatus,
+          approved_by: user?.id,
+          approved_at: new Date().toISOString()
+        })
+        .eq('id', sellerId)
+
+      if (error) {
+        setError(error.message)
+      } else {
+        // Refresh the list
+        await fetchSellers()
+        
+        // Show success message
+        alert(`${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'} seller สำเร็จ`)
+      }
+    } catch (err) {
+      setError('เกิดข้อผิดพลาดในการอัพเดทสถานะ')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    const statusColors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      approved: 'bg-green-100 text-green-800',
+      rejected: 'bg-red-100 text-red-800'
+    }
+    
+    const statusText = {
+      pending: 'รอการอนุมัติ',
+      approved: 'อนุมัติแล้ว',
+      rejected: 'ถูกปฏิเสธ'
+    }
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status as keyof typeof statusColors]}`}>
+        {statusText[status as keyof typeof statusText]}
+      </span>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">จัดการ Sellers</h1>
+        <p className="text-gray-600">อนุมัติหรือปฏิเสธการสมัครสมาชิกของ seller</p>
+      </div>
+
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="text-red-700 text-sm">
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Filter tabs */}
+      <div className="mb-6">
+        <nav className="flex space-x-8">
+          {[
+            { key: 'all', label: 'ทั้งหมด' },
+            { key: 'pending', label: 'รอการอนุมัติ' },
+            { key: 'approved', label: 'อนุมัติแล้ว' },
+            { key: 'rejected', label: 'ถูกปฏิเสธ' }
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key as any)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                filter === tab.key
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Sellers table */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        {sellers.length > 0 ? (
+          <ul className="divide-y divide-gray-200">
+            {sellers.map((seller) => (
+              <li key={seller.id}>
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center">
+                        <p className="text-sm font-medium text-blue-600 truncate">
+                          {seller.full_name}
+                        </p>
+                        <div className="ml-4">
+                          {seller.status && getStatusBadge(seller.status)}
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          ID: {seller.id.slice(0, 8)}...
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          {seller.phone}
+                        </div>
+                        {seller.commission_goal && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            เป้าหมาย: ฿{Number(seller.commission_goal).toLocaleString()}
+                          </div>
+                        )}
+                        {seller.referral_code && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            Referral: {seller.referral_code}
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2 text-sm text-gray-500">
+                        สมัครเมื่อ: {seller.created_at ? new Date(seller.created_at).toLocaleDateString('th-TH') : 'ไม่มีข้อมูล'}
+                        {seller.approved_at && (
+                          <span className="ml-4">
+                            {seller.status === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'}เมื่อ: {new Date(seller.approved_at).toLocaleDateString('th-TH')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 flex space-x-2">
+                      {seller.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleStatusChange(seller.id, 'approved')}
+                            disabled={actionLoading === seller.id}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {actionLoading === seller.id ? (
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                            อนุมัติ
+                          </button>
+                          <button
+                            onClick={() => handleStatusChange(seller.id, 'rejected')}
+                            disabled={actionLoading === seller.id}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {actionLoading === seller.id ? (
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            )}
+                            ปฏิเสธ
+                          </button>
+                        </>
+                      )}
+                      {seller.status === 'approved' && (
+                        <button
+                          onClick={() => handleStatusChange(seller.id, 'rejected')}
+                          disabled={actionLoading === seller.id}
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          ปฏิเสธ
+                        </button>
+                      )}
+                      {seller.status === 'rejected' && (
+                        <button
+                          onClick={() => handleStatusChange(seller.id, 'approved')}
+                          disabled={actionLoading === seller.id}
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          อนุมัติ
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-center py-12">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            </svg>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">ไม่มี Seller</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {filter === 'all' ? 'ยังไม่มี seller ที่สมัครสมาชิก' : `ไม่มี seller ที่มีสถานะ ${filter}`}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "672ad34e-f583-49c5-aeac-434cf8047cb6",
+    "full_name": "พรินทร์ ทองนาคะ",
+    "phone": "0891234567",
+    "role": "admin",
+    "status": "approved",
+    "commission_goal": "50000.00",
+    "referral_code": "PARINT123",
+    "approved_by": null,
+    "approved_at": "2025-01-01 00:00:00+00",
+    "created_at": "2025-01-01 00:00:00+00",
+    "updated_at": "2025-01-01 00:00:00+00"
+  },
+  {
+    "id": "0d7680ba-7aaf-4e0c-8014-f035291cb975",
+    "full_name": "สมชาย รักเที่ยว",
+    "phone": "0812345678",
+    "role": "seller",
+    "status": "approved",
+    "commission_goal": "25000.00",
+    "referral_code": "SOMCHA456",
+    "approved_by": "672ad34e-f583-49c5-aeac-434cf8047cb6",
+    "approved_at": "2025-01-10 00:00:00+00",
+    "created_at": "2025-01-05 00:00:00+00",
+    "updated_at": "2025-01-10 00:00:00+00"
+  },
+  {
+    "id": "69f9e741-ae1a-4bc1-a8fe-85a29fb7b340",
+    "full_name": "วิภาพร จันทร์สวย",
+    "phone": "0823456789",
+    "role": "seller",
+    "status": "approved",
+    "commission_goal": "35000.00",
+    "referral_code": "VIPAP789",
+    "approved_by": "672ad34e-f583-49c5-aeac-434cf8047cb6",
+    "approved_at": "2025-01-15 00:00:00+00",
+    "created_at": "2025-01-08 00:00:00+00",
+    "updated_at": "2025-01-15 00:00:00+00"
+  },
+  {
+    "id": "1f07c5d4-f8ae-41e5-a008-cabb756e56cd",
+    "full_name": "มานะ อดทน",
+    "phone": "0834567890",
+    "role": "seller",
+    "status": "pending",
+    "commission_goal": "20000.00",
+    "referral_code": "MANAA012",
+    "approved_by": null,
+    "approved_at": null,
+    "created_at": "2025-07-25 00:00:00+00",
+    "updated_at": "2025-07-25 00:00:00+00"
+  },
+  {
+    "id": "16509a30-3691-4fd3-9c1e-45ebaa2b428c",
+    "full_name": "สุชาติ มั่งมี",
+    "phone": "0845678901",
+    "role": "seller",
+    "status": "approved",
+    "commission_goal": "40000.00",
+    "referral_code": "SUCHA345",
+    "approved_by": "672ad34e-f583-49c5-aeac-434cf8047cb6",
+    "approved_at": "2025-02-05 00:00:00+00",
+    "created_at": "2025-02-01 00:00:00+00",
+    "updated_at": "2025-02-05 00:00:00+00"
+  },
+  {
+    "id": "24f026ad-d6c8-487c-997e-c8324ed899c1",
+    "full_name": "รัตนา เดินทาง",
+    "phone": "0856789012",
+    "role": "seller",
+    "status": "rejected",
+    "commission_goal": "15000.00",
+    "referral_code": "RATTA678",
+    "approved_by": "672ad34e-f583-49c5-aeac-434cf8047cb6",
+    "approved_at": "2025-03-20 00:00:00+00",
+    "created_at": "2025-03-15 00:00:00+00",
+    "updated_at": "2025-03-20 00:00:00+00"
+  }
+]
