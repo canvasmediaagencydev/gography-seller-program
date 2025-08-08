@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import SellerDetailsModal from '@/components/SellerDetailsModal'
 
 interface UserProfile {
   id: string
@@ -17,6 +18,13 @@ interface UserProfile {
   created_at: string | null
   updated_at: string | null
   email: string | null // Email from auth.users via RPC
+  id_card_url: string | null
+  avatar_url: string | null
+  document_url: string | null
+  documents_urls: string[] | null
+  id_card_uploaded_at: string | null
+  avatar_uploaded_at: string | null
+  document_uploaded_at: string | null
 }
 
 export default function SellersManagement() {
@@ -25,6 +33,10 @@ export default function SellersManagement() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const [error, setError] = useState('')
+  
+  // Modal states
+  const [selectedSeller, setSelectedSeller] = useState<UserProfile | null>(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
@@ -122,6 +134,16 @@ export default function SellersManagement() {
         {statusText[status as keyof typeof statusText]}
       </span>
     )
+  }
+
+  const openDetailsModal = (seller: UserProfile) => {
+    setSelectedSeller(seller)
+    setIsDetailsModalOpen(true)
+  }
+
+  const closeDetailsModal = () => {
+    setSelectedSeller(null)
+    setIsDetailsModalOpen(false)
   }
 
   if (loading) {
@@ -235,6 +257,18 @@ export default function SellersManagement() {
                       </div>
                     </div>
                     <div className="flex-shrink-0 flex space-x-2">
+                      {/* Details button - always visible */}
+                      <button
+                        onClick={() => openDetailsModal(seller)}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <svg className="-ml-1 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        ดูรายละเอียด
+                      </button>
+
                       {seller.status === 'pending' && (
                         <>
                           <button
@@ -319,6 +353,13 @@ export default function SellersManagement() {
           </div>
         )}
       </div>
+
+      {/* Seller Details Modal */}
+      <SellerDetailsModal 
+        isOpen={isDetailsModalOpen}
+        onClose={closeDetailsModal}
+        seller={selectedSeller}
+      />
     </div>
   )
 }

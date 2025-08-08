@@ -20,7 +20,9 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
   const [profileFile, setProfileFile] = useState<File | null>(null)
   const [documentFiles, setDocumentFiles] = useState<File[]>([])
   
-  // UI states
+  // Preview URLs
+  const [idCardPreview, setIdCardPreview] = useState<string | null>(null)
+  const [profilePreview, setProfilePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [error, setError] = useState('')
@@ -39,6 +41,9 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
     if (file) {
       setIdCardFile(file)
       setError('')
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setIdCardPreview(previewUrl)
     }
   }
 
@@ -47,6 +52,9 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
     if (file) {
       setProfileFile(file)
       setError('')
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setProfilePreview(previewUrl)
     }
   }
 
@@ -54,6 +62,23 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
     const files = Array.from(e.target.files || [])
     setDocumentFiles(files)
     setError('')
+  }
+
+  // Clean up preview URLs when component unmounts or files change
+  const removeIdCardFile = () => {
+    if (idCardPreview) {
+      URL.revokeObjectURL(idCardPreview)
+      setIdCardPreview(null)
+    }
+    setIdCardFile(null)
+  }
+
+  const removeProfileFile = () => {
+    if (profilePreview) {
+      URL.revokeObjectURL(profilePreview)
+      setProfilePreview(null)
+    }
+    setProfileFile(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -218,21 +243,31 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
               <div className="space-y-1 text-center">
                 {idCardFile ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-sm text-gray-600">{idCardFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setIdCardFile(null)}
-                      disabled={loading}
-                      className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <div className="space-y-3">
+                    {/* Preview Image */}
+                    <div className="mx-auto w-48 h-32 border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                      <img 
+                        src={idCardPreview || ''} 
+                        alt="ID Card Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                    </button>
+                      <span className="text-sm text-gray-600">{idCardFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={removeIdCardFile}
+                        disabled={loading}
+                        className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -270,21 +305,31 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
               <div className="space-y-1 text-center">
                 {profileFile ? (
-                  <div className="flex items-center justify-center space-x-2">
-                    <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-sm text-gray-600">{profileFile.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => setProfileFile(null)}
-                      disabled={loading}
-                      className="text-red-600 hover:text-red-800 disabled:opacity-50"
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <div className="space-y-3">
+                    {/* Preview Image */}
+                    <div className="mx-auto w-32 h-32 border-2 border-gray-200 rounded-full overflow-hidden bg-gray-50">
+                      <img 
+                        src={profilePreview || ''} 
+                        alt="Profile Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                    </button>
+                      <span className="text-sm text-gray-600">{profileFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={removeProfileFile}
+                        disabled={loading}
+                        className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <>
