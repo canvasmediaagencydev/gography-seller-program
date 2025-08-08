@@ -61,6 +61,10 @@ export default function SellersManagement() {
 
       // Filter by status if needed (data is array of sellers)
       let filteredData = data || []
+      
+      // Filter out admin users - show only sellers
+      filteredData = filteredData.filter((user) => user.role === 'seller')
+      
       if (filter !== 'all' && Array.isArray(filteredData)) {
         filteredData = filteredData.filter((seller) => seller.status === filter)
       }
