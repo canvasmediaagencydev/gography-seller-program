@@ -96,7 +96,7 @@ export default function SellerDashboard() {
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          สวัสดี, {profile?.full_name || 'User'}
+          สวัสดี, {profile?.full_name || 'Seller'}
             <p className="ml-4 inline">
               {profile.status && getStatusBadge(profile.status)}
             </p>

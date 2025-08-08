@@ -274,10 +274,18 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          avatar_uploaded_at: string | null
+          avatar_url: string | null
           commission_goal: number | null
           created_at: string | null
+          document_uploaded_at: string | null
+          document_url: string | null
+          documents_urls: string[] | null
+          email: string | null
           full_name: string | null
           id: string
+          id_card_uploaded_at: string | null
+          id_card_url: string | null
           phone: string | null
           referral_code: string | null
           role: string | null
@@ -287,10 +295,18 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          avatar_uploaded_at?: string | null
+          avatar_url?: string | null
           commission_goal?: number | null
           created_at?: string | null
+          document_uploaded_at?: string | null
+          document_url?: string | null
+          documents_urls?: string[] | null
+          email?: string | null
           full_name?: string | null
           id: string
+          id_card_uploaded_at?: string | null
+          id_card_url?: string | null
           phone?: string | null
           referral_code?: string | null
           role?: string | null
@@ -300,10 +316,18 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          avatar_uploaded_at?: string | null
+          avatar_url?: string | null
           commission_goal?: number | null
           created_at?: string | null
+          document_uploaded_at?: string | null
+          document_url?: string | null
+          documents_urls?: string[] | null
+          email?: string | null
           full_name?: string | null
           id?: string
+          id_card_uploaded_at?: string | null
+          id_card_url?: string | null
           phone?: string | null
           referral_code?: string | null
           role?: string | null
@@ -325,17 +349,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           id: string
-          full_name: string | null
-          phone: string | null
-          role: string | null
-          status: string | null
-          commission_goal: number | null
-          referral_code: string | null
-          approved_by: string | null
-          approved_at: string | null
-          created_at: string | null
-          updated_at: string | null
-          email: string | null
+          full_name: string
+          phone: string
+          role: string
+          status: string
+          commission_goal: number
+          referral_code: string
+          approved_by: string
+          approved_at: string
+          created_at: string
+          updated_at: string
+          email: string
         }[]
       }
     }
