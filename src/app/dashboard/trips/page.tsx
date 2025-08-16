@@ -41,6 +41,7 @@ export default async function TripsPage() {
                         {trip.description}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-4">
+                        {/* not make sense why seller want to share geography link */}
                         {trip.geography_link && (
                           <div className="flex items-center text-sm text-gray-500">
                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
