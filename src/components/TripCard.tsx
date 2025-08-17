@@ -120,7 +120,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 </div>
 
                 {/* Share Button */}
-                <div className="w-full px-2 py-2 rounded-lg transition-colors flex items-center justify-between gap-2 bg-gray-800 text-white cursor-pointer">
+                <div className="w-full px-2 py-2 rounded-full transition-colors flex items-center justify-between gap-2 bg-gray-800 text-white cursor-pointer">
                     <button
                         onClick={handleCopyLink}
                         disabled={!trip.geography_link}
