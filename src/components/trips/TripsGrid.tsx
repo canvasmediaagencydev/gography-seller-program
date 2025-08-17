@@ -1,4 +1,5 @@
 import TripCard from '../TripCard'
+import { TripsList } from './TripsList'
 import { TripWithRelations, ViewType } from '../../types/trip'
 import { ViewMode } from '../ui/ViewToggle'
 
@@ -12,17 +13,11 @@ interface TripsGridProps {
 export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps) {
     if (viewMode === 'list') {
         return (
-            <div className="space-y-4">
-                {trips.map((trip) => (
-                    <div key={trip.id} className="w-full">
-                        <TripCard
-                            trip={trip}
-                            viewType={viewType}
-                            currentSellerId={userId || undefined}
-                        />
-                    </div>
-                ))}
-            </div>
+            <TripsList 
+                trips={trips}
+                viewType={viewType}
+                userId={userId}
+            />
         )
     }
 
