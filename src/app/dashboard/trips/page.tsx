@@ -9,9 +9,11 @@ import { TripsGrid } from '../../../components/trips/TripsGrid'
 import { TripsLoading } from '../../../components/trips/TripsLoading'
 import { TripsError } from '../../../components/trips/TripsError'
 import { TripsEmpty } from '../../../components/trips/TripsEmpty'
+import { ViewMode } from '../../../components/ui/ViewToggle'
 
 export default function TripsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('all')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const { trips, loading, error, userId, userRole } = useTripsCollection()
   const { filteredTrips, tripCounts } = useTripFilters(trips, userRole, activeTab)
 
@@ -34,6 +36,8 @@ export default function TripsPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         showTabs={showTabs}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       {filteredTrips && filteredTrips.length > 0 ? (
@@ -41,6 +45,7 @@ export default function TripsPage() {
           trips={filteredTrips}
           viewType={viewType}
           userId={userId}
+          viewMode={viewMode}
         />
       ) : (
         <TripsEmpty />
