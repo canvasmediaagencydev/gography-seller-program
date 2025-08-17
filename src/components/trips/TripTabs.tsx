@@ -1,4 +1,5 @@
 import { TabType } from '../../hooks/useTripFilters'
+import { ViewToggle, ViewMode } from "../ui/ViewToggle"
 
 interface TabProps {
     id: TabType
@@ -26,9 +27,11 @@ interface TripTabsProps {
     activeTab: TabType
     onTabChange: (tabId: TabType) => void
     showTabs: boolean
+    viewMode: ViewMode
+    onViewModeChange: (mode: ViewMode) => void
 }
 
-export function TripTabs({ activeTab, onTabChange, showTabs }: TripTabsProps) {
+export function TripTabs({ activeTab, onTabChange, showTabs, viewMode, onViewModeChange }: TripTabsProps) {
     if (!showTabs) return null
 
     const tabs = [
@@ -40,17 +43,20 @@ export function TripTabs({ activeTab, onTabChange, showTabs }: TripTabsProps) {
 
     return (
         <div className="mb-6">
-            <nav className="flex space-x-2">
-                {tabs.map((tab) => (
-                    <Tab
-                        key={tab.id}
-                        id={tab.id}
-                        label={tab.label}
-                        isActive={activeTab === tab.id}
-                        onClick={onTabChange}
-                    />
-                ))}
-            </nav>
+            <div className="flex justify-between items-center">
+                <nav className="flex space-x-2">
+                    {tabs.map((tab) => (
+                        <Tab
+                            key={tab.id}
+                            id={tab.id}
+                            label={tab.label}
+                            isActive={activeTab === tab.id}
+                            onClick={onTabChange}
+                        />
+                    ))}
+                </nav>
+                <ViewToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
+            </div>
         </div>
     )
 }
