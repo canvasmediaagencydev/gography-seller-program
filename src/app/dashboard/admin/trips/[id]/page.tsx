@@ -50,10 +50,10 @@ interface Booking {
 export default async function TripDetailPage({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const supabase = await createClient()
-  const tripId = await params.id
+  const { id: tripId } = await params
 
   // Get trip details with country
   const { data: trip, error: tripError } = await supabase
