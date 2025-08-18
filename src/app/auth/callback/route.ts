@@ -33,17 +33,13 @@ export async function GET(request: NextRequest) {
           })
       }
 
-      const forwardedHost = request.headers.get('x-forwarded-host')
-      const isLocalhost = forwardedHost?.includes('localhost')
-      
-      if (isLocalhost) {
-        return NextResponse.redirect(`${origin}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
-      }
+      // Use production URL if available, fallback to origin
+      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+      return NextResponse.redirect(`${redirectUrl}${next}`)
     }
   }
 
   // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/login?error=Something went wrong`)
+  const errorRedirectUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+  return NextResponse.redirect(`${errorRedirectUrl}/auth/login?error=Something went wrong`)
 }
