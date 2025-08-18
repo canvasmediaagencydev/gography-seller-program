@@ -6,6 +6,9 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
 
+  console.log('Callback - Environment NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
+  console.log('Callback - Origin:', origin)
+
   if (code) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
@@ -35,6 +38,7 @@ export async function GET(request: NextRequest) {
 
       // Use production URL if available, fallback to origin
       const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+      console.log('Callback - Final redirect URL:', `${redirectUrl}${next}`)
       return NextResponse.redirect(`${redirectUrl}${next}`)
     }
   }

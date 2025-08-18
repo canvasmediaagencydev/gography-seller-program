@@ -52,6 +52,10 @@ function LoginForm() {
         ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
         : `${window.location.origin}/auth/callback`
 
+      // Debug log
+      console.log('Environment NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
+      console.log('Final redirect URL:', redirectUrl)
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
