@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       bookings: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           booking_date: string | null
           commission_amount: number
           created_at: string | null
@@ -29,6 +31,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           booking_date?: string | null
           commission_amount: number
           created_at?: string | null
@@ -42,6 +46,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           booking_date?: string | null
           commission_amount?: number
           created_at?: string | null
@@ -55,6 +61,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_customer_id_fkey"
             columns: ["customer_id"]
@@ -279,7 +292,6 @@ export type Database = {
           commission_goal: number | null
           created_at: string | null
           document_uploaded_at: string | null
-          document_url: string | null
           documents_urls: string[] | null
           email: string | null
           full_name: string | null
@@ -300,7 +312,6 @@ export type Database = {
           commission_goal?: number | null
           created_at?: string | null
           document_uploaded_at?: string | null
-          document_url?: string | null
           documents_urls?: string[] | null
           email?: string | null
           full_name?: string | null
@@ -321,7 +332,6 @@ export type Database = {
           commission_goal?: number | null
           created_at?: string | null
           document_uploaded_at?: string | null
-          document_url?: string | null
           documents_urls?: string[] | null
           email?: string | null
           full_name?: string | null
@@ -348,25 +358,24 @@ export type Database = {
       get_sellers_with_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
+          approved_at: string
+          approved_by: string
+          avatar_uploaded_at: string
+          avatar_url: string
+          commission_goal: number
+          created_at: string
+          document_uploaded_at: string
+          documents_urls: string[]
+          email: string
+          full_name: string
           id: string
-          full_name: string | null
-          phone: string | null
-          role: string | null
-          status: string | null
-          commission_goal: number | null
-          referral_code: string | null
-          approved_by: string | null
-          approved_at: string | null
-          created_at: string | null
-          updated_at: string | null
-          email: string | null
-          id_card_url: string | null
-          avatar_url: string | null
-          document_url: string | null
-          documents_urls: string[] | null
-          id_card_uploaded_at: string | null
-          avatar_uploaded_at: string | null
-          document_uploaded_at: string | null
+          id_card_uploaded_at: string
+          id_card_url: string
+          phone: string
+          referral_code: string
+          role: string
+          status: string
+          updated_at: string
         }[]
       }
     }
