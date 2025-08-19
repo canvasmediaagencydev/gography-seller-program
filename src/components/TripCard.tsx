@@ -12,9 +12,26 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
     const [allSchedules, setAllSchedules] = useState<Tables<'trip_schedules'>[]>([])
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const [sellerReferralCode, setSellerReferralCode] = useState<string | null>(null)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
 
     const supabase = createClient()
+
+    // Fetch seller referral code
+    useEffect(() => {
+        if (currentSellerId) {
+            const fetchSellerCode = async () => {
+                const { data } = await supabase
+                    .from('user_profiles')
+                    .select('referral_code')
+                    .eq('id', currentSellerId)
+                    .single()
+                
+                setSellerReferralCode(data?.referral_code || null)
+            }
+            fetchSellerCode()
+        }
+    }, [currentSellerId])
 
     // Fetch all available schedules for this trip
     useEffect(() => {
@@ -112,7 +129,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 {/* Deadline */}
                 <div className="flex items-center text-gray-600 mb-3">
                    <LuCalendarDays className='mr-2' />
-                    <span className="text-sm">Deadline: {formatDeadline(selectedSchedule)}</span>
+                    <span className="text-sm">ปิดรับสมัคร: {formatDeadline(selectedSchedule)}</span>
                 </div>
 
                 {/* Travel Dates Selection */}
@@ -167,17 +184,44 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                     </div>
                 </div>
 
-                {/* View Trip Button */}
-                <div className="w-3/4 md:w-full md:px-5 flex items-center justify-center mx-auto">
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                    {/* Share Booking Link Button (only for sellers) */}
+                    {viewType === 'seller' && selectedSchedule && (
+                        <button 
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-2 rounded-full duration-200 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+                            onClick={() => {
+                                const bookingUrl = `${window.location.origin}/book/${trip.id}/${selectedSchedule.id}?ref=${sellerReferralCode || 'seller'}`
+                                navigator.clipboard.writeText(bookingUrl)
+                                // You can add a toast notification here
+                                alert('คัดลอก Link สมัครทริปแล้ว!')
+                            }}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                            </svg>
+                            แชร์ลิงก์
+                        </button>
+                    )}
+                    
+                    {/* View Trip Button */}
                     <button 
                         disabled={!trip.geography_link}
-                        className="bg-orange-600 w-full hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded-full duration-200 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        className={`font-semibold py-2 px-2 rounded-full duration-200 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 ${
+                            viewType === 'seller' && selectedSchedule 
+                                ? 'flex-1 bg-orange-600 hover:bg-orange-700 text-white' 
+                                : 'w-full bg-orange-600 hover:bg-orange-700 text-white'
+                        }`}
                         onClick={() => {
                             if (trip.geography_link) {
                                 window.open(trip.geography_link, '_blank')
                             }
                         }}
                     >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
                         ดูทริป
                     </button>
                 </div>
