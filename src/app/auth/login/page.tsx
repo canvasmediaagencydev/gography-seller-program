@@ -19,6 +19,7 @@ function LoginForm() {
 
   const errorMessage = searchParams.get('error')
 
+  // TODO loaclhost cant login with google
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)

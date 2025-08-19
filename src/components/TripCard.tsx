@@ -1,30 +1,89 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import TripImage from './TripImage'
 import { useTripData } from '../hooks/useTripData'
-import { useCopyToClipboard } from '../hooks/useCopyToClipboard'
-import { formatPrice } from '../utils/tripUtils'
-import { TRIP_CARD_CONSTANTS } from '../constants/tripCard'
 import { TripCardProps } from '../types/trip'
-import { BsInfoCircle } from "react-icons/bs"
-import { LuPlaneTakeoff } from "react-icons/lu"
-import { LuClock4 } from "react-icons/lu"
-import { ImLink } from "react-icons/im"
-import { FaUser } from "react-icons/fa"
-import { MdOutlineDateRange } from "react-icons/md";
+import { createClient } from '@/lib/supabase/client'
+import { Tables } from '../../database.types'
+import { LuCalendarDays } from "react-icons/lu";
 
 export default function TripCard({ trip, viewType = 'general', currentSellerId }: TripCardProps) {
-    const { copySuccess, handleCopy } = useCopyToClipboard()
+    const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
+    const [allSchedules, setAllSchedules] = useState<Tables<'trip_schedules'>[]>([])
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
 
-    const handleCopyLink = () => {
-        handleCopy(trip.geography_link)
+    const supabase = createClient()
+
+    // Fetch all available schedules for this trip
+    useEffect(() => {
+        const fetchSchedules = async () => {
+            const { data: schedules } = await supabase
+                .from('trip_schedules')
+                .select('*')
+                .eq('trip_id', trip.id)
+                .eq('is_active', true)
+                .gt('departure_date', new Date().toISOString())
+                .order('departure_date', { ascending: true })
+
+            if (schedules) {
+                setAllSchedules(schedules)
+                // Set first schedule as default if no schedule is selected
+                if (!selectedSchedule && schedules.length > 0) {
+                    setSelectedSchedule(schedules[0])
+                }
+            }
+        }
+
+        fetchSchedules()
+    }, [trip.id])
+
+    const formatPrice = (amount: number) => {
+        return new Intl.NumberFormat('th-TH', {
+            style: 'currency',
+            currency: 'THB',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount)
+    }
+
+    const getCommissionAmount = () => {
+        if (trip.commission_type === 'percentage') {
+            return (trip.price_per_person * trip.commission_value) / 100
+        }
+        return trip.commission_value
+    }
+
+    const formatDeadline = (schedule: Tables<'trip_schedules'> | null) => {
+        if (!schedule) return 'TBD'
+        
+        const deadline = new Date(schedule.registration_deadline)
+        return deadline.toLocaleDateString('th-TH', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        })
+    }
+
+    const formatDateRange = (schedule: Tables<'trip_schedules'> | null) => {
+        if (!schedule) return 'TBD'
+        
+        const departure = new Date(schedule.departure_date)
+        const returnDate = new Date(schedule.return_date)
+        
+        const depDay = departure.getDate()
+        const depMonth = departure.toLocaleDateString('th-TH', { month: 'short' })
+        const retDay = returnDate.getDate()
+        const retMonth = returnDate.toLocaleDateString('th-TH', { month: 'short' })
+        
+        return `${depDay} ${depMonth} - ${retDay} ${retMonth}`
     }
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full">
-            {/* Trip Image with Price Overlay */}
-            <div className={`relative ${TRIP_CARD_CONSTANTS.IMAGE_HEIGHT} mb-4 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200`}>
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 w-full max-w-sm mx-auto">
+            {/* Cover Image */}
+            <div className="relative h-48 w-full">
                 {trip.cover_image_url ? (
                     <TripImage
                         src={trip.cover_image_url}
@@ -32,107 +91,94 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                         className="w-full h-full object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-6xl">
-                        {trip.countries?.flag_emoji || TRIP_CARD_CONSTANTS.DEFAULT_FLAG}
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-6xl">
+                        {trip.countries?.flag_emoji || '🌍'}
                     </div>
                 )}
-
-                {/* Price Badge */}
-                <div className="absolute bottom-2 right-2 bg-gray-900/20 rounded-md text-white px-3 py-1">
-                    <div className="text-sm font-bold text-right">
-                        {TRIP_CARD_CONSTANTS.LABELS.PER_PERSON}
-                    </div>
-                    <div className="text-3xl font-bold text-right">
-                        {formatPrice(trip.price_per_person)}
-                    </div>
+                <div className="absolute top-3 left-3 bg-black/40 text-white px-2 py-1 rounded-lg text-lg font-semibold backdrop-blur-sm">
+                    {selectedSchedule?.available_seats || trip.total_seats} ที่นั่งเหลือ
                 </div>
             </div>
 
-            {/* Trip Info */}
-            <div className="px-4 pt-0 py-4 flex flex-col h-full">
-                {/* Trip Title */}
-                <h3 className={`font-semibold text-gray-800 text-xl mb-4 ${TRIP_CARD_CONSTANTS.TITLE_HEIGHT} ${TRIP_CARD_CONSTANTS.TITLE_LINES} leading-6`}>
-                    {trip.title}
+            {/* Content */}
+            <div className="p-4">
+                {/* Title */}
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 h-14 flex items-start">
+                    <span className="line-clamp-2 leading-7">
+                        {trip.title}
+                    </span>
                 </h3>
 
-                {/* Trip Details */}
-                <div className="space-y-2 text-sm text-gray-600 mb-4 text-nowrap flex-grow">
-                    <div className="flex items-center gap-2">
-                        <LuPlaneTakeoff className="w-5 h-5" />
-                        <span>{TRIP_CARD_CONSTANTS.LABELS.TRAVEL_DATES}</span>
-                        <span className="flex-1" />
-                        <span className="text-gray-800 font-semibold">
-                            {dateRange}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <LuClock4 className="w-5 h-5" />
-                        <span>{TRIP_CARD_CONSTANTS.LABELS.DURATION}</span>
-                        <span className="flex-1" />
-                        <span className="text-gray-800 font-semibold">
-                            {`${duration.days} วัน ${duration.nights} คืน`}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <MdOutlineDateRange className="w-5 h-5" />
-                        <span>{TRIP_CARD_CONSTANTS.LABELS.DEADLINE}</span>
-                        <span className="flex-1" />
-                        <span className="text-gray-800 font-semibold">
-                            {deadlineInfo}
-                        </span>
-                    </div>
+                {/* Deadline */}
+                <div className="flex items-center text-gray-600 mb-3">
+                   <LuCalendarDays className='mr-2' />
+                    <span className="text-sm">Deadline: {formatDeadline(selectedSchedule)}</span>
                 </div>
 
-                {/* Stats Row */}
-                <div className="flex justify-between items-center mb-4 bg-gray-50 p-4 rounded-lg mt-auto">
-                    <div className="flex-1 text-center">
-                        <div className="text-lg font-bold text-gray-800 flex items-center justify-center">
-                            {availableSeats}
-                            <span className="text-sm ml-2">
-                                <FaUser className="inline text-gray-400" />
+                {/* Travel Dates Selection */}
+                <div className="mb-3">
+                    <p className="text-sm text-gray-600 mb-2">วันเดินทาง:</p>
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white text-left flex justify-between items-center hover:border-gray-400 transition-colors"
+                        >
+                            <span>
+                                {formatDateRange(selectedSchedule)} ({trip.duration_days} วัน {trip.duration_nights} คืน)
                             </span>
-                        </div>
-                        <div className="text-xs text-gray-500">{TRIP_CARD_CONSTANTS.LABELS.AVAILABLE}</div>
-                    </div>
+                            <svg 
+                                className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
 
-                    <div className="h-8 w-px bg-gray-300 mx-4" />
-
-                    {viewType === 'seller' ? (
-                        <div className="flex-1 text-center">
-                            <div className="text-lg font-bold text-gray-800">{mySales}</div>
-                            <div className="text-xs text-gray-500">{TRIP_CARD_CONSTANTS.LABELS.MY_SALES}</div>
-                        </div>
-                    ) : (
-                        <div className="flex-1 text-center">
-                            <div className="text-lg font-bold text-gray-800">-</div>
-                            <div className="text-xs text-gray-500">{TRIP_CARD_CONSTANTS.LABELS.SALES}</div>
-                        </div>
-                    )}
-
-                    <div className="h-8 w-px bg-gray-300 mx-4" />
-
-                    <div className="flex-1 text-center">
-                        <div className="text-lg font-bold text-gray-800">
-                            {formatPrice(commission)}
-                        </div>
-                        <div className="text-xs text-gray-500">{TRIP_CARD_CONSTANTS.LABELS.COMMISSION}</div>
+                        {/* Dropdown */}
+                        {isDropdownOpen && allSchedules.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                                {allSchedules.map((schedule) => (
+                                    <button
+                                        key={schedule.id}
+                                        onClick={() => {
+                                            setSelectedSchedule(schedule)
+                                            setIsDropdownOpen(false)
+                                        }}
+                                        className={`w-full p-2 text-left text-sm hover:bg-gray-50 ${
+                                            selectedSchedule?.id === schedule.id ? 'bg-orange-50 text-orange-600' : ''
+                                        }`}
+                                    >
+                                        {formatDateRange(schedule)} ({schedule.available_seats} ที่นั่งเหลือ)
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Share Button */}
-                <div className="w-full px-2 py-2 rounded-full transition-colors flex items-center justify-between gap-2 bg-gray-800 text-white cursor-pointer">
-                    <button
-                        onClick={handleCopyLink}
-                        disabled={!trip.geography_link}
-                        className="w-full rounded-md py-2 hover:text-orange-600 hover:scale-110 transition-all duration-200 ease-in-out flex items-center justify-center gap-2 text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <ImLink className="text-xl" />
-                        <span>
-                            {copySuccess 
-                                ? TRIP_CARD_CONSTANTS.COPY_SUCCESS_TEXT 
-                                : TRIP_CARD_CONSTANTS.COPY_DEFAULT_TEXT
-                            }
+                {/* Commission */}
+                <div className="flex items-center justify-between mb-4 mt-2">
+                    <div>
+                        <span className="text-orange-600 text-2xl font-bold">
+                            คอมมิชชั่น {formatPrice(getCommissionAmount())}
                         </span>
+                    </div>
+                </div>
+
+                {/* View Trip Button */}
+                <div className="w-3/4 md:w-full md:px-5 flex items-center justify-center mx-auto">
+                    <button 
+                        disabled={!trip.geography_link}
+                        className="bg-orange-600 w-full hover:bg-orange-700 text-white font-semibold py-2 px-2 rounded-full duration-200 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        onClick={() => {
+                            if (trip.geography_link) {
+                                window.open(trip.geography_link, '_blank')
+                            }
+                        }}
+                    >
+                        ดูทริป
                     </button>
                 </div>
             </div>
