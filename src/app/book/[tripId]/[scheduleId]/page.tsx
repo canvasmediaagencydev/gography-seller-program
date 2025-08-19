@@ -78,9 +78,12 @@ export default function BookTripPage({
         ? (trip.price_per_person * trip.commission_value) / 100 * customers.length
         : trip.commission_value * customers.length
 
-      // Create customers first
-      const customerIds: string[] = []
+      // Create customers and bookings
+      const bookingIds: string[] = []
+      let isMainCustomer = true
+      
       for (const customerData of customers) {
+        // Create customer
         const { data: customer, error: customerError } = await supabase
           .from('customers')
           .insert({
@@ -92,24 +95,30 @@ export default function BookTripPage({
           .single()
 
         if (customerError) throw customerError
-        customerIds.push(customer.id)
+
+        // Create individual booking for each customer
+        const { data: booking, error: bookingError } = await supabase
+          .from('bookings')
+          .insert({
+            trip_schedule_id: resolvedParams.scheduleId,
+            customer_id: customer.id,
+            seller_id: seller?.id,
+            total_amount: trip.price_per_person, // Individual amount per person
+            commission_amount: trip.commission_type === 'percentage'
+              ? (trip.price_per_person * trip.commission_value) / 100
+              : trip.commission_value,
+            status: 'pending',
+            notes: isMainCustomer 
+              ? `ผู้ติดต่อหลัก - จองทั้งหมด ${customers.length} คน (รวม: ${formatPrice(totalAmount)})`
+              : `ผู้เดินทางร่วมกับ ${customers[0].full_name}`
+          })
+          .select()
+          .single()
+
+        if (bookingError) throw bookingError
+        bookingIds.push(booking.id)
+        isMainCustomer = false // คนแรกเป็น main customer
       }
-
-      // Create booking
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .insert({
-          trip_schedule_id: resolvedParams.scheduleId,
-          customer_id: customerIds[0], // Main customer
-          seller_id: seller?.id,
-          total_amount: totalAmount,
-          commission_amount: commissionAmount,
-          status: 'pending',
-          notes: `จำนวนผู้เดินทาง: ${customers.length} คน
-รายชื่อ: ${customers.map(c => c.full_name).join(', ')}`
-        })
-
-      if (bookingError) throw bookingError
 
       // Redirect to success page
       router.push('/book/success')

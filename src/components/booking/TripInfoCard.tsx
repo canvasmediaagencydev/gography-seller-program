@@ -17,9 +17,10 @@ interface SellerData {
 interface TripInfoCardProps {
     trip: TripWithRelations
     schedule: Tables<'trip_schedules'>
+    seller?: SellerData | null
 }
 
-export default function TripInfoCard({ trip, schedule }: TripInfoCardProps) {
+export default function TripInfoCard({ trip, schedule, seller }: TripInfoCardProps) {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             {/* Header */}
