@@ -132,27 +132,6 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      {/* Progress toward goal */}
-      {profile.commission_goal && (
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">ความคืบหน้าเป้าหมาย</h3>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">คอมมิชชั่น</span>
-            <span className="text-sm font-medium text-gray-700">
-              ฿{totalCommission.toLocaleString()} / ฿{Number(profile.commission_goal).toLocaleString()}
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full" 
-              style={{ width: `${Math.min((totalCommission / Number(profile.commission_goal)) * 100, 100)}%` }}
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-2">
-            {((totalCommission / Number(profile.commission_goal)) * 100).toFixed(1)}% ของเป้าหมาย
-          </p>
-        </div>
-      )}
 
       {/* Bookings Table */}
       <div className="bg-white shadow rounded-lg">
@@ -164,22 +143,22 @@ export default async function ReportsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ลูกค้า
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ทริป
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ยอดรวม
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     คอมมิชชั่น
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     สถานะ
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     วันที่จอง
                   </th>
                 </tr>
