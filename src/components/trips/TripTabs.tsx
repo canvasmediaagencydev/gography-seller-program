@@ -55,7 +55,10 @@ export function TripTabs({ activeTab, onTabChange, showTabs, viewMode, onViewMod
                         />
                     ))}
                 </nav>
-                <ViewToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
+
+                {/* //* Note ปิดไว้ยังไม่เปิดใช้ ปรับปรุง list view ยังไม่สมบูรณ์ */}
+                
+                {/* <ViewToggle viewMode={viewMode} onViewModeChange={onViewModeChange} /> */}
             </div>
         </div>
     )
