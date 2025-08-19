@@ -1,25 +1,24 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 // Hooks
 import { useBookingData } from '@/hooks/useBookingData'
 import { useCustomers } from '@/hooks/useCustomers'
+import { useBookingActions } from '@/hooks/useBookingActions'
 
 // Components
 import LoadingSpinner from '@/components/booking/LoadingSpinner'
 import ErrorDisplay from '@/components/booking/ErrorDisplay'
 import BookingHeader from '@/components/booking/BookingHeader'
 import TripInfoCard from '@/components/booking/TripInfoCard'
-import CustomerFormWrapper from '@/components/booking/CustomerFormWrapper'
+import CustomerForm from '@/components/booking/CustomerForm'
 import BookingSummary from '@/components/booking/BookingSummary'
+import ContactSupport from '@/components/booking/ContactSupport'
 
-// Utils
-import { formatPrice } from '@/utils/bookingUtils'
-
-// Supabase
-import { createClient } from '@/lib/supabase/client'
+// Constants
+import { SUPPORT_MESSAGES } from '@/constants/booking'
 
 export default function BookTripPage({
   params
@@ -27,9 +26,6 @@ export default function BookTripPage({
   params: Promise<{ tripId: string; scheduleId: string }>
 }) {
   const [resolvedParams, setResolvedParams] = useState<{ tripId: string; scheduleId: string } | null>(null)
-  const [isBooking, setIsBooking] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const sellerRef = searchParams.get('ref')
 
@@ -45,100 +41,35 @@ export default function BookTripPage({
     sellerRef
   )
   const { customers, addCustomer, removeCustomer, updateCustomer, validateMainCustomer } = useCustomers()
+  
+  // Booking actions hook
+  const { 
+    isBooking, 
+    error, 
+    calculateTotalAmount, 
+    handleBooking: performBooking,
+    setError 
+  } = useBookingActions({
+    trip,
+    schedule,
+    seller,
+    tripId: resolvedParams?.tripId || '',
+    scheduleId: resolvedParams?.scheduleId || '',
+    customers
+  })
 
-  const supabase = createClient()
-
-  const calculateTotalAmount = () => {
-    return trip ? trip.price_per_person * customers.length : 0
-  }
-
-  const handleBooking = async () => {
-    if (!resolvedParams) {
-      setError('ไม่พบข้อมูล URL')
-      return
-    }
-
-    if (!validateMainCustomer()) {
-      setError('กรุณากรอกข้อมูลผู้ติดต่อหลักให้ครบถ้วน')
-      return
-    }
-
-    if (!trip || !schedule) {
-      setError('ไม่พบข้อมูลทริป')
-      return
-    }
-
-    try {
-      setIsBooking(true)
-      setError(null)
-
-      // Calculate total amount and commission
-      const totalAmount = calculateTotalAmount()
-      const commissionAmount = trip.commission_type === 'percentage'
-        ? (trip.price_per_person * trip.commission_value) / 100 * customers.length
-        : trip.commission_value * customers.length
-
-      // Create customers and bookings
-      const bookingIds: string[] = []
-      let isMainCustomer = true
-      
-      for (const customerData of customers) {
-        // Create customer
-        const { data: customer, error: customerError } = await supabase
-          .from('customers')
-          .insert({
-            ...customerData,
-            referred_by_code: seller?.referral_code,
-            referred_by_seller_id: seller?.id
-          })
-          .select()
-          .single()
-
-        if (customerError) throw customerError
-
-        // Create individual booking for each customer
-        const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .insert({
-            trip_schedule_id: resolvedParams.scheduleId,
-            customer_id: customer.id,
-            seller_id: seller?.id,
-            total_amount: trip.price_per_person, // Individual amount per person
-            commission_amount: trip.commission_type === 'percentage'
-              ? (trip.price_per_person * trip.commission_value) / 100
-              : trip.commission_value,
-            status: 'pending',
-            notes: isMainCustomer 
-              ? `ผู้ติดต่อหลัก - จองทั้งหมด ${customers.length} คน (รวม: ${formatPrice(totalAmount)})`
-              : `ผู้เดินทางร่วมกับ ${customers[0].full_name}`
-          })
-          .select()
-          .single()
-
-        if (bookingError) throw bookingError
-        bookingIds.push(booking.id)
-        isMainCustomer = false // คนแรกเป็น main customer
-      }
-
-      // Redirect to success page
-      router.push('/book/success')
-
-    } catch (err: any) {
-      console.error('Error creating booking:', err)
-      setError(err.message || 'เกิดข้อผิดพลาดในการจอง')
-    } finally {
-      setIsBooking(false)
-    }
+  const handleBooking = () => {
+    performBooking(validateMainCustomer)
   }
 
   // Loading state for params resolution
   if (!resolvedParams) {
-    return <LoadingSpinner message="กำลังโหลด..." />
+    return <LoadingSpinner message={SUPPORT_MESSAGES.booking.loading} />
   }
 
   // Loading state
   if (loading) {
-    return <LoadingSpinner message="กำลังโหลดข้อมูล..." />
+    return <LoadingSpinner message={SUPPORT_MESSAGES.booking.loadingData} />
   }
 
   // Error state
@@ -148,7 +79,7 @@ export default function BookTripPage({
 
   // No data state
   if (!trip || !schedule) {
-    return <ErrorDisplay error="ไม่พบข้อมูลทริปหรือตารางเวลาที่เลือก" />
+    return <ErrorDisplay error={SUPPORT_MESSAGES.error.noTripData} />
   }
 
   return (
@@ -164,12 +95,35 @@ export default function BookTripPage({
             <TripInfoCard trip={trip} schedule={schedule} seller={seller} />
 
             {/* Customer Forms */}
-            <CustomerFormWrapper
-              customers={customers}
-              onAddCustomer={addCustomer}
-              onRemoveCustomer={removeCustomer}
-              onUpdateCustomer={updateCustomer}
-            />
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">ข้อมูลผู้เดินทาง</h3>
+                <p className="text-gray-600 text-sm">กรุณากรอกข้อมูลผู้เดินทางทุกท่าน</p>
+              </div>
+
+              <div className="space-y-6">
+                {customers.map((customer, index) => (
+                  <CustomerForm
+                    key={index}
+                    customer={customer}
+                    index={index}
+                    onUpdate={updateCustomer}
+                    onRemove={removeCustomer}
+                    canRemove={index > 0}
+                  />
+                ))}
+                
+                <button
+                  onClick={addCustomer}
+                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-orange-300 hover:text-orange-600 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>เพิ่มผู้เดินทาง</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -187,17 +141,7 @@ export default function BookTripPage({
               />
 
               {/* Contact Support */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h4 className="font-medium text-gray-900 mb-3">ต้องการความช่วยเหลือ?</h4>
-              <div className="space-y-2">
-                <a href="tel:02-123-4567" className="block w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm text-center">
-                  📞 โทร 02-123-4567
-                </a>
-                <a href="https://line.me/ti/p/@geography" className="block w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors text-sm text-center">
-                  � แชท LINE
-                </a>
-              </div>
-            </div>
+              <ContactSupport />
             </div>
           </div>
         </div>
