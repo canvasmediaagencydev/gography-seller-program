@@ -144,13 +144,13 @@ export default function BookTripPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <BookingHeader />
+      {/* Header */}
+      <BookingHeader />
 
+      <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Trip Info & Customer Forms */}
-          <div className="lg:col-span-2">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
             {/* Trip Info */}
             <TripInfoCard trip={trip} schedule={schedule} seller={seller} />
 
@@ -163,31 +163,33 @@ export default function BookTripPage({
             />
           </div>
 
-          {/* Booking Summary */}
+          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <BookingSummary
-              customerCount={customers.length}
-              pricePerPerson={trip.price_per_person}
-              totalAmount={calculateTotalAmount()}
-            />
+            <div className="sticky top-24 space-y-6">
+              <BookingSummary
+                customerCount={customers.length}
+                pricePerPerson={trip.price_per_person}
+                totalAmount={calculateTotalAmount()}
+                onBooking={handleBooking}
+                isBooking={isBooking}
+                canBook={validateMainCustomer()}
+                error={error}
+                sellerRefCode={seller?.referral_code}
+              />
 
-            <button
-              onClick={handleBooking}
-              disabled={isBooking || !validateMainCustomer()}
-              className={`w-full py-3 px-4 rounded-md font-semibold transition-colors ${
-                isBooking || !validateMainCustomer()
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-orange-500 text-white hover:bg-orange-600'
-              }`}
-            >
-              {isBooking ? 'กำลังจอง...' : 'ยืนยันการจอง'}
-            </button>
-
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-600">{error}</p>
+              {/* Contact Support */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h4 className="font-medium text-gray-900 mb-3">ต้องการความช่วยเหลือ?</h4>
+              <div className="space-y-2">
+                <a href="tel:02-123-4567" className="block w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm text-center">
+                  📞 โทร 02-123-4567
+                </a>
+                <a href="https://line.me/ti/p/@geography" className="block w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors text-sm text-center">
+                  � แชท LINE
+                </a>
               </div>
-            )}
+            </div>
+            </div>
           </div>
         </div>
       </div>
