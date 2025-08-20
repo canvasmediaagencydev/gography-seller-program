@@ -355,6 +355,17 @@ export type Database = {
         Args: { schedule_id: string }
         Returns: number
       }
+      get_booking_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approved_bookings: number
+          cancelled_bookings: number
+          inprogress_bookings: number
+          pending_bookings: number
+          rejected_bookings: number
+          total_bookings: number
+        }[]
+      }
       get_sellers_with_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
