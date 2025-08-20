@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const pageSize = parseInt(searchParams.get('pageSize') || '6')
     const filter = searchParams.get('filter') || 'all'
+    const countries = searchParams.get('countries')?.split(',').filter(Boolean) || []
     
     const supabase = await createClient()
     
@@ -15,6 +16,36 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Get available countries from existing trips
+    const { data: availableCountries } = await supabase
+      .from('trips')
+      .select(`
+        country_id,
+        countries (
+          id,
+          name,
+          flag_emoji
+        )
+      `)
+      .eq('is_active', true)
+      .not('country_id', 'is', null)
+
+    // Extract unique countries
+    const uniqueCountries = availableCountries
+      ?.filter((trip: any) => trip.countries)
+      ?.reduce((acc: any[], trip: any) => {
+        const country = trip.countries
+        if (!acc.find(c => c.id === country.id)) {
+          acc.push({
+            id: country.id,
+            name: country.name,
+            flag_emoji: country.flag_emoji
+          })
+        }
+        return acc
+      }, [])
+      ?.sort((a: any, b: any) => a.name.localeCompare(b.name)) || []
 
     // Get user profile to check role
     const { data: profile } = await supabase
@@ -31,24 +62,37 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
 
+    // Apply country filter if specified
+    if (countries.length > 0) {
+      countQuery = countQuery.in('country_id', countries)
+    }
+
     // For seller filters, we need to get all trips first to filter properly
     let filteredTripIds: string[] = []
     let totalFilteredCount = 0
 
     if (userRole === 'seller' && filter !== 'all') {
       // Get all active trips with their data for filtering
-      const { data: allTrips } = await supabase
+      let allTripsQuery = supabase
         .from('trips')
         .select(`
           id,
           *,
           countries (
+            id,
             name,
             flag_emoji
           )
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
+
+      // Apply country filter if specified
+      if (countries.length > 0) {
+        allTripsQuery = allTripsQuery.in('country_id', countries)
+      }
+
+      const { data: allTrips } = await allTripsQuery
 
       // Get trips with schedules and seller data for filtering
       const tripsWithSellerData = await Promise.all(
@@ -125,7 +169,8 @@ export async function GET(request: NextRequest) {
         totalPages,
         pageSize,
         userRole,
-        userId: user.id
+        userId: user.id,
+        availableCountries: uniqueCountries
       })
     }
 
@@ -135,11 +180,17 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         countries (
+          id,
           name,
           flag_emoji
         )
       `, { count: 'exact' })
       .eq('is_active', true)
+
+    // Apply country filter if specified
+    if (countries.length > 0) {
+      query = query.in('country_id', countries)
+    }
 
     // Apply pagination
     const from = (page - 1) * pageSize
@@ -209,7 +260,8 @@ export async function GET(request: NextRequest) {
       totalPages,
       pageSize,
       userRole,
-      userId: user.id
+      userId: user.id,
+      availableCountries: uniqueCountries
     })
 
   } catch (error: any) {
