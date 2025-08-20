@@ -16,6 +16,7 @@ import { TabType } from '../../../hooks/useTripFilters'
 export default function TripsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [activeTab, setActiveTab] = useState<TabType>('all')
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([])
   
   // Server-side pagination state
   const [trips, setTrips] = useState<TripWithRelations[]>([])
@@ -26,10 +27,11 @@ export default function TripsPage() {
   const [error, setError] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [availableCountries, setAvailableCountries] = useState<any[]>([])
 
   const pageSize = 6
 
-  const fetchTrips = async (page: number = currentPage, filter: string = activeTab, isGridUpdate = false) => {
+  const fetchTrips = async (page: number = currentPage, filter: string = activeTab, countries: string[] = selectedCountries, isGridUpdate = false) => {
     try {
       if (isGridUpdate) {
         setGridLoading(true)
@@ -43,6 +45,11 @@ export default function TripsPage() {
         filter: filter
       })
 
+      // Add countries filter if any selected
+      if (countries.length > 0) {
+        params.append('countries', countries.join(','))
+      }
+
       const response = await fetch(`/api/trips?${params}`)
       
       if (!response.ok) {
@@ -55,6 +62,11 @@ export default function TripsPage() {
       setTotalCount(data.totalCount)
       setUserId(data.userId)
       setUserRole(data.userRole)
+      
+      // Set available countries from the first load
+      if (data.availableCountries && data.availableCountries.length > 0) {
+        setAvailableCountries(data.availableCountries)
+      }
       
     } catch (err: any) {
       setError(err.message)
@@ -70,14 +82,20 @@ export default function TripsPage() {
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
     setCurrentPage(1)
-    fetchTrips(1, tab, true) // Grid update only
+    fetchTrips(1, tab, selectedCountries, true) // Grid update only
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    fetchTrips(page, activeTab, true) // Grid update only
+    fetchTrips(page, activeTab, selectedCountries, true) // Grid update only
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleCountriesChange = (countries: string[]) => {
+    setSelectedCountries(countries)
+    setCurrentPage(1)
+    fetchTrips(1, activeTab, countries, true) // Grid update only
   }
 
   useEffect(() => {
@@ -100,7 +118,12 @@ export default function TripsPage() {
 
   return (
     <div className="space-y-6">
-      <TripsHeader totalTrips={totalCount} />
+      <TripsHeader 
+        totalTrips={totalCount}
+        selectedCountries={selectedCountries}
+        onCountriesChange={handleCountriesChange}
+        availableCountries={availableCountries}
+      />
       
       {showTabs && (
         <TripTabs
