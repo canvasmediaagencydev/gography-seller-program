@@ -2,20 +2,34 @@
 
 import { useState, useEffect } from 'react'
 import TripImage from './TripImage'
+import SeatIndicator from './ui/SeatIndicator'
 import { useTripData } from '../hooks/useTripData'
+import { useTripSchedules } from '../hooks/useTripSchedules'
 import { TripCardProps } from '../types/trip'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../database.types'
 import { LuCalendarDays } from "react-icons/lu";
+import { ImLink } from "react-icons/im";
+import { BsInfoCircle } from "react-icons/bs";
 
 export default function TripCard({ trip, viewType = 'general', currentSellerId }: TripCardProps) {
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
-    const [allSchedules, setAllSchedules] = useState<Tables<'trip_schedules'>[]>([])
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [sellerReferralCode, setSellerReferralCode] = useState<string | null>(null)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
+    
+    // Get real-time schedules with available seats
+    const { schedules: allSchedules, loading: schedulesLoading } = useTripSchedules(trip.id)
 
     const supabase = createClient()
+
+    // Get real-time seats for currently selected schedule
+    const getCurrentScheduleSeats = () => {
+        if (!selectedSchedule) return trip.total_seats
+        
+        const scheduleWithSeats = allSchedules.find(s => s.id === selectedSchedule.id)
+        return scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats
+    }
 
     // Fetch seller referral code
     useEffect(() => {
@@ -33,28 +47,12 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         }
     }, [currentSellerId])
 
-    // Fetch all available schedules for this trip
+    // Set first schedule as default when schedules are loaded
     useEffect(() => {
-        const fetchSchedules = async () => {
-            const { data: schedules } = await supabase
-                .from('trip_schedules')
-                .select('*')
-                .eq('trip_id', trip.id)
-                .eq('is_active', true)
-                .gt('departure_date', new Date().toISOString())
-                .order('departure_date', { ascending: true })
-
-            if (schedules) {
-                setAllSchedules(schedules)
-                // Set first schedule as default if no schedule is selected
-                if (!selectedSchedule && schedules.length > 0) {
-                    setSelectedSchedule(schedules[0])
-                }
-            }
+        if (!selectedSchedule && allSchedules.length > 0) {
+            setSelectedSchedule(allSchedules[0])
         }
-
-        fetchSchedules()
-    }, [trip.id])
+    }, [allSchedules, selectedSchedule])
 
     const formatPrice = (amount: number) => {
         return new Intl.NumberFormat('th-TH', {
@@ -112,8 +110,12 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                         {trip.countries?.flag_emoji || '🌍'}
                     </div>
                 )}
-                <div className="absolute top-3 left-3 bg-black/40 text-white px-2 py-1 rounded-lg text-lg font-semibold backdrop-blur-sm">
-                    {selectedSchedule?.available_seats || trip.total_seats} ที่นั่งเหลือ
+                <div className="absolute top-3 left-3 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm">
+                    <SeatIndicator 
+                        availableSeats={getCurrentScheduleSeats()}
+                        totalSeats={selectedSchedule?.available_seats || trip.total_seats}
+                        loading={schedulesLoading}
+                    />
                 </div>
             </div>
 
@@ -167,7 +169,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                                             selectedSchedule?.id === schedule.id ? 'bg-orange-50 text-orange-600' : ''
                                         }`}
                                     >
-                                        {formatDateRange(schedule)} ({schedule.available_seats} ที่นั่งเหลือ)
+                                        {formatDateRange(schedule)} ({schedule.realTimeSeats ?? schedule.available_seats} ที่นั่งเหลือ)
                                     </button>
                                 ))}
                             </div>
@@ -187,43 +189,61 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 {/* Action Buttons */}
                 <div className="flex gap-2">
                     {/* Share Booking Link Button (only for sellers) */}
-                    {viewType === 'seller' && selectedSchedule && (
-                        <button 
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-2 rounded-full duration-200 transition-all transform hover:scale-105 flex items-center justify-center gap-2"
-                            onClick={() => {
-                                const bookingUrl = `${window.location.origin}/book/${trip.id}/${selectedSchedule.id}?ref=${sellerReferralCode || 'seller'}`
-                                navigator.clipboard.writeText(bookingUrl)
-                                // You can add a toast notification here
-                                alert('คัดลอก Link สมัครทริปแล้ว!')
-                            }}
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                            </svg>
-                            แชร์ลิงก์
-                        </button>
+                    {viewType === 'seller' && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    // Use selectedSchedule or first available schedule
+                                    const scheduleToUse = selectedSchedule || allSchedules[0] || trip.next_schedule
+                                    if (scheduleToUse) {
+                                        const bookingUrl = `${window.location.origin}/book/${trip.id}/${scheduleToUse.id}?ref=${sellerReferralCode || 'seller'}`
+                                        navigator.clipboard.writeText(bookingUrl)
+                                        alert('คัดลอก Link สมัครทริปแล้ว!')
+                                    } else {
+                                        alert('ไม่พบตารางเวลาสำหรับทริปนี้')
+                                    }
+                                }}
+                                disabled={!selectedSchedule && !allSchedules[0] && !trip.next_schedule}
+                                className="flex-1 bg-gray-800 text-white px-3 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <ImLink className='text-lg' />
+                                <span>แชร์ลิงก์</span>
+                            </button>
+                            
+                            <div className="relative group">
+                                <button
+                                    onClick={() => {
+                                        if (trip.geography_link) {
+                                            window.open(trip.geography_link, '_blank')
+                                        }
+                                    }}
+                                    disabled={!trip.geography_link}
+                                    className="bg-gray-100 text-gray-600 px-3 py-3 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <BsInfoCircle className='text-lg' />
+                                </button>
+                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 z-10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-gray-900/80 text-white text-xs rounded px-2 py-1 whitespace-nowrap shadow-lg">
+                                    ดูข้อมูลทริป
+                                </div>
+                            </div>
+                        </>
                     )}
                     
-                    {/* View Trip Button */}
-                    <button 
-                        disabled={!trip.geography_link}
-                        className={`font-semibold py-2 px-2 rounded-full duration-200 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 ${
-                            viewType === 'seller' && selectedSchedule 
-                                ? 'flex-1 bg-orange-600 hover:bg-orange-700 text-white' 
-                                : 'w-full bg-orange-600 hover:bg-orange-700 text-white'
-                        }`}
-                        onClick={() => {
-                            if (trip.geography_link) {
-                                window.open(trip.geography_link, '_blank')
-                            }
-                        }}
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        ดูทริป
-                    </button>
+                    {/* View Trip Button (for general view) */}
+                    {viewType !== 'seller' && (
+                        <button 
+                            disabled={!trip.geography_link}
+                            onClick={() => {
+                                if (trip.geography_link) {
+                                    window.open(trip.geography_link, '_blank')
+                                }
+                            }}
+                            className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <BsInfoCircle className="text-lg" />
+                            <span>ดูทริป</span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

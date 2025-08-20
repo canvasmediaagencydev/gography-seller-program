@@ -1,5 +1,7 @@
 import { Tables } from '../../../database.types'
 import { formatDate, formatPrice } from '../../utils/bookingUtils'
+import { useScheduleSeats } from '../../hooks/useScheduleSeats'
+import SeatIndicator from '../ui/SeatIndicator'
 
 interface TripWithRelations extends Tables<'trips'> {
     countries?: {
@@ -21,6 +23,9 @@ interface TripInfoCardProps {
 }
 
 export default function TripInfoCard({ trip, schedule, seller }: TripInfoCardProps) {
+    // Get real-time available seats
+    const { availableSeats, loading: seatsLoading } = useScheduleSeats(schedule.id)
+    
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             {/* Header */}
@@ -61,7 +66,14 @@ export default function TripInfoCard({ trip, schedule, seller }: TripInfoCardPro
                     </div>
                     <div className="text-center p-3 bg-gray-50 rounded-lg">
                         <p className="text-lg text-gray-500 mb-1">ที่นั่งเหลือ</p>
-                        <p className="text-lg text-green-600">{schedule.available_seats} ที่นั่ง</p>
+                        <div className="flex justify-center">
+                            <SeatIndicator 
+                                availableSeats={availableSeats ?? schedule.available_seats}
+                                totalSeats={schedule.available_seats}
+                                loading={seatsLoading}
+                                textColor="text-green-600"
+                            />
+                        </div>
                     </div>
                 </div>
                 

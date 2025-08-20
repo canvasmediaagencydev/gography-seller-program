@@ -16,6 +16,7 @@ import TripInfoCard from '@/components/booking/TripInfoCard'
 import CustomerForm from '@/components/booking/CustomerForm'
 import BookingSummary from '@/components/booking/BookingSummary'
 import ContactSupport from '@/components/booking/ContactSupport'
+import SeatAvailabilityWarning from '@/components/booking/SeatAvailabilityWarning'
 
 // Constants
 import { SUPPORT_MESSAGES } from '@/constants/booking'
@@ -93,6 +94,13 @@ export default function BookTripPage({
           <div className="lg:col-span-2 space-y-6">
             {/* Trip Info */}
             <TripInfoCard trip={trip} schedule={schedule} seller={seller} />
+
+            {/* Seat Availability Warning */}
+            <SeatAvailabilityWarning 
+              scheduleId={schedule.id}
+              totalSeats={schedule.available_seats}
+              customerCount={customers.length}
+            />
 
             {/* Customer Forms */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">

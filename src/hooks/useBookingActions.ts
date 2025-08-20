@@ -90,6 +90,34 @@ export function useBookingActions({
       setIsBooking(true)
       setError(null)
 
+      // Check available seats before booking
+      const { data: availableSeats, error: seatsError } = await supabase
+        .rpc('get_available_seats', { schedule_id: scheduleId })
+
+      if (seatsError) {
+        console.warn('Failed to get real-time seats, using fallback calculation')
+        
+        // Fallback: manual calculation
+        const { data: bookings } = await supabase
+          .from('bookings')
+          .select('status')
+          .eq('trip_schedule_id', scheduleId)
+          .in('status', ['approved', 'pending', 'confirmed'])
+
+        const bookedSeats = bookings?.length || 0
+        const calculatedSeats = Math.max(0, schedule.available_seats - bookedSeats)
+        
+        if (customers.length > calculatedSeats) {
+          setError(`ที่นั่งไม่เพียงพอ มีที่นั่งเหลือเพียง ${calculatedSeats} ที่นั่ง`)
+          return
+        }
+      } else {
+        if (customers.length > (availableSeats || 0)) {
+          setError(`ที่นั่งไม่เพียงพอ มีที่นั่งเหลือเพียง ${availableSeats || 0} ที่นั่ง`)
+          return
+        }
+      }
+
       // Create customers and bookings
       const bookingIds: string[] = []
       let isMainCustomer = true
