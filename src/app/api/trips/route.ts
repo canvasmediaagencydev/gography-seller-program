@@ -56,27 +56,12 @@ export async function GET(request: NextRequest) {
 
     const userRole = profile?.role || null
 
-    // Build base query for counting (before pagination)
-    let countQuery = supabase
-      .from('trips')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
-
-    // Apply country filter if specified
-    if (countries.length > 0) {
-      countQuery = countQuery.in('country_id', countries)
-    }
-
-    // For seller filters, we need to get all trips first to filter properly
-    let filteredTripIds: string[] = []
-    let totalFilteredCount = 0
-
+    // For seller filters, we need to get trips and filter based on bookings
     if (userRole === 'seller' && filter !== 'all') {
-      // Get all active trips with their data for filtering
+      // Get all active trips first
       let allTripsQuery = supabase
         .from('trips')
         .select(`
-          id,
           *,
           countries (
             id,
@@ -94,9 +79,22 @@ export async function GET(request: NextRequest) {
 
       const { data: allTrips } = await allTripsQuery
 
+      if (!allTrips) {
+        return NextResponse.json({
+          trips: [],
+          totalCount: 0,
+          currentPage: page,
+          totalPages: 0,
+          pageSize,
+          userRole,
+          userId: user.id,
+          availableCountries: uniqueCountries
+        })
+      }
+
       // Get trips with schedules and seller data for filtering
       const tripsWithSellerData = await Promise.all(
-        (allTrips || []).map(async (trip: any) => {
+        allTrips.map(async (trip: any) => {
           // Get next upcoming schedule
           const { data: nextSchedule } = await supabase
             .from('trip_schedules')
@@ -111,22 +109,72 @@ export async function GET(request: NextRequest) {
           // Get available seats if schedule exists
           let availableSeats = null
           if (nextSchedule) {
-            const { data: availableSeatsData } = await supabase
-              .rpc('get_available_seats', { schedule_id: nextSchedule.id })
-            availableSeats = availableSeatsData
+            try {
+              const { data: availableSeatsData } = await supabase
+                .rpc('get_available_seats', { schedule_id: nextSchedule.id })
+              availableSeats = availableSeatsData
+            } catch (error) {
+              console.error('Error fetching available seats:', error)
+              // Fallback to schedule's available_seats if RPC fails
+              availableSeats = nextSchedule.available_seats
+            }
           }
 
-          // Get seller bookings count
+          // Get seller bookings count (รวมทั้ง direct seller_id และผ่าน customer referral)
+          // Check against ALL schedules, not just next upcoming ones
           let sellerBookingsCount = 0
+          
+          // Get all schedules for this trip (not just upcoming ones)
+          const { data: allSchedules } = await supabase
+            .from('trip_schedules')
+            .select('*')
+            .eq('trip_id', trip.id)
+            .eq('is_active', true)
+          
+          if (allSchedules && allSchedules.length > 0) {
+            try {
+              for (const schedule of allSchedules) {
+                // Count direct bookings ที่มี seller_id
+                const { count: directCount } = await supabase
+                  .from('bookings')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('seller_id', user.id)
+                  .eq('trip_schedule_id', schedule.id)
+                  .in('status', ['inprogress', 'approved'])
+                
+                // Count bookings ผ่าน customer referral
+                const { count: referralCount } = await supabase
+                  .from('bookings')
+                  .select(`
+                    *,
+                    customers!inner (
+                      referred_by_seller_id
+                    )
+                  `, { count: 'exact', head: true })
+                  .eq('customers.referred_by_seller_id', user.id)
+                  .eq('trip_schedule_id', schedule.id)
+                  .in('status', ['inprogress', 'approved'])
+                
+                const scheduleBookings = (directCount || 0) + (referralCount || 0)
+                sellerBookingsCount += scheduleBookings
+              }
+              
+            } catch (error) {
+              console.error('Error fetching seller bookings count:', error)
+              sellerBookingsCount = 0
+            }
+          }
+          
+          // Still get next schedule for display purposes
           if (nextSchedule) {
-            const { count } = await supabase
-              .from('bookings')
-              .select('*', { count: 'exact', head: true })
-              .eq('seller_id', user.id)
-              .eq('trip_schedule_id', nextSchedule.id)
-              .in('status', ['confirmed', 'pending'])
-            
-            sellerBookingsCount = count || 0
+            try {
+              const { data: availableSeatsData } = await supabase
+                .rpc('get_available_seats', { schedule_id: nextSchedule.id })
+              availableSeats = availableSeatsData
+            } catch (error) {
+              console.error('Error fetching available seats:', error)
+              availableSeats = nextSchedule.available_seats
+            }
           }
 
           return {
@@ -142,23 +190,27 @@ export async function GET(request: NextRequest) {
       let filteredTrips = tripsWithSellerData
       switch (filter) {
         case 'sold':
-          filteredTrips = tripsWithSellerData.filter((trip: any) => trip.seller_bookings_count && trip.seller_bookings_count > 0)
+          filteredTrips = tripsWithSellerData.filter((trip: any) => 
+            trip.seller_bookings_count && trip.seller_bookings_count > 0
+          )
           break
         case 'not_sold':
-          filteredTrips = tripsWithSellerData.filter((trip: any) => !trip.seller_bookings_count || trip.seller_bookings_count === 0)
+          filteredTrips = tripsWithSellerData.filter((trip: any) => 
+            !trip.seller_bookings_count || trip.seller_bookings_count === 0
+          )
           break
         case 'full':
-          filteredTrips = tripsWithSellerData.filter((trip: any) => trip.available_seats === 0)
+          filteredTrips = tripsWithSellerData.filter((trip: any) => 
+            trip.available_seats !== null && trip.available_seats === 0
+          )
           break
       }
 
-      filteredTripIds = filteredTrips.map(trip => trip.id)
-      totalFilteredCount = filteredTrips.length
-
-      // Get paginated results from filtered trips
+      // Calculate pagination for filtered results
+      const totalFilteredCount = filteredTrips.length
       const from = (page - 1) * pageSize
-      const to = from + pageSize - 1
-      const paginatedFilteredTrips = filteredTrips.slice(from, to + 1)
+      const to = from + pageSize
+      const paginatedFilteredTrips = filteredTrips.slice(from, to)
 
       const totalPages = Math.ceil(totalFilteredCount / pageSize)
 
@@ -223,22 +275,59 @@ export async function GET(request: NextRequest) {
         // Get available seats if schedule exists
         let availableSeats = null
         if (nextSchedule) {
-          const { data: availableSeatsData } = await supabase
-            .rpc('get_available_seats', { schedule_id: nextSchedule.id })
-          availableSeats = availableSeatsData
+          try {
+            const { data: availableSeatsData } = await supabase
+              .rpc('get_available_seats', { schedule_id: nextSchedule.id })
+            availableSeats = availableSeatsData
+          } catch (error) {
+            console.error('Error fetching available seats:', error)
+            // Fallback to schedule's available_seats if RPC fails
+            availableSeats = nextSchedule.available_seats
+          }
         }
 
-        // Get seller bookings count (only for seller view)
+        // Get seller bookings count (รวมทั้ง direct seller_id และผ่าน customer referral)
+        // Check against ALL schedules, not just next upcoming ones
         let sellerBookingsCount = 0
-        if (userRole === 'seller' && nextSchedule) {
-          const { count } = await supabase
-            .from('bookings')
-            .select('*', { count: 'exact', head: true })
-            .eq('seller_id', user.id)
-            .eq('trip_schedule_id', nextSchedule.id)
-            .in('status', ['confirmed', 'pending'])
+        if (userRole === 'seller') {
+          // Get all schedules for this trip (not just upcoming ones)
+          const { data: allSchedules } = await supabase
+            .from('trip_schedules')
+            .select('*')
+            .eq('trip_id', trip.id)
+            .eq('is_active', true)
           
-          sellerBookingsCount = count || 0
+          if (allSchedules && allSchedules.length > 0) {
+            try {
+              for (const schedule of allSchedules) {
+                // Count direct bookings ที่มี seller_id
+                const { count: directCount } = await supabase
+                  .from('bookings')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('seller_id', user.id)
+                  .eq('trip_schedule_id', schedule.id)
+                  .in('status', ['inprogress', 'approved'])
+                
+                // Count bookings ผ่าน customer referral
+                const { count: referralCount } = await supabase
+                  .from('bookings')
+                  .select(`
+                    *,
+                    customers!inner (
+                      referred_by_seller_id
+                    )
+                  `, { count: 'exact', head: true })
+                  .eq('customers.referred_by_seller_id', user.id)
+                  .eq('trip_schedule_id', schedule.id)
+                  .in('status', ['inprogress', 'approved'])
+                
+                sellerBookingsCount += (directCount || 0) + (referralCount || 0)
+              }
+            } catch (error) {
+              console.error('Error fetching seller bookings count:', error)
+              sellerBookingsCount = 0
+            }
+          }
         }
 
         return {
