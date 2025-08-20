@@ -410,11 +410,19 @@ export default async function TripDetailPage({
                           ? 'bg-green-100 text-green-800'
                           : booking.status === 'pending'
                           ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
+                          : booking.status === 'inprogress'
+                          ? 'bg-blue-100 text-blue-800'
+                          : booking.status === 'rejected'
+                          ? 'bg-red-100 text-red-800'
+                          : booking.status === 'cancelled'
+                          ? 'bg-gray-100 text-gray-800'
+                          : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {booking.status === 'approved' ? 'ยืนยันแล้ว' : 
-                         booking.status === 'pending' ? 'รอยืนยัน' : 
-                         booking.status === 'cancelled' ? 'ยกเลิก' : booking.status}
+                        {booking.status === 'approved' ? 'ผ่านการยืนยัน' : 
+                         booking.status === 'pending' ? 'รอดำเนินการ' : 
+                         booking.status === 'inprogress' ? 'กำลังดำเนินการ' :
+                         booking.status === 'rejected' ? 'แอดมินยกเลิก' :
+                         booking.status === 'cancelled' ? 'ลูกค้าายกเลิก' : booking.status}
                       </span>
                     </td>
                   </tr>

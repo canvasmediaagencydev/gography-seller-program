@@ -76,14 +76,14 @@ const channel = supabase
 
 ### Database Function
 ```sql
--- ฟังก์ชันคำนวณที่นั่งจริง
+-- ฟังก์ชันคำนวณที่นั่งจริง (อัพเดตแล้ว)
 CREATE OR REPLACE FUNCTION get_available_seats(schedule_id UUID)
 RETURNS INTEGER AS $$
 BEGIN
     RETURN (
-        SELECT ts.available_seats - COALESCE(SUM(
-            CASE WHEN b.status IN ('approved', 'pending', 'confirmed') THEN 1 ELSE 0 END
-        ), 0)
+        SELECT COALESCE(ts.available_seats - COALESCE(SUM(
+            CASE WHEN b.status IN ('approved', 'pending', 'inprogress') THEN 1 ELSE 0 END
+        ), 0), ts.available_seats)
         FROM trip_schedules ts
         LEFT JOIN bookings b ON b.trip_schedule_id = ts.id
         WHERE ts.id = schedule_id

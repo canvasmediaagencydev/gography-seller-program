@@ -81,7 +81,7 @@ export function useTripSchedules(tripId: string) {
                 .from('bookings')
                 .select('status')
                 .eq('trip_schedule_id', schedule.id)
-                .in('status', ['approved', 'pending', 'confirmed'])
+                .in('status', ['approved', 'pending', 'inprogress'])
 
               const bookedSeats = bookings?.length || 0
               const realTimeSeats = Math.max(0, schedule.available_seats - bookedSeats)

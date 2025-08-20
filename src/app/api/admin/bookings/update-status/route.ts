@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate status - เช็คค่าที่อนุญาตตาม database constraint
-    const validStatuses = ['pending', 'confirmed', 'cancelled', 'approved', 'rejected']
+    const validStatuses = ['pending', 'inprogress', 'approved', 'rejected', 'cancelled']
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { error: `Invalid status. Allowed values: ${validStatuses.join(', ')}` },
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       .update({ 
         status,
         updated_at: new Date().toISOString(),
-        ...(status === 'approved' || status === 'confirmed' ? { 
+        ...(status === 'approved' ? { 
           approved_at: new Date().toISOString(),
           approved_by: user.id 
         } : {})

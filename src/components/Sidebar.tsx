@@ -59,7 +59,7 @@ export default function Sidebar({ userProfile }: SidebarProps) {
   return (
     <div className="bg-white w-64 min-h-screen shadow-lg flex flex-col">
       {/* Header */}
-      <div className="p-4 flex justify-center items-center border-b border-gray-200">
+      <div className="p-4 flex justify-center items-center">
         <h1 className="text-xl font-bold text-gray-900">
           {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
         </h1>
