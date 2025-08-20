@@ -42,7 +42,7 @@ export function useScheduleSeats(scheduleId: string | null) {
             .from('bookings')
             .select('status')
             .eq('trip_schedule_id', scheduleId)
-            .in('status', ['approved', 'pending', 'confirmed'])
+            .in('status', ['approved', 'pending', 'inprogress'])
 
           const bookedSeats = bookings?.length || 0
           const totalSeats = scheduleData?.available_seats || 0

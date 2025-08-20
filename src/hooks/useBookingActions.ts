@@ -102,7 +102,7 @@ export function useBookingActions({
           .from('bookings')
           .select('status')
           .eq('trip_schedule_id', scheduleId)
-          .in('status', ['approved', 'pending', 'confirmed'])
+          .in('status', ['approved', 'pending', 'inprogress'])
 
         const bookedSeats = bookings?.length || 0
         const calculatedSeats = Math.max(0, schedule.available_seats - bookedSeats)

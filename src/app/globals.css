@@ -9,3 +9,7 @@
   overflow: hidden;
 }
 
+.scale-102 {
+  transform: scale(1.02);
+}
+

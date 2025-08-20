@@ -32,9 +32,26 @@ export function useCustomersAdmin() {
     const totalCustomers = customers.length
     const totalBookings = customers.reduce((sum, c) => sum + (c.bookings?.length || 0), 0)
     const pendingBookings = customers.reduce((sum, c) => sum + (c.bookings?.filter((b: any) => b.status === 'pending').length || 0), 0)
-    const approvedBookings = customers.reduce((sum, c) => sum + (c.bookings?.filter((b: any) => b.status === 'approved' || b.status === 'confirmed').length || 0), 0)
+    const approvedBookings = customers.reduce((sum, c) => sum + (c.bookings?.filter((b: any) => b.status === 'approved').length || 0), 0)
+    const inprogressBookings = customers.reduce((sum, c) => sum + (c.bookings?.filter((b: any) => b.status === 'inprogress').length || 0), 0)
+    const rejectedBookings = customers.reduce((sum, c) => sum + (c.bookings?.filter((b: any) => b.status === 'rejected').length || 0), 0)
+    const cancelledBookings = customers.reduce((sum, c) => sum + (c.bookings?.filter((b: any) => b.status === 'cancelled').length || 0), 0)
     
-    return { totalCustomers, totalBookings, pendingBookings, approvedBookings }
+    // คำนวณสถิติเพิ่มเติม
+    const customersWithBookings = customers.filter(c => c.bookings && c.bookings.length > 0).length
+    const avgBookingsPerCustomer = totalCustomers > 0 ? Math.round((totalBookings / totalCustomers) * 10) / 10 : 0
+    
+    return { 
+      totalCustomers, 
+      totalBookings, 
+      pendingBookings, 
+      approvedBookings,
+      inprogressBookings,
+      rejectedBookings,
+      cancelledBookings,
+      customersWithBookings,
+      avgBookingsPerCustomer
+    }
   }
 
   const fetchCustomers = async () => {

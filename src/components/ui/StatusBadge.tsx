@@ -4,19 +4,19 @@ interface StatusBadgeProps {
 }
 
 const STATUS_STYLES = {
-  'approved': 'bg-green-50 text-green-700 border border-green-200',
-  'confirmed': 'bg-green-50 text-green-700 border border-green-200',
   'pending': 'bg-amber-50 text-amber-700 border border-amber-200',
-  'cancelled': 'bg-red-50 text-red-700 border border-red-200',
-  'rejected': 'bg-red-50 text-red-700 border border-red-200'
+  'inprogress': 'bg-blue-50 text-blue-700 border border-blue-200',
+  'approved': 'bg-green-50 text-green-700 border border-green-200',
+  'rejected': 'bg-red-50 text-red-700 border border-red-200',
+  'cancelled': 'bg-gray-50 text-gray-700 border border-gray-200'
 } as const
 
 const STATUS_LABELS = {
-  'approved': 'อนุมัติแล้ว',
-  'confirmed': 'ยืนยันแล้ว',
   'pending': 'รอดำเนินการ',
-  'cancelled': 'ยกเลิกแล้ว',
-  'rejected': 'ปฏิเสธ'
+  'inprogress': 'กำลังดำเนินการ',
+  'approved': 'ผ่านการยืนยัน',
+  'rejected': 'แอดมินยกเลิก',
+  'cancelled': 'ลูกค้าายกเลิก'
 } as const
 
 export default function StatusBadge({ status, className = '' }: StatusBadgeProps) {

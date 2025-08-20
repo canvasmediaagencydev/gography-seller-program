@@ -8,10 +8,10 @@ interface StatusSelectorProps {
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'รอดำเนินการ' },
-  { value: 'approved', label: 'อนุมัติ' },
-  { value: 'confirmed', label: 'ยืนยัน' },
-  { value: 'cancelled', label: 'ยกเลิก' },
-  { value: 'rejected', label: 'ปฏิเสธ' }
+  { value: 'inprogress', label: 'กำลังดำเนินการ' },
+  { value: 'approved', label: 'ผ่านการยืนยัน' },
+  { value: 'rejected', label: 'แอดมินยกเลิก' },
+  { value: 'cancelled', label: 'ลูกค้าายกเลิก' }
 ] as const
 
 export default function StatusSelector({
