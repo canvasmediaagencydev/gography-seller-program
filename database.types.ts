@@ -351,6 +351,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_available_countries: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_available_seats: {
         Args: { schedule_id: string }
         Returns: number
@@ -388,6 +392,21 @@ export type Database = {
           status: string
           updated_at: string
         }[]
+      }
+      get_trip_stats: {
+        Args: { p_user_id: string; p_user_role: string }
+        Returns: Json
+      }
+      get_trips_with_seller_data: {
+        Args: {
+          p_countries?: string[]
+          p_filter?: string
+          p_page?: number
+          p_page_size?: number
+          p_user_id: string
+          p_user_role: string
+        }
+        Returns: Json
       }
     }
     Enums: {
