@@ -73,7 +73,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
     }
 
     const formatDeadline = (schedule: Tables<'trip_schedules'> | null) => {
-        if (!schedule) return 'TBD'
+        if (!schedule) return 'ยังไม่กำหนด'
         
         const deadline = new Date(schedule.registration_deadline)
         return deadline.toLocaleDateString('th-TH', {
@@ -84,7 +84,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
     }
 
     const formatDateRange = (schedule: Tables<'trip_schedules'> | null) => {
-        if (!schedule) return 'TBD'
+        if (!schedule) return 'ยังไม่กำหนด'
         
         const departure = new Date(schedule.departure_date)
         const returnDate = new Date(schedule.return_date)
@@ -123,13 +123,24 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
 
             {/* Content */}
             <div className="p-4">
+                {/* Debug info - แสดงข้อมูลสำหรับ debug */}
+                {/* {process.env.NODE_ENV === 'development' && (
+                    <div className="mb-2 p-2 bg-yellow-100 text-xs rounded">
+                        <div>trip.next_schedule: {trip.next_schedule ? 'มี' : 'ไม่มี'}</div>
+                        <div>selectedSchedule: {selectedSchedule ? 'มี' : 'ไม่มี'}</div>
+                        <div>allSchedules.length: {allSchedules.length}</div>
+                        {selectedSchedule && (
+                            <div>departure: {selectedSchedule.departure_date}</div>
+                        )}
+                    </div>
+                )} */}
+
                 {/* Title */}
                 <h3 className="text-xl font-semibold text-gray-800 mb-3 h-14 flex items-start">
                     <span className="line-clamp-2 leading-7">
                         {trip.title}
                     </span>
                 </h3>
-
                 {/* Deadline */}
                 <div className="flex items-center text-gray-600 mb-3">
                    <LuCalendarDays className='mr-2' />
