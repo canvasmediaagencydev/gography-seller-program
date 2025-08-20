@@ -20,7 +20,7 @@ export default async function ReportsPage() {
     redirect('/dashboard?error=Reports access requires approval')
   }
 
-  // Get seller's bookings
+  // Get seller's bookings - try both user.id and referral_code
   const { data: bookings } = await supabase
     .from('bookings')
     .select(`
@@ -42,13 +42,40 @@ export default async function ReportsPage() {
     .eq('seller_id', user.id)
     .order('created_at', { ascending: false })
 
+  // Also try to get bookings by referral code if none found
+  let allBookings = bookings || []
+  if ((!bookings || bookings.length === 0) && profile.referral_code) {
+    const { data: bookingsByRef } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        customers (
+          full_name,
+          email,
+          phone
+        ),
+        trip_schedules (
+          departure_date,
+          return_date,
+          trips (
+            title,
+            price_per_person
+          )
+        )
+      `)
+      .eq('referral_code', profile.referral_code)
+      .order('created_at', { ascending: false })
+    
+    allBookings = bookingsByRef || []
+  }
+
   // Calculate stats
-  const totalCommission = bookings?.reduce((sum, booking) => sum + Number(booking.commission_amount), 0) || 0
-  const totalSales = bookings?.reduce((sum, booking) => sum + Number(booking.total_amount), 0) || 0
-  const totalBookings = bookings?.length || 0
+  const totalCommission = allBookings?.reduce((sum, booking) => sum + Number(booking.commission_amount || 0), 0) || 0
+  const totalSales = allBookings?.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0) || 0
+  const totalBookings = allBookings?.length || 0
   
-  const confirmedBookings = bookings?.filter(b => b.status === 'confirmed').length || 0
-  const pendingBookings = bookings?.filter(b => b.status === 'pending').length || 0
+  const confirmedBookings = allBookings?.filter(b => b.status === 'approved').length || 0
+  const pendingBookings = allBookings?.filter(b => b.status === 'pending').length || 0
 
   return (
     <div className="p-6">
@@ -139,32 +166,32 @@ export default async function ReportsPage() {
           <h3 className="text-lg font-medium text-gray-900">รายการจองล่าสุด</h3>
         </div>
         <div className="overflow-x-auto">
-          {bookings && bookings.length > 0 ? (
+          {allBookings && allBookings.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ลูกค้า
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ทริป
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ยอดรวม
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     คอมมิชชั่น
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     สถานะ
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     วันที่จอง
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {bookings.map((booking) => (
+                {allBookings.map((booking) => (
                   <tr key={booking.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
@@ -206,9 +233,9 @@ export default async function ReportsPage() {
                       }`}>
                         {booking.status === 'approved' ? 'ผ่านการยืนยัน' : 
                          booking.status === 'pending' ? 'รอดำเนินการ' :
-                         booking.status === 'inprogress' ? 'กำลังดำเนินการ' :
-                         booking.status === 'cancelled' ? 'ลูกค้าายกเลิก' : 
-                         booking.status === 'rejected' ? 'แอดมินยกเลิก' : booking.status}
+                         booking.status === 'inprogress' ? 'อยู่ระหว่างดำเนินการ' :
+                         booking.status === 'cancelled' ? 'ลูกค้ายกเลิก' : 
+                         booking.status === 'rejected' ? 'ไม่ผ่านการยืนยัน' : booking.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
