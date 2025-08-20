@@ -2,6 +2,8 @@ import { FaUser } from "react-icons/fa"
 import { ImLink } from "react-icons/im"
 import { TripWithRelations, ViewType } from '../../types/trip'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
+import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
 
 interface TripsListProps {
     trips: TripWithRelations[]
@@ -11,6 +13,24 @@ interface TripsListProps {
 
 export function TripsList({ trips, viewType, userId }: TripsListProps) {
     const { handleCopy } = useCopyToClipboard()
+    const [sellerStatus, setSellerStatus] = useState<string | null>(null)
+    const supabase = createClient()
+
+    // Fetch seller status
+    useEffect(() => {
+        if (userId) {
+            const fetchSellerStatus = async () => {
+                const { data } = await supabase
+                    .from('user_profiles')
+                    .select('status')
+                    .eq('id', userId)
+                    .single()
+                
+                setSellerStatus(data?.status || null)
+            }
+            fetchSellerStatus()
+        }
+    }, [userId])
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return '-'
@@ -57,6 +77,10 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
     }
 
     const copyShareLink = (trip: TripWithRelations) => {
+        if (sellerStatus !== 'approved') {
+            alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
+            return
+        }
         const shareUrl = `${window.location.origin}/trips/${trip.id}`
         handleCopy(shareUrl)
     }
@@ -166,7 +190,8 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
                                 <td className="px-4 py-4 text-center">
                                     <button
                                         onClick={() => copyShareLink(trip)}
-                                        className="px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm bg-gray-800 text-white hover:text-orange-600 hover:scale-110 transition-all duration-200 ease-in-out cursor-pointer mx-auto"
+                                        disabled={sellerStatus !== 'approved'}
+                                        className="px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm bg-gray-800 text-white hover:text-orange-600 hover:scale-110 transition-all duration-200 ease-in-out cursor-pointer mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:text-white"
                                     >
                                         <ImLink className='text-xs' />
                                         <span>Share</span>

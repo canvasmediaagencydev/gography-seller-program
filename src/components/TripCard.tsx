@@ -16,6 +16,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [sellerReferralCode, setSellerReferralCode] = useState<string | null>(null)
+    const [sellerStatus, setSellerStatus] = useState<string | null>(null)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
     
     // Get real-time schedules with available seats
@@ -31,19 +32,20 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         return scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats
     }
 
-    // Fetch seller referral code
+    // Fetch seller referral code and status
     useEffect(() => {
         if (currentSellerId) {
-            const fetchSellerCode = async () => {
+            const fetchSellerData = async () => {
                 const { data } = await supabase
                     .from('user_profiles')
-                    .select('referral_code')
+                    .select('referral_code, status')
                     .eq('id', currentSellerId)
                     .single()
                 
                 setSellerReferralCode(data?.referral_code || null)
+                setSellerStatus(data?.status || null)
             }
-            fetchSellerCode()
+            fetchSellerData()
         }
     }, [currentSellerId])
 
@@ -193,6 +195,10 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                         <>
                             <button
                                 onClick={() => {
+                                    if (sellerStatus !== 'approved') {
+                                        alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
+                                        return
+                                    }
                                     // Use selectedSchedule or first available schedule
                                     const scheduleToUse = selectedSchedule || allSchedules[0] || trip.next_schedule
                                     if (scheduleToUse) {
@@ -203,7 +209,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                                         alert('ไม่พบตารางเวลาสำหรับทริปนี้')
                                     }
                                 }}
-                                disabled={!selectedSchedule && !allSchedules[0] && !trip.next_schedule}
+                                disabled={sellerStatus !== 'approved' || (!selectedSchedule && !allSchedules[0] && !trip.next_schedule)}
                                 className="flex-1 bg-gray-800 text-white px-3 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <ImLink className='text-lg' />
