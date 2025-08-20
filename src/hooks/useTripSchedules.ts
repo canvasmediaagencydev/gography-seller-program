@@ -19,7 +19,6 @@ export function useTripSchedules(tripId: string) {
       setError(null)
 
       try {
-        console.log('🔍 Fetching schedules for trip:', tripId)
         
         // First, check if there are any schedules at all for this trip
         const { data: allSchedules, error: allSchedulesError } = await supabase
@@ -27,10 +26,8 @@ export function useTripSchedules(tripId: string) {
           .select('*')
           .eq('trip_id', tripId)
 
-        console.log('📊 All schedules for trip:', allSchedules)
 
         if (allSchedulesError) {
-          console.error('❌ Error fetching all schedules:', allSchedulesError)
           throw allSchedulesError
         }
 
@@ -46,16 +43,12 @@ export function useTripSchedules(tripId: string) {
           .gte('departure_date', today.toISOString().split('T')[0]) // >= today (date only)
           .order('departure_date', { ascending: true })
 
-        console.log('📅 Active schedules (today and future):', schedulesData)
-        console.log('📅 Today date for comparison:', today.toISOString().split('T')[0])
 
         if (schedulesError) {
-          console.error('❌ Error fetching active schedules:', schedulesError)
           throw schedulesError
         }
 
         if (!schedulesData || schedulesData.length === 0) {
-          console.log('⚠️ No active schedules found')
           setSchedules([])
           return
         }
@@ -67,14 +60,12 @@ export function useTripSchedules(tripId: string) {
               const { data: seatsData } = await supabase
                 .rpc('get_available_seats', { schedule_id: schedule.id })
               
-              console.log(`💺 Seats for schedule ${schedule.id}:`, seatsData)
               
               return {
                 ...schedule,
                 realTimeSeats: seatsData || 0
               }
             } catch (err) {
-              console.warn(`Failed to get seats for schedule ${schedule.id}:`, err)
               
               // Fallback calculation
               const { data: bookings } = await supabase
@@ -86,7 +77,6 @@ export function useTripSchedules(tripId: string) {
               const bookedSeats = bookings?.length || 0
               const realTimeSeats = Math.max(0, schedule.available_seats - bookedSeats)
               
-              console.log(`💺 Fallback calculation for schedule ${schedule.id}: ${realTimeSeats} seats`)
               
               return {
                 ...schedule,
@@ -96,10 +86,8 @@ export function useTripSchedules(tripId: string) {
           })
         )
 
-        console.log('✅ Final schedules with seats:', schedulesWithSeats)
         setSchedules(schedulesWithSeats)
       } catch (err: any) {
-        console.error('❌ Error fetching schedules:', err)
         setError(err.message)
       } finally {
         setLoading(false)
