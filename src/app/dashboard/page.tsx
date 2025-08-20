@@ -76,7 +76,7 @@ export default function SellerDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="space-y-6">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
           <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
@@ -93,8 +93,8 @@ export default function SellerDashboard() {
   if (!profile) return null
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">
           สวัสดี, {profile?.full_name || 'Seller'}
             <p className="ml-4 inline">
@@ -106,7 +106,7 @@ export default function SellerDashboard() {
 
       {/* Profile Incomplete Alert */}
       {isProfileIncomplete && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -137,7 +137,7 @@ export default function SellerDashboard() {
 
       {/* Status Alert */}
       {profile?.status === 'pending' && (
-        <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -160,7 +160,7 @@ export default function SellerDashboard() {
       )}
 
       {profile?.status === 'approved' && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">

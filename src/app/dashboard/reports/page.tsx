@@ -78,14 +78,17 @@ export default async function ReportsPage() {
   const pendingBookings = allBookings?.filter(b => b.status === 'pending').length || 0
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
+    <div className="space-y-6">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">รายงานยอดขาย</h1>
-        <p className="text-gray-600">สรุปผลงานการขายและคอมมิชชั่นของคุณ</p>
+        <p className="mt-1 text-sm text-gray-600">
+          รายงานสถิติการขายและการจองของ Seller
+        </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            {/* Stats Cards */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
