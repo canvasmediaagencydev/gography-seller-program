@@ -1,81 +1,140 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
 
-export default async function ReportsPage() {
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    redirect('/auth/login')
-  }
+import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import ReportsLoading from '@/components/reports/ReportsLoading'
+import ReportsError from '@/components/reports/ReportsError'
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+interface Booking {
+  [key: string]: any // Allow any additional properties from Supabase
+}
 
-  if (!profile || profile.status !== 'approved') {
-    redirect('/dashboard?error=Reports access requires approval')
-  }
+interface UserProfile {
+  [key: string]: any // Allow any additional properties from Supabase
+}
 
-  // Get seller's bookings - try both user.id and referral_code
-  const { data: bookings } = await supabase
-    .from('bookings')
-    .select(`
-      *,
-      customers (
-        full_name,
-        email,
-        phone
-      ),
-      trip_schedules (
-        departure_date,
-        return_date,
-        trips (
-          title,
-          price_per_person
-        )
-      )
-    `)
-    .eq('seller_id', user.id)
-    .order('created_at', { ascending: false })
+export default function ReportsPage() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const router = useRouter()
+  const supabase = createClient()
 
-  // Also try to get bookings by referral code if none found
-  let allBookings = bookings || []
-  if ((!bookings || bookings.length === 0) && profile.referral_code) {
-    const { data: bookingsByRef } = await supabase
-      .from('bookings')
-      .select(`
-        *,
-        customers (
-          full_name,
-          email,
-          phone
-        ),
-        trip_schedules (
-          departure_date,
-          return_date,
-          trips (
-            title,
-            price_per_person
-          )
-        )
-      `)
-      .eq('referral_code', profile.referral_code)
-      .order('created_at', { ascending: false })
-    
-    allBookings = bookingsByRef || []
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Get user
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          router.push('/auth/login')
+          return
+        }
+
+        // Get profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (profileError || !profileData) {
+          setError('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้')
+          return
+        }
+
+        if (profileData.status !== 'approved') {
+          router.push('/dashboard?error=Reports access requires approval')
+          return
+        }
+
+        setProfile(profileData)
+
+        // Get seller's bookings - try both user.id and referral_code
+        const { data: userBookings, error: bookingsError } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            customers (
+              full_name,
+              email,
+              phone
+            ),
+            trip_schedules (
+              departure_date,
+              return_date,
+              trips (
+                title,
+                price_per_person
+              )
+            )
+          `)
+          .eq('seller_id', user.id)
+          .order('created_at', { ascending: false })
+
+        let allBookings = userBookings || []
+
+        // Also try to get bookings by referral code if none found
+        if ((!userBookings || userBookings.length === 0) && profileData.referral_code) {
+          const { data: refBookings } = await supabase
+            .from('bookings')
+            .select(`
+              *,
+              customers (
+                full_name,
+                email,
+                phone
+              ),
+              trip_schedules (
+                departure_date,
+                return_date,
+                trips (
+                  title,
+                  price_per_person
+                )
+              )
+            `)
+            .eq('referral_code', profileData.referral_code)
+            .order('created_at', { ascending: false })
+          
+          allBookings = refBookings || []
+        }
+
+        if (bookingsError) {
+          console.error('Bookings error:', bookingsError)
+        }
+
+        setBookings(allBookings)
+
+      } catch (error) {
+        console.error('Error fetching reports data:', error)
+        setError('เกิดข้อผิดพลาดในการโหลดข้อมูลรายงาน')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [supabase, router])
 
   // Calculate stats
-  const totalCommission = allBookings?.reduce((sum, booking) => sum + Number(booking.commission_amount || 0), 0) || 0
-  const totalSales = allBookings?.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0) || 0
-  const totalBookings = allBookings?.length || 0
-  
-  const confirmedBookings = allBookings?.filter(b => b.status === 'approved').length || 0
-  const pendingBookings = allBookings?.filter(b => b.status === 'pending').length || 0
+  const totalCommission = bookings?.reduce((sum, booking) => sum + Number(booking.commission_amount || 0), 0) || 0
+  const totalSales = bookings?.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0) || 0
+  const totalBookings = bookings?.length || 0
+  const confirmedBookings = bookings?.filter(b => b.status === 'approved').length || 0
+  const pendingBookings = bookings?.filter(b => b.status === 'pending').length || 0
+
+  if (loading) {
+    return <ReportsLoading />
+  }
+
+  if (error) {
+    return <ReportsError message={error} />
+  }
 
   return (
     <div className="space-y-6">
@@ -169,32 +228,32 @@ export default async function ReportsPage() {
           <h3 className="text-lg font-medium text-gray-900">รายการจองล่าสุด</h3>
         </div>
         <div className="overflow-x-auto">
-          {allBookings && allBookings.length > 0 ? (
+          {bookings && bookings.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ลูกค้า
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ทริป
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     ยอดรวม
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     คอมมิชชั่น
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     สถานะ
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
                     วันที่จอง
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {allBookings.map((booking) => (
+                {bookings.map((booking: any) => (
                   <tr key={booking.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
