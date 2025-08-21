@@ -183,7 +183,7 @@ export default function AdminTripsPage() {
                       ดูรายละเอียด
                     </Link>
                     <Link
-                      href={`/dashboard/admin/trips/${trip.id}/edit`}
+                      href={`/dashboard/admin/trips/edit/${trip.id}`}
                       className="flex-1 text-center bg-gray-100 text-gray-700 py-2 px-4 rounded hover:bg-gray-200 transition-colors text-sm"
                     >
                       แก้ไข

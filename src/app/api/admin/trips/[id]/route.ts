@@ -9,6 +9,7 @@ interface Props {
 // GET - Get single trip
 export async function GET(request: NextRequest, { params }: Props) {
   try {
+    const resolvedParams = await params
     const supabase = await createClient()
     
     // Check admin permission
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest, { params }: Props) {
           created_at
         )
       `)
-      .eq('id', params.id)
+      .eq('id', resolvedParams.id)
       .single()
 
     if (error) throw error
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 // PUT - Update trip and schedules
 export async function PUT(request: NextRequest, { params }: Props) {
   try {
+    const resolvedParams = await params
     const supabase = await createClient()
     
     // Check admin permission
@@ -109,7 +111,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
         geography_link: formData.geography_link,
         is_active: formData.is_active
       })
-      .eq('id', params.id)
+      .eq('id', resolvedParams.id)
       .select()
       .single()
 
@@ -119,12 +121,12 @@ export async function PUT(request: NextRequest, { params }: Props) {
     await supabase
       .from('trip_schedules')
       .delete()
-      .eq('trip_id', params.id)
+      .eq('trip_id', resolvedParams.id)
 
     // Insert new schedules
     const schedules = formData.schedules.map(schedule => ({
       ...schedule,
-      trip_id: params.id
+      trip_id: resolvedParams.id
     }))
 
     const { data: tripSchedules, error: schedulesError } = await supabase
@@ -150,6 +152,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
 // DELETE - Delete trip and all related schedules
 export async function DELETE(request: NextRequest, { params }: Props) {
   try {
+    const resolvedParams = await params
     const supabase = await createClient()
     
     // Check admin permission
@@ -172,7 +175,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     const { data: scheduleIds } = await supabase
       .from('trip_schedules')
       .select('id')
-      .eq('trip_id', params.id)
+      .eq('trip_id', resolvedParams.id)
 
     if (scheduleIds && scheduleIds.length > 0) {
       const { data: bookings } = await supabase
@@ -192,13 +195,13 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     await supabase
       .from('trip_schedules')
       .delete()
-      .eq('trip_id', params.id)
+      .eq('trip_id', resolvedParams.id)
 
     // Delete trip
     const { error } = await supabase
       .from('trips')
       .delete()
-      .eq('id', params.id)
+      .eq('id', resolvedParams.id)
 
     if (error) throw error
 
