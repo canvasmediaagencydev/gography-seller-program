@@ -123,7 +123,7 @@ export function useCustomersAdmin() {
       await fetchCustomers()
       
       // Show success message
-      console.log(`อัพเดตสถานะการจองเป็น "${newStatus}" เรียบร้อยแล้ว`)
+      console.log(`อัปเดตสถานะการจองเป็น "${newStatus}" เรียบร้อยแล้ว`)
       
     } catch (error: any) {
       console.error('Error updating booking status:', error)
@@ -148,7 +148,7 @@ export function useCustomersAdmin() {
         console.error('Fallback update also failed:', fallbackError)
         
         // Show user-friendly error message
-        const errorMessage = fallbackError?.message || error?.message || 'เกิดข้อผิดพลาดในการอัพเดตสถานะ'
+        const errorMessage = fallbackError?.message || error?.message || 'เกิดข้อผิดพลาดในการอัปเดตสถานะ'
         alert(`เกิดข้อผิดพลาด: ${errorMessage}`)
       }
       

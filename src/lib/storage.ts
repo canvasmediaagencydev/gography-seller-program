@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
 
-const supabase = createClient()
-
 // File types และ sizes
 export const FILE_TYPES = {
   IMAGE: ['image/jpeg', 'image/png', 'image/webp'],
@@ -28,7 +26,7 @@ export const validateFile = (file: File, type: 'IMAGE' | 'PDF') => {
   }
 }
 
-// Upload ไฟล์ไปยัง Supabase Storage
+// Upload ไฟล์ไปยัง Supabase Storage ผ่าน API route
 export const uploadSellerFile = async (
   file: File,
   sellerId: string,
@@ -39,61 +37,53 @@ export const uploadSellerFile = async (
   const fileType = category === 'documents' ? 'PDF' : 'IMAGE'
   validateFile(file, fileType)
 
-  // Generate file name
-  const timestamp = Date.now()
-  const fileExtension = file.name.split('.').pop()
-  const finalFileName = fileName || `${category}-${timestamp}.${fileExtension}`
-  
-  // Create path: seller-assets/{sellerId}/{category}/{fileName}
-  const filePath = `${sellerId}/${category}/${finalFileName}`
-
-  // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
-    .from('seller-assets')
-    .upload(filePath, file, {
-      cacheControl: '3600',
-      upsert: false // ไม่ให้ overwrite ไฟล์เดิม
-    })
-
-  if (error) {
-    console.error('Upload error:', error)
-    throw new Error(`เกิดข้อผิดพลาดในการอัปโหลด: ${error.message}`)
+  // Upload via API route
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('sellerId', sellerId)
+  formData.append('category', category)
+  if (fileName) {
+    formData.append('fileName', fileName)
   }
 
-  // Get public URL
-  const { data: urlData } = supabase.storage
-    .from('seller-assets')
-    .getPublicUrl(filePath)
+  const response = await fetch('/api/upload/seller', {
+    method: 'POST',
+    body: formData
+  })
 
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.error || 'Failed to upload file')
+  }
+
+  const data = await response.json()
   return {
-    path: filePath,
-    url: urlData.publicUrl,
-    fileName: finalFileName
+    path: data.path,
+    url: data.url,
+    fileName: data.fileName
   }
 }
 
-// ลบไฟล์จาก Storage
+// ลบไฟล์จาก Storage ผ่าน API route
 export const deleteSellerFile = async (filePath: string) => {
-  const { error } = await supabase.storage
-    .from('seller-assets')
-    .remove([filePath])
+  const response = await fetch(`/api/upload/seller?filePath=${encodeURIComponent(filePath)}`, {
+    method: 'DELETE'
+  })
 
-  if (error) {
-    console.error('Delete error:', error)
-    throw new Error(`เกิดข้อผิดพลาดในการลบไฟล์: ${error.message}`)
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.error || 'Failed to delete file')
   }
 }
 
-// Get file URL (สำหรับ preview)
+// Get file URL (สำหรับ preview) - ใช้ direct URL pattern
 export const getSellerFileUrl = (filePath: string) => {
-  const { data } = supabase.storage
-    .from('seller-assets')
-    .getPublicUrl(filePath)
-  
-  return data.publicUrl
+  // สร้าง URL pattern โดยตรง (ต้องปรับตาม Supabase project)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  return `${supabaseUrl}/storage/v1/object/public/seller-assets/${filePath}`
 }
 
-// Update seller profile with file URLs
+// Update seller profile with file URLs ผ่าน API
 export const updateSellerFiles = async (
   sellerId: string,
   updates: {
@@ -106,6 +96,8 @@ export const updateSellerFiles = async (
     document_uploaded_at?: string
   }
 ) => {
+  const supabase = createClient()
+  
   const { error } = await supabase
     .from('user_profiles')
     .update(updates)

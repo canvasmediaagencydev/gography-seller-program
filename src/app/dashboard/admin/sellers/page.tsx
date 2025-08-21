@@ -114,7 +114,7 @@ export default function SellersManagement() {
         alert(`${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'} seller สำเร็จ`)
       }
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการอัพเดทสถานะ')
+      setError('เกิดข้อผิดพลาดในการอัปเดตสถานะ')
     } finally {
       setActionLoading(null)
     }
