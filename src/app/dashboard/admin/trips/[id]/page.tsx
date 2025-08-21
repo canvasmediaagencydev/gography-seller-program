@@ -136,7 +136,7 @@ export default async function TripDetailPage({
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
-                href={`/dashboard/admin/trips/${tripId}/edit`}
+                href={`/dashboard/admin/trips/edit/${tripId}`}
                 className="bg-emerald-600 text-white px-6 py-3 rounded-xl hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2 shadow-sm"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
