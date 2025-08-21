@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { TripFormData } from '@/types/admin'
 
-interface Props {
-  params: { id: string }
+interface RouteContext {
+  params: Promise<{ id: string }>
 }
 
 // GET - Get single trip
-export async function GET(request: NextRequest, { params }: Props) {
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const resolvedParams = await params
+    const resolvedParams = await context.params
     const supabase = await createClient()
     
     // Check admin permission
@@ -65,9 +65,9 @@ export async function GET(request: NextRequest, { params }: Props) {
 }
 
 // PUT - Update trip and schedules
-export async function PUT(request: NextRequest, { params }: Props) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    const resolvedParams = await params
+    const resolvedParams = await context.params
     const supabase = await createClient()
     
     // Check admin permission
@@ -150,9 +150,9 @@ export async function PUT(request: NextRequest, { params }: Props) {
 }
 
 // DELETE - Delete trip and all related schedules
-export async function DELETE(request: NextRequest, { params }: Props) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    const resolvedParams = await params
+    const resolvedParams = await context.params
     const supabase = await createClient()
     
     // Check admin permission
