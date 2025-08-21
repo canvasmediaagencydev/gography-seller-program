@@ -113,328 +113,286 @@ export default async function TripDetailPage({
   const activeSchedules = typedSchedules.filter(s => s.is_active).length
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Link
-            href="/dashboard/admin/trips"
-            className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            กลับ
-          </Link>
-        </div>
-        
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{typedTrip.title}</h1>
-            <p className="text-gray-600">รายละเอียดทริปและสถิติ</p>
-          </div>
-          <div className="flex gap-2">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-6">
             <Link
-              href={`/dashboard/admin/trips/${tripId}/edit`}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+              href="/dashboard/admin/trips"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              แก้ไข
-            </Link>
-            <Link
-              href={`/dashboard/admin/trips/${tripId}/schedules`}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M8 7h8M8 7v4m0 0h8m-8 0v4h8V11" />
-              </svg>
-              จัดการตารางเวลา
+              <span className="font-medium">กลับสู่รายการทริป</span>
             </Link>
           </div>
-        </div>
-      </div>
-
-      {/* Trip Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">ข้อมูลทริป</h2>
           
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{typedTrip.title}</h1>
+              <p className="text-lg text-gray-600">รายละเอียดและข้อมูลทริป</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/dashboard/admin/trips/${tripId}/edit`}
+                className="bg-emerald-600 text-white px-6 py-3 rounded-xl hover:bg-emerald-700 transition-colors duration-200 flex items-center gap-2 shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                แก้ไขทริป
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Trip Image */}
           {typedTrip.cover_image_url && (
-            <div className="mb-4">
-              <TripImage
-                src={typedTrip.cover_image_url}
-                alt={typedTrip.title}
-                className="w-full h-48 object-cover rounded-lg"
-              />
+            <div className="xl:col-span-3">
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <TripImage
+                  src={typedTrip.cover_image_url}
+                  alt={typedTrip.title}
+                  className="w-full h-64 lg:h-80 object-cover"
+                />
+              </div>
             </div>
           )}
 
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-sm font-medium text-gray-500">ประเทศ</dt>
-              <dd className="text-sm text-gray-900 flex items-center">
-                {(typedTrip.countries as any)?.flag_emoji && (
-                  <span className="mr-2 text-lg">
-                    {(typedTrip.countries as any).flag_emoji}
-                  </span>
-                )}
-                {(typedTrip.countries as any)?.name || 'ไม่ระบุ'}
-              </dd>
-            </div>
-            
-            <div>
-              <dt className="text-sm font-medium text-gray-500">ระยะเวลา</dt>
-              <dd className="text-sm text-gray-900">
-                {typedTrip.duration_days} วัน {typedTrip.duration_nights} คืน
-              </dd>
-            </div>
+          {/* Trip Details */}
+          <div className="xl:col-span-2">
+            <div className="bg-white rounded-2xl shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">ข้อมูลทริป</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">ประเทศปลายทาง</h3>
+                    <div className="flex items-center gap-3">
+                      {(typedTrip.countries as any)?.flag_emoji && (
+                        <span className="text-2xl">
+                          {(typedTrip.countries as any).flag_emoji}
+                        </span>
+                      )}
+                      <span className="text-lg font-medium text-gray-900">
+                        {(typedTrip.countries as any)?.name || 'ไม่ระบุ'}
+                      </span>
+                    </div>
+                  </div>
 
-            <div>
-              <dt className="text-sm font-medium text-gray-500">ราคาต่อคน</dt>
-              <dd className="text-sm text-gray-900">
-                ฿{Number(typedTrip.price_per_person).toLocaleString()}
-              </dd>
-            </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">ระยะเวลา</h3>
+                    <p className="text-lg font-medium text-gray-900">
+                      {typedTrip.duration_days} วัน {typedTrip.duration_nights} คืน
+                    </p>
+                  </div>
 
-            <div>
-              <dt className="text-sm font-medium text-gray-500">จำนวนที่นั่ง</dt>
-              <dd className="text-sm text-gray-900">{typedTrip.total_seats} คน</dd>
-            </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">ราคาต่อคน</h3>
+                    <p className="text-2xl font-bold text-emerald-600">
+                      ฿{Number(typedTrip.price_per_person).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
 
-            <div>
-              <dt className="text-sm font-medium text-gray-500">คอมมิชชั่น</dt>
-              <dd className="text-sm text-gray-900">
-                {typedTrip.commission_value}
-                {typedTrip.commission_type === 'percentage' ? '%' : ' บาท'}
-              </dd>
-            </div>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">จำนวนที่นั่ง</h3>
+                    <p className="text-lg font-medium text-gray-900">{typedTrip.total_seats} คน</p>
+                  </div>
 
-            <div>
-              <dt className="text-sm font-medium text-gray-500">สถานะ</dt>
-              <dd className="text-sm">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  typedTrip.is_active 
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {typedTrip.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
-                </span>
-              </dd>
-            </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">ค่าคอมมิชชั่น</h3>
+                    <p className="text-lg font-medium text-gray-900">
+                      {typedTrip.commission_value}
+                      {typedTrip.commission_type === 'percentage' ? '%' : ' บาท'}
+                    </p>
+                  </div>
 
-            {typedTrip.description && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">รายละเอียด</dt>
-                <dd className="text-sm text-gray-900">{typedTrip.description}</dd>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">สถานะ</h3>
+                    <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                      typedTrip.is_active 
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {typedTrip.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                    </span>
+                  </div>
+                </div>
               </div>
-            )}
 
-            {typedTrip.geography_link && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">แผนที่</dt>
-                <dd className="text-sm">
+              {typedTrip.description && (
+                <div className="mt-8">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">รายละเอียดทริป</h3>
+                  <p className="text-gray-900 leading-relaxed">{typedTrip.description}</p>
+                </div>
+              )}
+
+              {typedTrip.geography_link && (
+                <div className="mt-8">
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">ข้อมูลเพิ่มเติม</h3>
                   <a 
                     href={typedTrip.geography_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800"
+                    className="inline-flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 font-medium"
                   >
-                    ดูแผนที่
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                    ดูข้อมูลเพิ่มเติม
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                   </a>
-                </dd>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Schedules Section */}
+          <div className="xl:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">ตารางเวลา</h2>
+
+              {typedSchedules.length > 0 ? (
+                <div className="space-y-4">
+                  {typedSchedules.map((schedule) => (
+                    <div key={schedule.id} className="border border-gray-200 rounded-xl p-6 hover:bg-gray-50 transition-colors">
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">วันเดินทาง</p>
+                          <p className="text-gray-900 font-medium">
+                            {new Date(schedule.departure_date).toLocaleDateString('th-TH', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">วันกลับ</p>
+                          <p className="text-gray-900 font-medium">
+                            {new Date(schedule.return_date).toLocaleDateString('th-TH', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">ปิดรับสมัคร</p>
+                          <p className="text-gray-900 font-medium">
+                            {new Date(schedule.registration_deadline).toLocaleDateString('th-TH', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between pt-2">
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">ที่นั่งว่าง</p>
+                            <p className="text-lg font-bold text-emerald-600">{schedule.available_seats} คน</p>
+                          </div>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                            schedule.is_active 
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {schedule.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4M8 7h8M8 7v4m0 0h8m-8 0v4h8V11" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">ยังไม่มีตารางเวลา</h3>
+                  <p className="text-gray-500">กรุณาเพิ่มตารางเวลาสำหรับทริปนี้</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Bookings Section */}
+          {typedBookings.length > 0 && (
+            <div className="xl:col-span-3">
+              <div className="bg-white rounded-2xl shadow-sm p-8">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-6">การจองล่าสุด</h2>
+                
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-4 px-6 font-medium text-gray-500">ลูกค้า</th>
+                        <th className="text-left py-4 px-6 font-medium text-gray-500">วันจอง</th>
+                        <th className="text-left py-4 px-6 font-medium text-gray-500">ยอดรวม</th>
+                        <th className="text-left py-4 px-6 font-medium text-gray-500">คอมมิชชั่น</th>
+                        <th className="text-left py-4 px-6 font-medium text-gray-500">สถานะ</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {typedBookings.slice(0, 10).map((booking) => (
+                        <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-6">
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {(booking.customers as any)?.full_name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {(booking.customers as any)?.email}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-gray-900">
+                            {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString('th-TH') : '-'}
+                          </td>
+                          <td className="py-4 px-6 font-medium text-gray-900">
+                            ฿{booking.total_amount.toLocaleString()}
+                          </td>
+                          <td className="py-4 px-6 font-medium text-emerald-600">
+                            ฿{booking.commission_amount.toLocaleString()}
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              booking.status === 'approved'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : booking.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : booking.status === 'inprogress'
+                                ? 'bg-blue-100 text-blue-800'
+                                : booking.status === 'rejected'
+                                ? 'bg-red-100 text-red-800'
+                                : booking.status === 'cancelled'
+                                ? 'bg-gray-100 text-gray-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {booking.status === 'approved' ? 'ผ่านการยืนยัน' : 
+                               booking.status === 'pending' ? 'รอดำเนินการ' : 
+                               booking.status === 'inprogress' ? 'กำลังดำเนินการ' :
+                               booking.status === 'rejected' ? 'แอดมินยกเลิก' :
+                               booking.status === 'cancelled' ? 'ลูกค้าายกเลิก' : booking.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            )}
-          </dl>
-        </div>
-
-        {/* Statistics */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">สถิติ</h2>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <dt className="text-sm font-medium text-blue-600">ตารางเวลาที่เปิดใช้งาน</dt>
-              <dd className="text-2xl font-bold text-blue-900">{activeSchedules}</dd>
             </div>
-            
-            <div className="bg-green-50 p-4 rounded-lg">
-              <dt className="text-sm font-medium text-green-600">จำนวนการจอง</dt>
-              <dd className="text-2xl font-bold text-green-900">{totalBookings}</dd>
-            </div>
-            
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <dt className="text-sm font-medium text-yellow-600">รายได้รวม</dt>
-              <dd className="text-2xl font-bold text-yellow-900">
-                ฿{totalRevenue.toLocaleString()}
-              </dd>
-            </div>
-            
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <dt className="text-sm font-medium text-purple-600">คอมมิชชั่นรวม</dt>
-              <dd className="text-2xl font-bold text-purple-900">
-                ฿{totalCommission.toLocaleString()}
-              </dd>
-            </div>
-          </div>
+          )}
         </div>
-      </div>
-
-      {/* Schedules Section */}
-      <div className="bg-white shadow rounded-lg p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium text-gray-900">ตารางเวลา</h2>
-          <Link
-            href={`/dashboard/admin/trips/${tripId}/schedules`}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            จัดการทั้งหมด →
-          </Link>
-        </div>
-
-        {typedSchedules.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันเดินทาง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันกลับ
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ปิดรับสมัคร
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ที่นั่งว่าง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    สถานะ
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {typedSchedules.slice(0, 5).map((schedule) => (
-                  <tr key={schedule.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(schedule.departure_date).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(schedule.return_date).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(schedule.registration_deadline).toLocaleDateString('th-TH')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {schedule.available_seats}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        schedule.is_active 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {schedule.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">ยังไม่มีตารางเวลา</p>
-            <Link
-              href={`/dashboard/admin/trips/${tripId}/schedules`}
-              className="mt-2 inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-            >
-              สร้างตารางเวลาใหม่
-            </Link>
-          </div>
-        )}
-      </div>
-
-      {/* Recent Bookings Section */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium text-gray-900">การจองล่าสุด</h2>
-        </div>
-
-        {typedBookings.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ลูกค้า
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    วันจอง
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ยอดรวม
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    คอมมิชชั่น
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    สถานะ
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {typedBookings.slice(0, 10).map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {(booking.customers as any)?.full_name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {(booking.customers as any)?.email}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString('th-TH') : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ฿{booking.total_amount.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ฿{booking.commission_amount.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        booking.status === 'approved'
-                          ? 'bg-green-100 text-green-800'
-                          : booking.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : booking.status === 'inprogress'
-                          ? 'bg-blue-100 text-blue-800'
-                          : booking.status === 'rejected'
-                          ? 'bg-red-100 text-red-800'
-                          : booking.status === 'cancelled'
-                          ? 'bg-gray-100 text-gray-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {booking.status === 'approved' ? 'ผ่านการยืนยัน' : 
-                         booking.status === 'pending' ? 'รอดำเนินการ' : 
-                         booking.status === 'inprogress' ? 'กำลังดำเนินการ' :
-                         booking.status === 'rejected' ? 'แอดมินยกเลิก' :
-                         booking.status === 'cancelled' ? 'ลูกค้าายกเลิก' : booking.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">ยังไม่มีการจอง</p>
-          </div>
-        )}
       </div>
     </div>
   )
