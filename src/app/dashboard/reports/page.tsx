@@ -122,10 +122,11 @@ export default function ReportsPage() {
   }, [supabase, router])
 
   // Calculate stats
-  const totalCommission = bookings?.reduce((sum, booking) => sum + Number(booking.commission_amount || 0), 0) || 0
-  const totalSales = bookings?.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0) || 0
+  const approvedBookings = bookings?.filter(b => b.status === 'approved') || []
+  const totalCommission = approvedBookings.reduce((sum, booking) => sum + Number(booking.commission_amount || 0), 0)
+  const totalSales = approvedBookings.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0)
   const totalBookings = bookings?.length || 0
-  const confirmedBookings = bookings?.filter(b => b.status === 'approved').length || 0
+  const confirmedBookings = approvedBookings.length
   const pendingBookings = bookings?.filter(b => b.status === 'pending').length || 0
 
   if (loading) {
