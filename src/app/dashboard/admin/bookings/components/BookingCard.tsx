@@ -130,7 +130,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
   const customer = booking.customers
 
   return (
-    <div className="p-6  transition-colors">
+    <div className="p-6 transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           {/* Trip and Customer Info */}
@@ -191,7 +191,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
           </div>
 
           {/* Seller Info */}
-          <div className="flex items-center justify-between mb-4 py-3 px-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between mb-4 py-3 px-4 bg-white rounded-lg">
             <div className="flex items-center gap-3">
               <div className="h-6 w-6 bg-gray-200 rounded-full flex items-center justify-center">
                 <svg className="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,7 +218,43 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
               แก้ไข
             </button>
           </div>
-
+  {/* Edit Seller */}
+      {editingSeller && (
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedSellerId}
+                onChange={(e) => setSelectedSellerId(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                <option value="">ไม่มี Seller</option>
+                {sellers.map((seller) => (
+                  <option key={seller.id} value={seller.id}>
+                    {seller.full_name || seller.email} ({seller.referral_code})
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleSellerUpdate}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                บันทึก
+              </button>
+              <button
+                onClick={() => {
+                  setEditingSeller(false)
+                  setSelectedSellerId(booking.seller_id || '')
+                }}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
           {/* Actions */}
           <div className="flex items-center justify-between">
             <button
@@ -299,43 +335,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
         </div>
       )}
 
-      {/* Edit Seller */}
-      {editingSeller && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
-            <div className="flex items-center gap-3">
-              <select
-                value={selectedSellerId}
-                onChange={(e) => setSelectedSellerId(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">ไม่มี Seller</option>
-                {sellers.map((seller) => (
-                  <option key={seller.id} value={seller.id}>
-                    {seller.full_name || seller.email} ({seller.referral_code})
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleSellerUpdate}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                บันทึก
-              </button>
-              <button
-                onClick={() => {
-                  setEditingSeller(false)
-                  setSelectedSellerId(booking.seller_id || '')
-                }}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                ยกเลิก
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    
     </div>
   )
 }

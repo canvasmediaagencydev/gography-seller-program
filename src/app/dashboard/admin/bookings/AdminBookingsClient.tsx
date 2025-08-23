@@ -292,14 +292,15 @@ export default function AdminBookingsClient({
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="p-6 space-y-4">
             {filteredBookings.map((booking) => (
-              <BookingCard
-                key={booking.id}
-                booking={booking}
-                onStatusUpdate={updateBookingStatus}
-                sellers={sellers}
-              />
+              <div key={booking.id} className="bg-gray-50 rounded-lg border border-gray-200">
+                <BookingCard
+                  booking={booking}
+                  onStatusUpdate={updateBookingStatus}
+                  sellers={sellers}
+                />
+              </div>
             ))}
           </div>
         )}
