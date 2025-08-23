@@ -179,7 +179,7 @@ export default async function AdminDashboard() {
       {/* Quick Actions */}
       <div className="mt-8">
         <h2 className="text-lg font-medium text-gray-900 mb-4">เมนูด่วน</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <a
             href="/dashboard/admin/sellers"
             className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -192,6 +192,21 @@ export default async function AdminDashboard() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900">จัดการ Sellers</p>
               <p className="text-sm text-gray-500">อนุมัติ/ปฏิเสธ seller ใหม่</p>
+            </div>
+          </a>
+
+          <a
+            href="/dashboard/admin/bookings"
+            className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900">จัดการการจอง</p>
+              <p className="text-sm text-gray-500">สร้างและจัดการการจอง</p>
             </div>
           </a>
 
@@ -213,7 +228,7 @@ export default async function AdminDashboard() {
 
           <div className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3">
             <div className="flex-shrink-0">
-              <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
