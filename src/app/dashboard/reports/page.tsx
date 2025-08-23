@@ -138,188 +138,246 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">รายงานยอดขาย</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          รายงานสถิติการขายและการจองของ Seller
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-            {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">คอมมิชชั่นรวม</dt>
-                  <dd className="text-lg font-medium text-gray-900">฿{totalCommission.toLocaleString()}</dd>
-                </dl>
-              </div>
-            </div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">รายงานการขาย</h1>
+            <p className="mt-1 text-gray-600">
+              ภาพรวมและสถิติการจองของคุณ
+            </p>
           </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">ยอดขายรวม</dt>
-                  <dd className="text-lg font-medium text-gray-900">฿{totalSales.toLocaleString()}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">จำนวนการจอง</dt>
-                  <dd className="text-lg font-medium text-gray-900">{totalBookings}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">ยืนยันแล้ว</dt>
-                  <dd className="text-lg font-medium text-gray-900">{confirmedBookings}</dd>
-                </dl>
-              </div>
-            </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-500">อัปเดตล่าสุด</p>
+            <p className="text-sm font-medium text-gray-900">
+              {new Date().toLocaleDateString('th-TH')}
+            </p>
           </div>
         </div>
       </div>
 
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">คอมมิชชั่นรวม</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">
+                ฿{totalCommission.toLocaleString()}
+              </p>
+            </div>
+            <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">ยอดขายรวม</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">
+                ฿{totalSales.toLocaleString()}
+              </p>
+            </div>
+            <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">จำนวนการจอง</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{totalBookings}</p>
+              <p className="text-xs text-gray-500 mt-1">ทั้งหมด</p>
+            </div>
+            <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">ยืนยันแล้ว</p>
+              <p className="text-2xl font-semibold text-gray-900 mt-1">{confirmedBookings}</p>
+              <p className="text-xs text-gray-500 mt-1">จาก {totalBookings} รายการ</p>
+            </div>
+            <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Performance Summary */}
+      {totalBookings > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">สรุปผลการดำเนินงาน</h3>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-blue-600">
+                {totalBookings > 0 ? Math.round((confirmedBookings / totalBookings) * 100) : 0}%
+              </div>
+              <div className="text-sm text-gray-600 mt-1">อัตราการยืนยัน</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-blue-600">
+                ฿{confirmedBookings > 0 ? Math.round(totalSales / confirmedBookings).toLocaleString() : 0}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">ยอดเฉลี่ยต่อรายการ</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-semibold text-blue-600">
+                ฿{confirmedBookings > 0 ? Math.round(totalCommission / confirmedBookings).toLocaleString() : 0}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">คอมมิชชั่นเฉลี่ย</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bookings Table */}
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-white rounded-lg border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">รายการจองล่าสุด</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">รายการจองทั้งหมด</h3>
+            <span className="text-sm text-gray-500">{bookings?.length || 0} รายการ</span>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          {bookings && bookings.length > 0 ? (
+        
+        {bookings && bookings.length > 0 ? (
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ลูกค้า
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ทริป
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ยอดรวม
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     คอมมิชชั่น
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     สถานะ
                   </th>
-                  <th className="px-6 py-3 text-left text-lg font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     วันที่จอง
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {bookings.map((booking: any) => (
-                  <tr key={booking.id}>
+                  <tr key={booking.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {booking.customers?.full_name || 'ไม่มีข้อมูล'}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {booking.customers?.email}
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-8 w-8">
+                          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-xs font-medium text-gray-600">
+                              {booking.customers?.full_name?.charAt(0) || 'N'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">
+                            {booking.customers?.full_name || 'ไม่มีข้อมูล'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {booking.customers?.email}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm font-medium text-gray-900">
                         {booking.trip_schedules?.trips?.title || 'ไม่มีข้อมูล'}
                       </div>
                       {booking.trip_schedules?.departure_date && (
                         <div className="text-sm text-gray-500">
-                          {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH')}
+                          {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ฿{Number(booking.total_amount).toLocaleString()}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        ฿{Number(booking.total_amount).toLocaleString()}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ฿{Number(booking.commission_amount).toLocaleString()}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        ฿{Number(booking.commission_amount).toLocaleString()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         booking.status === 'approved' 
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-green-50 text-green-700 border border-green-200'
                           : booking.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
                           : booking.status === 'inprogress'
-                          ? 'bg-blue-100 text-blue-800'
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : booking.status === 'cancelled'
-                          ? 'bg-gray-100 text-gray-800'
+                          ? 'bg-gray-50 text-gray-700 border border-gray-200'
                           : booking.status === 'rejected'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-red-50 text-red-700 border border-red-200'
+                          : 'bg-gray-50 text-gray-700 border border-gray-200'
                       }`}>
-                        {booking.status === 'approved' ? 'ผ่านการยืนยัน' : 
+                        {booking.status === 'approved' ? 'ยืนยันแล้ว' : 
                          booking.status === 'pending' ? 'รอดำเนินการ' :
-                         booking.status === 'inprogress' ? 'อยู่ระหว่างดำเนินการ' :
-                         booking.status === 'cancelled' ? 'ลูกค้ายกเลิก' : 
-                         booking.status === 'rejected' ? 'ไม่ผ่านการยืนยัน' : booking.status}
+                         booking.status === 'inprogress' ? 'กำลังดำเนินการ' :
+                         booking.status === 'cancelled' ? 'ยกเลิกแล้ว' : 
+                         booking.status === 'rejected' ? 'ไม่อนุมัติ' : booking.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString('th-TH') : 'ไม่มีข้อมูล'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {booking.booking_date ? new Date(booking.booking_date).toLocaleDateString('th-TH', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : 'ไม่มีข้อมูล'}
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          ) : (
-            <div className="text-center py-12">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="mx-auto h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">ยังไม่มีการจอง</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                เมื่อมีการจองทริปผ่านคุณ ข้อมูลจะแสดงที่นี่
-              </p>
             </div>
-          )}
-        </div>
+            <h3 className="mt-4 text-sm font-medium text-gray-900">ยังไม่มีการจอง</h3>
+            <p className="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
+              เมื่อมีลูกค้าจองทริปผ่านคุณ ข้อมูลจะแสดงในตารางนี้
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

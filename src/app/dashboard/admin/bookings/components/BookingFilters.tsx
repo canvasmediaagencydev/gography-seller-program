@@ -33,7 +33,7 @@ export default function BookingFilters({
   loading
 }: BookingFiltersProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {/* Search */}
         <div className="lg:col-span-2">
@@ -43,13 +43,13 @@ export default function BookingFilters({
           <div className="relative">
             <input
               type="text"
-              placeholder="ชื่อลูกค้า, อีเมล, ทริป, seller..."
+              placeholder="ชื่อลูกค้า, อีเมล, ทริป..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
-            <svg className="w-4 h-4 text-gray-500 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg className="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
         </div>
@@ -62,7 +62,7 @@ export default function BookingFilters({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <option value="all">ทั้งหมด</option>
             <option value="pending">รออนุมัติ</option>
@@ -81,7 +81,7 @@ export default function BookingFilters({
           <select
             value={sellerFilter}
             onChange={(e) => setSellerId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <option value="all">ทั้งหมด</option>
             <option value="none">ไม่มี Seller</option>
@@ -101,7 +101,7 @@ export default function BookingFilters({
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <option value="all">ทั้งหมด</option>
             <option value="today">วันนี้</option>
@@ -112,17 +112,17 @@ export default function BookingFilters({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
         <div className="text-sm text-gray-500">
           ใช้ตัวกรองเพื่อค้นหาการจองที่ต้องการ
         </div>
         <button
           onClick={onRefresh}
           disabled={loading}
-          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+          className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           รีเฟรช
         </button>
