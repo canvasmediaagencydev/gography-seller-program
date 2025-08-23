@@ -52,79 +52,83 @@ export default function BookingStats({ bookings }: BookingStatsProps) {
     .filter(b => b.status === 'approved')
     .reduce((sum, b) => sum + b.commission_amount, 0)
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('th-TH', {
-      style: 'currency',
-      currency: 'THB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount)
-  }
-
   const stats = [
     {
       title: 'การจองทั้งหมด',
       value: totalBookings.toLocaleString(),
-      icon: '📊',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600',
-      iconColor: 'text-blue-500'
+      subtitle: 'รายการ',
+      icon: (
+        <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      )
     },
     {
       title: 'รออนุมัติ',
       value: pendingBookings.toLocaleString(),
-      icon: '⏳',
-      bgColor: 'bg-yellow-50',
-      textColor: 'text-yellow-600',
-      iconColor: 'text-yellow-500'
+      subtitle: 'รายการ',
+      icon: (
+        <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
     },
     {
       title: 'อนุมัติแล้ว',
       value: approvedBookings.toLocaleString(),
-      icon: '✅',
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-600',
-      iconColor: 'text-green-500'
+      subtitle: 'รายการ',
+      icon: (
+        <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
     },
     {
       title: 'กำลังดำเนินการ',
       value: inProgressBookings.toLocaleString(),
-      icon: '🔄',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-600',
-      iconColor: 'text-purple-500'
+      subtitle: 'รายการ',
+      icon: (
+        <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      )
     },
     {
       title: 'ยอดขายรวม',
-      value: formatCurrency(totalRevenue),
-      icon: '💰',
-      bgColor: 'bg-emerald-50',
-      textColor: 'text-emerald-600',
-      iconColor: 'text-emerald-500'
+      value: `฿${totalRevenue.toLocaleString()}`,
+      subtitle: 'บาท',
+      icon: (
+        <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
     },
     {
       title: 'คอมมิชชั่นรวม',
-      value: formatCurrency(totalCommission),
-      icon: '🎯',
-      bgColor: 'bg-orange-50',
-      textColor: 'text-orange-600',
-      iconColor: 'text-orange-500'
+      value: `฿${totalCommission.toLocaleString()}`,
+      subtitle: 'บาท',
+      icon: (
+        <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      )
     }
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       {stats.map((stat, index) => (
         <div 
           key={index}
-          className={`${stat.bgColor} rounded-xl p-4 border border-gray-100`}
+          className="bg-white rounded-lg border border-gray-200 p-4"
         >
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
-              <p className={`text-2xl font-bold ${stat.textColor}`}>{stat.value}</p>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+              <p className="text-lg font-semibold text-gray-900 mt-1">{stat.value}</p>
+              <p className="text-xs text-gray-500 mt-1">{stat.subtitle}</p>
             </div>
-            <div className={`text-2xl ${stat.iconColor}`}>
+            <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
               {stat.icon}
             </div>
           </div>

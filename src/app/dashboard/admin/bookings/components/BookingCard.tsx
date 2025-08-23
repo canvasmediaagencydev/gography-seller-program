@@ -73,17 +73,17 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
 
   const getStatusBadge = (status: string | null) => {
     const statusConfig = {
-      pending: { label: 'รออนุมัติ', bg: 'bg-yellow-100', text: 'text-yellow-800' },
-      inprogress: { label: 'กำลังดำเนินการ', bg: 'bg-purple-100', text: 'text-purple-800' },
-      approved: { label: 'อนุมัติแล้ว', bg: 'bg-green-100', text: 'text-green-800' },
-      rejected: { label: 'ปฏิเสธ', bg: 'bg-red-100', text: 'text-red-800' },
-      cancelled: { label: 'ยกเลิก', bg: 'bg-gray-100', text: 'text-gray-800' }
+      pending: { label: 'รออนุมัติ', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
+      inprogress: { label: 'กำลังดำเนินการ', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+      approved: { label: 'อนุมัติแล้ว', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+      rejected: { label: 'ปฏิเสธ', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+      cancelled: { label: 'ยกเลิก', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' }
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
 
     return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
         {config.label}
       </span>
     )
@@ -130,110 +130,113 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
   const customer = booking.customers
 
   return (
-    <div className="p-6 hover:bg-gray-50 transition-colors">
+    <div className="p-6  transition-colors">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           {/* Trip and Customer Info */}
-          <div className="flex items-start gap-4 mb-4">
+          <div className="flex items-start gap-6 mb-4">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {trip?.title || 'ไม่พบข้อมูลทริป'}
-                </h3>
-                {trip?.countries?.flag_emoji && (
-                  <span className="text-lg">{trip.countries.flag_emoji}</span>
-                )}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {trip?.title || 'ไม่พบข้อมูลทริป'}
+                  </h3>
+                  {trip?.countries?.flag_emoji && (
+                    <span className="text-base">{trip.countries.flag_emoji}</span>
+                  )}
+                </div>
+                {getStatusBadge(booking.status)}
               </div>
               
-              <div className="text-sm text-gray-600 space-y-1">
-                <p><strong>ลูกค้า:</strong> {customer?.full_name || 'ไม่พบข้อมูล'}</p>
-                <p><strong>อีเมล:</strong> {customer?.email || 'ไม่ระบุ'}</p>
-                {customer?.phone && <p><strong>โทร:</strong> {customer.phone}</p>}
-                {booking.trip_schedules && (
-                  <p><strong>วันเดินทาง:</strong> {formatDate(booking.trip_schedules.departure_date)} - {formatDate(booking.trip_schedules.return_date)}</p>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-600">
+                        {customer?.full_name?.charAt(0) || 'N'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{customer?.full_name || 'ไม่พบข้อมูล'}</p>
+                      <p className="text-xs text-gray-500">{customer?.email || 'ไม่ระบุ'}</p>
+                    </div>
+                  </div>
+                  {customer?.phone && (
+                    <p className="text-sm text-gray-600 ml-10">โทร: {customer.phone}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  {booking.trip_schedules && (
+                    <>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">วันเดินทาง:</span> {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">วันกลับ:</span> {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    จองเมื่อ: {booking.created_at ? new Date(booking.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="text-right">
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(booking.total_amount)}</p>
-              <p className="text-sm text-gray-500">คอมมิชชั่น: {formatCurrency(booking.commission_amount)}</p>
-              <p className="text-xs text-gray-400 mt-1">
-                จองเมื่อ: {booking.created_at ? formatDate(booking.created_at) : 'ไม่ระบุ'}
-              </p>
+            <div className="text-right min-w-0">
+              <p className="text-xl font-semibold text-gray-900">฿{booking.total_amount.toLocaleString()}</p>
+              <p className="text-sm text-gray-600 mt-1">คอมมิชชั่น: ฿{booking.commission_amount.toLocaleString()}</p>
             </div>
           </div>
 
           {/* Seller Info */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Seller:</span>
-              {booking.seller ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-900">{booking.seller.full_name || booking.seller.email}</span>
-                  <span className="text-xs text-gray-500">({booking.seller.referral_code})</span>
-                </div>
-              ) : (
-                <span className="text-sm text-gray-500">ไม่มี Seller</span>
-              )}
+          <div className="flex items-center justify-between mb-4 py-3 px-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-6 bg-gray-200 rounded-full flex items-center justify-center">
+                <svg className="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">Seller</p>
+                {booking.seller ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-900">{booking.seller.full_name || booking.seller.email}</span>
+                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">{booking.seller.referral_code}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-500">ไม่มี Seller</span>
+                )}
+              </div>
             </div>
             
             <button
               onClick={() => setEditingSeller(!editingSeller)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
             >
               แก้ไข
             </button>
           </div>
 
-          {/* Status and Actions */}
+          {/* Actions */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {getStatusBadge(booking.status)}
-              
-              <button
-                onClick={() => setShowDetails(!showDetails)}
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-              >
-                {showDetails ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'}
-              </button>
-            </div>
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="text-gray-600 hover:text-gray-700 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors"
+            >
+              <svg className={`h-4 w-4 transform transition-transform ${showDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+              </svg>
+              {showDetails ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'}
+            </button>
 
             <div className="flex items-center gap-2">
-              {booking.status !== 'approved' && booking.status !== 'rejected' && booking.status !== 'cancelled' && (
-                <>
-                  <button
-                    onClick={() => handleStatusChange('approved')}
-                    disabled={updating}
-                    className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 text-sm font-medium disabled:opacity-50"
-                  >
-                    อนุมัติ
-                  </button>
-                  <button
-                    onClick={() => handleStatusChange('rejected')}
-                    disabled={updating}
-                    className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 text-sm font-medium disabled:opacity-50"
-                  >
-                    ปฏิเสธ
-                  </button>
-                </>
-              )}
-              
-              {booking.status === 'approved' && (
-                <button
-                  onClick={() => handleStatusChange('cancelled')}
-                  disabled={updating}
-                  className="bg-gray-600 text-white px-3 py-1 rounded-lg hover:bg-gray-700 text-sm font-medium disabled:opacity-50"
-                >
-                  ยกเลิก
-                </button>
-              )}
-
               <select
                 value={booking.status || 'pending'}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 disabled={updating}
-                className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <option value="pending">รออนุมัติ</option>
                 <option value="inprogress">กำลังดำเนินการ</option>
@@ -241,6 +244,10 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
                 <option value="rejected">ปฏิเสธ</option>
                 <option value="cancelled">ยกเลิก</option>
               </select>
+
+              {updating && (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+              )}
             </div>
           </div>
         </div>
@@ -248,30 +255,45 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
 
       {/* Expanded Details */}
       {showDetails && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">ข้อมูลลูกค้า</h4>
-              <div className="space-y-1 text-gray-600">
-                <p>ID Card: {customer?.id_card || 'ไม่ระบุ'}</p>
-                <p>Passport: {customer?.passport_number || 'ไม่ระบุ'}</p>
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">ข้อมูลลูกค้า</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">บัตรประชาชน:</span>
+                    <span className="text-gray-900">{customer?.id_card || 'ไม่ระบุ'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">หนังสือเดินทาง:</span>
+                    <span className="text-gray-900">{customer?.passport_number || 'ไม่ระบุ'}</span>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">ข้อมูลทริป</h4>
-              <div className="space-y-1 text-gray-600">
-                <p>ราคาต่อคน: {trip ? formatCurrency(trip.price_per_person) : 'ไม่ระบุ'}</p>
-                <p>ประเทศ: {trip?.countries?.name || 'ไม่ระบุ'}</p>
-                <p>ที่นั่งว่าง: {booking.trip_schedules?.available_seats || 0} ที่นั่ง</p>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-900 mb-3">ข้อมูลทริป</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ราคาต่อคน:</span>
+                    <span className="text-gray-900">฿{trip ? trip.price_per_person.toLocaleString() : 'ไม่ระบุ'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">ประเทศ:</span>
+                    <span className="text-gray-900">{trip?.countries?.name || 'ไม่ระบุ'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {booking.notes && (
-            <div className="mt-4">
-              <h4 className="font-medium text-gray-900 mb-2">หมายเหตุ</h4>
-              <p className="text-gray-600 text-sm">{booking.notes}</p>
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">หมายเหตุ</h4>
+              <p className="text-sm text-gray-700">{booking.notes}</p>
             </div>
           )}
         </div>
@@ -279,36 +301,38 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
 
       {/* Edit Seller */}
       {editingSeller && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-700">เลือก Seller:</label>
-            <select
-              value={selectedSellerId}
-              onChange={(e) => setSelectedSellerId(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">ไม่มี Seller</option>
-              {sellers.map((seller) => (
-                <option key={seller.id} value={seller.id}>
-                  {seller.full_name || seller.email} ({seller.referral_code})
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleSellerUpdate}
-              className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 text-sm font-medium"
-            >
-              บันทึก
-            </button>
-            <button
-              onClick={() => {
-                setEditingSeller(false)
-                setSelectedSellerId(booking.seller_id || '')
-              }}
-              className="bg-gray-300 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-400 text-sm font-medium"
-            >
-              ยกเลิก
-            </button>
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedSellerId}
+                onChange={(e) => setSelectedSellerId(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              >
+                <option value="">ไม่มี Seller</option>
+                {sellers.map((seller) => (
+                  <option key={seller.id} value={seller.id}>
+                    {seller.full_name || seller.email} ({seller.referral_code})
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleSellerUpdate}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                บันทึก
+              </button>
+              <button
+                onClick={() => {
+                  setEditingSeller(false)
+                  setSelectedSellerId(booking.seller_id || '')
+                }}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                ยกเลิก
+              </button>
+            </div>
           </div>
         </div>
       )}
