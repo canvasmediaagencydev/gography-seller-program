@@ -65,6 +65,12 @@ function Sidebar({ className }: SidebarProps) {
     if (path === '/dashboard/trips') {
       return pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips'
     }
+    if (path === '/dashboard/admin/trips') {
+      return pathname.includes('/dashboard/admin/trips') && pathname !== '/dashboard/admin/trips/create'
+    }
+    if (path === '/dashboard/admin/bookings') {
+      return pathname.includes('/dashboard/admin/bookings')
+    }
     return pathname === path
   }
 
@@ -109,9 +115,9 @@ function Sidebar({ className }: SidebarProps) {
               
               <SidebarButton
                 icon={<TbUsers />}
-                label="ลูกค้าและการจอง"
-                href="/dashboard/admin/customers"
-                isActive={isActive('/dashboard/admin/customers')}
+                label="จัดการการจอง"
+                href="/dashboard/admin/bookings"
+                isActive={isActive('/dashboard/admin/bookings')}
               />
             </>
           ) : (
