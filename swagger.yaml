@@ -1,29 +1,14 @@
 openapi: 3.0.3
 info:
-  title: Geography Seller Program API
-  description: API documentation for the Geography Seller Program platform
+  title: Seller Program API
+  description: API documentation for the  Seller Program platform
   version: 1.0.0
-  contact:
-    name: API Support
-    email: support@geography.com
 
-servers:
-  - url: http://localhost:3000/api
-    description: Development server
-  - url: https://seller-dashboard.geography.com/api
-    description: Production server
 
 security:
   - BearerAuth: []
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Supabase JWT token
-
   schemas:
     Trip:
       type: object

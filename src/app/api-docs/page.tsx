@@ -82,10 +82,10 @@ export default function APIDocs() {
             <div className="bg-gray-900 text-white py-6">
                 <div className="max-w-7xl mx-auto px-4">
                     <h1 className="text-3xl font-bold">
-                        {swaggerDoc.info?.title || 'Geography Seller Program API'}
+                        {swaggerDoc.info?.title || 'Seller Program API'}
                     </h1>
                     <p className="mt-2 text-gray-300">
-                        {swaggerDoc.info?.description || 'Complete API documentation for the Geography Seller Program platform'}
+                        {swaggerDoc.info?.description || 'Complete API documentation for the Seller Program platform'}
                     </p>
                 </div>
             </div>
@@ -93,31 +93,6 @@ export default function APIDocs() {
             <div className="max-w-7xl mx-auto px-4 py-8">
                 <div className="bg-white shadow-lg rounded-lg overflow-hidden">
                     <div className="p-6">
-                        <h2 className="text-2xl font-semibold text-gray-900 mb-4">API Overview</h2>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-blue-900">Base URL</h3>
-                                <p className="text-blue-700 text-sm mt-1">
-                                    {swaggerDoc.servers?.[0]?.url || '/api'}
-                                </p>
-                            </div>
-
-                            <div className="bg-green-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-green-900">Authentication</h3>
-                                <p className="text-green-700 text-sm mt-1">
-                                    Bearer Token (Supabase JWT)
-                                </p>
-                            </div>
-
-                            <div className="bg-purple-50 p-4 rounded-lg">
-                                <h3 className="font-semibold text-purple-900">Version</h3>
-                                <p className="text-purple-700 text-sm mt-1">
-                                    v{swaggerDoc.info?.version || '1.0.0'}
-                                </p>
-                            </div>
-                        </div>
-
                         <div className="space-y-6">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Available Endpoints</h3>
