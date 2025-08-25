@@ -699,6 +699,34 @@ paths:
           description: Unauthorized
         '500':
           description: Upload failed
+    delete:
+      summary: Delete uploaded image
+      description: Delete an uploaded image from storage
+      tags:
+        - Upload
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: url
+          in: query
+          required: true
+          description: The URL of the image to delete
+          schema:
+            type: string
+            format: uri
+      responses:
+        '200':
+          description: Image deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '400':
+          description: Invalid URL or missing parameters
+        '401':
+          description: Unauthorized
+        '500':
+          description: Delete failed
 
   /upload/seller:
     post:
@@ -754,6 +782,34 @@ paths:
           description: Unauthorized
         '500':
           description: Upload failed
+    delete:
+      summary: Delete seller documents
+      description: Delete seller profile documents from storage
+      tags:
+        - Upload
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: url
+          in: query
+          required: true
+          description: The URL of the document to delete
+          schema:
+            type: string
+            format: uri
+      responses:
+        '200':
+          description: Document deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '400':
+          description: Invalid URL or missing parameters
+        '401':
+          description: Unauthorized
+        '500':
+          description: Delete failed
 
 tags:
   - name: Trips
