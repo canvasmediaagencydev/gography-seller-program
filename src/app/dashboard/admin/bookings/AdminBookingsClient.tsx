@@ -37,6 +37,7 @@ interface BookingWithDetails extends Tables<'bookings'> {
     full_name: string | null
     email: string | null
     referral_code: string | null
+    avatar_url: string | null
   }
 }
 
@@ -45,6 +46,7 @@ interface Seller {
   full_name: string | null
   email: string | null
   referral_code: string | null
+  avatar_url: string | null
 }
 
 interface TripWithSchedules extends Tables<'trips'> {
@@ -182,7 +184,7 @@ export default function AdminBookingsClient({
             if (booking.seller_id) {
               const { data: seller } = await supabase
                 .from('user_profiles')
-                .select('id, full_name, email, referral_code')
+                .select('id, full_name, email, referral_code, avatar_url')
                 .eq('id', booking.seller_id)
                 .single()
               

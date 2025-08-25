@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import SellerDetailsModal from '@/components/SellerDetailsModal'
+import { MdOutlineMail } from "react-icons/md";
+import { IoCallOutline } from "react-icons/io5";
+import { LuTag } from "react-icons/lu";
 
 interface UserProfile {
   id: string
@@ -231,22 +234,16 @@ export default function SellersManagement() {
                       </div>
                       <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
                         <div className={`flex items-center text-sm ${seller.email ? 'text-gray-500' : 'text-orange-600'}`}>
-                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                          </svg>
+                         <MdOutlineMail className='mr-2 text-xl text-gray-400'/>
                           {seller.email || 'ไม่มีอีเมล'}
                         </div>
                         <div className={`flex items-center text-sm ${seller.phone ? 'text-gray-500' : 'text-orange-600'}`}>
-                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
+                          <IoCallOutline className='mr-2 text-xl text-gray-400'/>
                           {seller.phone || 'ยังไม่กรอกเบอร์โทร'}
                         </div>
                         {seller.referral_code && (
                           <div className="flex items-center text-sm text-gray-500">
-                            <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
+                            <LuTag className='mr-2 text-xl text-gray-400'/>
                             Referral: {seller.referral_code}
                           </div>
                         )}
