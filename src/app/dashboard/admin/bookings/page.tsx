@@ -61,7 +61,7 @@ export default async function AdminBookingsPage() {
         if (booking.seller_id) {
           const { data: seller } = await supabase
             .from('user_profiles')
-            .select('id, full_name, email, referral_code')
+            .select('id, full_name, email, referral_code, avatar_url')
             .eq('id', booking.seller_id)
             .single()
           
@@ -75,7 +75,7 @@ export default async function AdminBookingsPage() {
   // Fetch sellers for the create booking form
   const { data: sellers } = await supabase
     .from('user_profiles')
-    .select('id, full_name, email, referral_code')
+    .select('id, full_name, email, referral_code, avatar_url')
     .eq('role', 'seller')
     .eq('status', 'approved')
     .order('full_name')

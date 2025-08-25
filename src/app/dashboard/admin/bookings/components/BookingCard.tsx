@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Tables } from '../../../../../../database.types'
 import { MdOutlineEdit } from "react-icons/md";
+import { IoCall } from "react-icons/io5";
+import { PiAirplaneTakeoffBold } from "react-icons/pi";
+import { PiAirplaneLandingBold } from "react-icons/pi";
 
 interface BookingWithDetails extends Tables<'bookings'> {
   customers?: {
@@ -31,6 +34,7 @@ interface BookingWithDetails extends Tables<'bookings'> {
     full_name: string | null
     email: string | null
     referral_code: string | null
+    avatar_url: string | null
   }
 }
 
@@ -39,6 +43,7 @@ interface Seller {
   full_name: string | null
   email: string | null
   referral_code: string | null
+  avatar_url: string | null
 }
 
 interface BookingCardProps {
@@ -158,7 +163,10 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
                     </div>
                   </div>
                   {customer?.phone && (
-                    <p className="text-md text-gray-600 ml-10">โทร: {customer.phone}</p>
+                    <p className="text-md text-gray-600 ">
+                      <IoCall className="inline-block mr-2" />
+                      {customer.phone}
+                    </p>
                   )}
                 </div>
 
@@ -166,10 +174,16 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
                   {booking.trip_schedules && (
                     <>
                       <p className="text-md text-gray-600">
-                        <span className="font-medium">วันเดินทาง:</span> {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <span className="font-medium">
+                          <PiAirplaneTakeoffBold className="inline-block mr-1" />
+                          วันเดินทาง:
+                        </span> {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                       <p className="text-md text-gray-600">
-                        <span className="font-medium">วันกลับ:</span> {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <span className="font-medium">
+                          <PiAirplaneLandingBold className="inline-block mr-1" />
+                          วันกลับ:
+                        </span> {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </>
                   )}
@@ -189,11 +203,19 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
           {/* Seller Info */}
           <div className="flex items-center justify-between mb-4 py-3 px-4 bg-white rounded-lg">
             <div className="flex items-center gap-3">
-              <div className="h-6 w-6 bg-gray-200 rounded-full flex items-center justify-center">
-                <svg className="h-3 w-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
+              {booking.seller?.avatar_url ? (
+                <img 
+                  src={booking.seller.avatar_url} 
+                  alt={booking.seller.full_name || 'Seller'}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              )}
               <div>
                 <p className="text-md font-medium text-gray-700">Seller</p>
                 {booking.seller ? (
