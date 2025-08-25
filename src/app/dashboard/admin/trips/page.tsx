@@ -100,34 +100,39 @@ export default function AdminTripsPage() {
                   {/* Trip Header */}
                   <div className="mb-4">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-xl font-bold text-gray-900 leading-tight line-clamp-2">
+                      <h3 className="text-xl font-bold text-gray-900 leading-tight line-clamp-2 min-h-[3.5rem] flex items-start">
                         {trip.title}
                       </h3>
                       <div className="flex items-center gap-2 ml-3">
-                        <label className="relative inline-flex items-center cursor-pointer">
+                        <label className="relative inline-block w-12 h-7 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={trip.is_active === true}
                             onChange={() => handleToggleStatus(trip.id, trip.is_active === true)}
                             disabled={togglingId === trip.id}
-                            className="sr-only peer"
+                            className="opacity-0 w-0 h-0"
                           />
-                          <div className="relative w-10 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-4 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600 disabled:opacity-50"></div>
+                          <span className={`
+                            absolute top-0 left-0 right-0 bottom-0 
+                            rounded-full transition-all duration-400 ease-in-out cursor-pointer
+                            ${trip.is_active === true ? 'bg-emerald-500' : 'bg-gray-300'}
+                            ${togglingId === trip.id ? 'opacity-70' : ''}
+                            before:content-[''] before:absolute before:h-5 before:w-5 
+                            before:left-1 before:bottom-1 before:bg-white 
+                            before:rounded-full before:transition-all before:duration-400 before:ease-in-out
+                            ${trip.is_active === true ? 'before:translate-x-5' : 'before:translate-x-0'}
+                            hover:shadow-md focus:shadow-lg focus:outline-none
+                          `}>
+                          </span>
                         </label>
-                        {togglingId === trip.id && (
-                          <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                        )}
                       </div>
                     </div>
                     
-                    {trip.description && (
+                    {/* {trip.description && (
                       <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                         {trip.description}
                       </p>
-                    )}
+                    )} */}
 
                     <div className="flex items-center gap-2 mb-3">
                       {(trip.countries as any)?.flag_emoji && (
