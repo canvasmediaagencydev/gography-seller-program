@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../../../../../database.types'
+import { RiDeleteBin2Line } from "react-icons/ri";
 
 interface TripWithSchedules extends Tables<'trips'> {
   countries?: {
@@ -224,8 +225,8 @@ export default function CreateBookingModal({
             seller_id: selectedSeller?.id,
             total_amount: selectedTrip!.price_per_person,
             commission_amount: calculateCommission(selectedTrip!),
-            status: 'pending',
-            notes: isMainCustomer 
+            status: 'inprogress',
+            notes: isMainCustomer
               ? `Admin สร้างการจอง - ผู้ติดต่อหลัก (จองทั้งหมด ${customers.length} คน) ${notes ? ` - ${notes}` : ''}`
               : `Admin สร้างการจอง - ผู้เดินทางร่วมกับ ${customers[0].full_name}`,
             booking_date: new Date().toISOString()
@@ -353,9 +354,9 @@ export default function CreateBookingModal({
             {index > 0 && (
               <button
                 onClick={() => removeCustomer(index)}
-                className="text-red-600 hover:text-red-700 text-sm font-medium"
+                className="text-red-400 hover:text-red-600 text-xl font-medium transition-colors duration-200"
               >
-                ลบ
+                <RiDeleteBin2Line className='w-10 hover:cursor-pointer hover:scale-110 transition-transform duration-200' />
               </button>
             )}
           </div>
@@ -411,7 +412,7 @@ export default function CreateBookingModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-
+{/* 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 เลขบัตรประชาชน
@@ -436,7 +437,7 @@ export default function CreateBookingModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="xxxxxxxx"
               />
-            </div>
+            </div> */}
           </div>
         </div>
       ))}
@@ -534,29 +535,54 @@ export default function CreateBookingModal({
         </div>
 
         {/* Progress Bar */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center">
-            {[1, 2, 3].map((stepNumber) => (
-              <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  stepNumber <= step 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {stepNumber}
+        <div className="px-8 py-6 border-b border-gray-200 bg-white">
+          <div className="flex items-center justify-between max-w-lg mx-auto relative">
+            {/* Background progress line */}
+            <div className="absolute top-4 left-6 right-6 h-1 bg-gray-200 rounded-full"></div>
+            {/* Active progress line */}
+            <div 
+              className="absolute top-4 left-6 h-1 bg-green-500 rounded-full transition-all duration-500 ease-in-out"
+              style={{ 
+                width: step === 1 ? '0%' : 
+                       step === 2 ? 'calc(50% - 24px)' : 
+                       'calc(100% - 48px)' 
+              }}
+            ></div>
+            
+            {[
+              { number: 1, label: 'เลือกทริป' },
+              { number: 2, label: 'ข้อมูลผู้เดินทาง' },
+              { number: 3, label: 'ยืนยันการจอง' }
+            ].map((stepData) => (
+              <div key={stepData.number} className="relative z-10">
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                    stepData.number < step 
+                      ? 'bg-green-500 text-white shadow-lg' 
+                      : stepData.number === step
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-white text-gray-400 border-2 border-gray-200'
+                  }`}>
+                    {stepData.number < step ? (
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      stepData.number
+                    )}
+                  </div>
+                  <span className={`text-sm text-center mt-3 font-medium transition-colors duration-300 ${
+                    stepData.number < step 
+                      ? 'text-green-600' 
+                      : stepData.number === step
+                      ? 'text-blue-600'
+                      : 'text-gray-400'
+                  }`}>
+                    {stepData.label}
+                  </span>
                 </div>
-                {stepNumber < 3 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    stepNumber < step ? 'bg-blue-600' : 'bg-gray-200'
-                  }`} />
-                )}
               </div>
             ))}
-          </div>
-          <div className="flex justify-between mt-2 text-xs text-gray-500">
-            <span>เลือกทริป</span>
-            <span>ข้อมูลผู้เดินทาง</span>
-            <span>ยืนยันการจอง</span>
           </div>
         </div>
 

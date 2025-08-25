@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Tables } from '../../../../../../database.types'
+import { MdOutlineEdit } from "react-icons/md";
 
 interface BookingWithDetails extends Tables<'bookings'> {
   customers?: {
@@ -83,7 +84,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border}`}>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-md font-medium border ${config.bg} ${config.text} ${config.border}`}>
         {config.label}
       </span>
     )
@@ -151,33 +152,28 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600">
-                        {customer?.full_name?.charAt(0) || 'N'}
-                      </span>
-                    </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{customer?.full_name || 'ไม่พบข้อมูล'}</p>
-                      <p className="text-xs text-gray-500">{customer?.email || 'ไม่ระบุ'}</p>
+                      <p className="text-md font-medium text-gray-900">{customer?.full_name || 'ไม่พบข้อมูล'}</p>
+                      <p className="text-md text-gray-500">{customer?.email || 'ไม่ระบุ'}</p>
                     </div>
                   </div>
                   {customer?.phone && (
-                    <p className="text-sm text-gray-600 ml-10">โทร: {customer.phone}</p>
+                    <p className="text-md text-gray-600 ml-10">โทร: {customer.phone}</p>
                   )}
                 </div>
 
                 <div className="space-y-1">
                   {booking.trip_schedules && (
                     <>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-md text-gray-600">
                         <span className="font-medium">วันเดินทาง:</span> {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-md text-gray-600">
                         <span className="font-medium">วันกลับ:</span> {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </>
                   )}
-                  <p className="text-xs text-gray-500">
+                  <p className="text-md text-gray-500">
                     จองเมื่อ: {booking.created_at ? new Date(booking.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
                   </p>
                 </div>
@@ -186,7 +182,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
 
             <div className="text-right min-w-0">
               <p className="text-xl font-semibold text-gray-900">฿{booking.total_amount.toLocaleString()}</p>
-              <p className="text-sm text-gray-600 mt-1">คอมมิชชั่น: ฿{booking.commission_amount.toLocaleString()}</p>
+              <p className="text-md text-gray-600 mt-1">คอมมิชชั่น: ฿{booking.commission_amount.toLocaleString()}</p>
             </div>
           </div>
 
@@ -199,22 +195,22 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">Seller</p>
+                <p className="text-md font-medium text-gray-700">Seller</p>
                 {booking.seller ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-900">{booking.seller.full_name || booking.seller.email}</span>
-                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">{booking.seller.referral_code}</span>
+                    <span className="text-md text-gray-900">{booking.seller.full_name || booking.seller.email}</span>
+                    <span className="text-md text-gray-500 bg-gray-200 px-2 py-0.5 rounded">{booking.seller.referral_code}</span>
                   </div>
                 ) : (
-                  <span className="text-sm text-gray-500">ไม่มี Seller</span>
+                  <span className="text-md text-gray-500">ไม่มี Seller</span>
                 )}
               </div>
             </div>
-            
             <button
               onClick={() => setEditingSeller(!editingSeller)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+              className="text-blue-600 hover:text-blue-700 text-md font-medium px-3 py-1 rounded-md hover:bg-blue-50 transition-color hover:cursor-pointer"
             >
+              <MdOutlineEdit className='inline-block mr-1 text-xl'/>
               แก้ไข
             </button>
           </div>
@@ -222,12 +218,12 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
       {editingSeller && (
         <div className="mt-6 pt-6 border-t border-gray-200">
           <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
+            <h4 className="text-md font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
             <div className="flex items-center gap-3">
               <select
                 value={selectedSellerId}
                 onChange={(e) => setSelectedSellerId(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
                 <option value="">ไม่มี Seller</option>
                 {sellers.map((seller) => (
@@ -238,7 +234,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
               </select>
               <button
                 onClick={handleSellerUpdate}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white text-md font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 บันทึก
               </button>
@@ -247,7 +243,7 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
                   setEditingSeller(false)
                   setSelectedSellerId(booking.seller_id || '')
                 }}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-md font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 ยกเลิก
               </button>
@@ -256,23 +252,24 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
         </div>
       )}
           {/* Actions */}
-          <div className="flex items-center justify-between">
-            <button
+          <div className="flex items-center justify-end">
+            {/* <button
               onClick={() => setShowDetails(!showDetails)}
-              className="text-gray-600 hover:text-gray-700 text-sm font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors"
+              className="text-gray-600 hover:text-gray-700 text-md font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors"
             >
               <svg className={`h-4 w-4 transform transition-transform ${showDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
               </svg>
               {showDetails ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'}
-            </button>
+            </button> */}
 
             <div className="flex items-center gap-2">
+              <p className="text-lg text-gray-600">สถานะ :</p>
               <select
                 value={booking.status || 'pending'}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 disabled={updating}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <option value="pending">รออนุมัติ</option>
                 <option value="inprogress">กำลังดำเนินการ</option>
@@ -290,13 +287,13 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
       </div>
 
       {/* Expanded Details */}
-      {showDetails && (
+      {/* {showDetails && (
         <div className="mt-6 pt-6 border-t border-gray-200">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">ข้อมูลลูกค้า</h4>
-                <div className="space-y-2 text-sm">
+                <h4 className="text-md font-medium text-gray-900 mb-3">ข้อมูลลูกค้า</h4>
+                <div className="space-y-2 text-md">
                   <div className="flex justify-between">
                     <span className="text-gray-600">บัตรประชาชน:</span>
                     <span className="text-gray-900">{customer?.id_card || 'ไม่ระบุ'}</span>
@@ -311,8 +308,8 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
             
             <div className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-3">ข้อมูลทริป</h4>
-                <div className="space-y-2 text-sm">
+                <h4 className="text-md font-medium text-gray-900 mb-3">ข้อมูลทริป</h4>
+                <div className="space-y-2 text-md">
                   <div className="flex justify-between">
                     <span className="text-gray-600">ราคาต่อคน:</span>
                     <span className="text-gray-900">฿{trip ? trip.price_per_person.toLocaleString() : 'ไม่ระบุ'}</span>
@@ -328,12 +325,12 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
 
           {booking.notes && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">หมายเหตุ</h4>
-              <p className="text-sm text-gray-700">{booking.notes}</p>
+              <h4 className="text-md font-medium text-gray-900 mb-2">หมายเหตุ</h4>
+              <p className="text-md text-gray-700">{booking.notes}</p>
             </div>
           )}
         </div>
-      )}
+      )} */}
 
     
     </div>
