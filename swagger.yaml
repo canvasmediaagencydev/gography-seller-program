@@ -1,0 +1,768 @@
+openapi: 3.0.3
+info:
+  title: Geography Seller Program API
+  description: API documentation for the Geography Seller Program platform
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@geography.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://seller-dashboard.geography.com/api
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token
+
+  schemas:
+    Trip:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        price_per_person:
+          type: number
+        duration_days:
+          type: integer
+        duration_nights:
+          type: integer
+        total_seats:
+          type: integer
+        commission_type:
+          type: string
+          enum: [percentage, fixed]
+        commission_value:
+          type: number
+        cover_image_url:
+          type: string
+          format: uri
+        geography_link:
+          type: string
+          format: uri
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        countries:
+          $ref: '#/components/schemas/Country'
+        trip_schedules:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripSchedule'
+
+    TripSchedule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        departure_date:
+          type: string
+          format: date
+        return_date:
+          type: string
+          format: date
+        registration_deadline:
+          type: string
+          format: date
+        available_seats:
+          type: integer
+        is_active:
+          type: boolean
+
+    Country:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        flag_emoji:
+          type: string
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customer_id:
+          type: string
+          format: uuid
+        trip_schedule_id:
+          type: string
+          format: uuid
+        seller_id:
+          type: string
+          format: uuid
+          nullable: true
+        total_amount:
+          type: number
+        commission_amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, inprogress, approved, rejected, cancelled]
+        notes:
+          type: string
+          nullable: true
+        booking_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        customers:
+          $ref: '#/components/schemas/Customer'
+        trip_schedules:
+          $ref: '#/components/schemas/TripSchedule'
+        seller:
+          $ref: '#/components/schemas/Seller'
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          nullable: true
+        id_card:
+          type: string
+          nullable: true
+        passport_number:
+          type: string
+          nullable: true
+
+    Seller:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+        referral_code:
+          type: string
+          nullable: true
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+paths:
+  /trips:
+    get:
+      summary: Get trips with pagination and filters
+      description: Retrieve trips with pagination, filtering by countries and status
+      tags:
+        - Trips
+      parameters:
+        - name: page
+          in: query
+          description: Page number (default 1)
+          schema:
+            type: integer
+            minimum: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page (default 6)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+        - name: filter
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [all, active, inactive, my]
+        - name: countries
+          in: query
+          description: Comma-separated country IDs
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trips:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Trip'
+                  totalCount:
+                    type: integer
+                  userId:
+                    type: string
+                  userRole:
+                    type: string
+                  availableCountries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Country'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /countries:
+    get:
+      summary: Get all countries
+      description: Retrieve all available countries
+      tags:
+        - Countries
+      responses:
+        '200':
+          description: List of countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Country'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/trips:
+    get:
+      summary: Get all trips (Admin only)
+      description: Retrieve all trips for admin management
+      tags:
+        - Admin - Trips
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of trips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trip'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create new trip (Admin only)
+      description: Create a new trip with schedules
+      tags:
+        - Admin - Trips
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - price_per_person
+                - duration_days
+                - duration_nights
+                - total_seats
+                - commission_value
+                - country_id
+                - schedules
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                price_per_person:
+                  type: number
+                duration_days:
+                  type: integer
+                duration_nights:
+                  type: integer
+                total_seats:
+                  type: integer
+                commission_type:
+                  type: string
+                  enum: [percentage, fixed]
+                commission_value:
+                  type: number
+                cover_image_url:
+                  type: string
+                  format: uri
+                geography_link:
+                  type: string
+                  format: uri
+                country_id:
+                  type: string
+                  format: uuid
+                is_active:
+                  type: boolean
+                schedules:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      departure_date:
+                        type: string
+                        format: date
+                      return_date:
+                        type: string
+                        format: date
+                      registration_deadline:
+                        type: string
+                        format: date
+                      available_seats:
+                        type: integer
+                      is_active:
+                        type: boolean
+      responses:
+        '201':
+          description: Trip created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+  /admin/trips/{id}:
+    get:
+      summary: Get trip by ID (Admin only)
+      description: Retrieve a specific trip by ID
+      tags:
+        - Admin - Trips
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Trip ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Trip details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '404':
+          description: Trip not found
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+    put:
+      summary: Update trip (Admin only)
+      description: Update an existing trip
+      tags:
+        - Admin - Trips
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Trip ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                price_per_person:
+                  type: number
+                duration_days:
+                  type: integer
+                duration_nights:
+                  type: integer
+                total_seats:
+                  type: integer
+                commission_type:
+                  type: string
+                  enum: [percentage, fixed]
+                commission_value:
+                  type: number
+                cover_image_url:
+                  type: string
+                  format: uri
+                geography_link:
+                  type: string
+                  format: uri
+                country_id:
+                  type: string
+                  format: uuid
+                is_active:
+                  type: boolean
+      responses:
+        '200':
+          description: Trip updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Validation error
+        '404':
+          description: Trip not found
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+    delete:
+      summary: Delete trip (Admin only)
+      description: Delete a trip and its schedules
+      tags:
+        - Admin - Trips
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Trip ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Trip deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '404':
+          description: Trip not found
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+  /admin/bookings/update-status:
+    post:
+      summary: Update booking status (Admin only)
+      description: Update the status of a booking
+      tags:
+        - Admin - Bookings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bookingId
+                - status
+              properties:
+                bookingId:
+                  type: string
+                  format: uuid
+                status:
+                  type: string
+                  enum: [pending, inprogress, approved, rejected, cancelled]
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+        '404':
+          description: Booking not found
+
+  /admin/bookings/update-seller:
+    post:
+      summary: Update booking seller (Admin only)
+      description: Assign or update the seller for a booking
+      tags:
+        - Admin - Bookings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bookingId
+              properties:
+                bookingId:
+                  type: string
+                  format: uuid
+                sellerId:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: Seller updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+        '404':
+          description: Booking or seller not found
+
+  /admin/bookings/bulk-operations:
+    post:
+      summary: Bulk operations on bookings (Admin only)
+      description: Perform bulk operations on multiple bookings
+      tags:
+        - Admin - Bookings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bookingIds
+                - operation
+              properties:
+                bookingIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                operation:
+                  type: string
+                  enum: [approve, reject, cancel, assign_seller]
+                sellerId:
+                  type: string
+                  format: uuid
+                  description: Required when operation is assign_seller
+      responses:
+        '200':
+          description: Bulk operation completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  updated:
+                    type: integer
+                  failed:
+                    type: integer
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+
+  /upload/image:
+    post:
+      summary: Upload image
+      description: Upload an image file and get the URL
+      tags:
+        - Upload
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to upload
+                bucket:
+                  type: string
+                  description: Storage bucket name
+                folder:
+                  type: string
+                  description: Folder path in bucket
+      responses:
+        '200':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  publicUrl:
+                    type: string
+                    format: uri
+        '400':
+          description: Invalid file or missing parameters
+        '401':
+          description: Unauthorized
+        '500':
+          description: Upload failed
+
+  /upload/seller:
+    post:
+      summary: Upload seller documents
+      description: Upload seller profile documents (ID card, documents, avatar)
+      tags:
+        - Upload
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id_card:
+                  type: string
+                  format: binary
+                  description: ID card image
+                documents:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Additional documents
+                avatar:
+                  type: string
+                  format: binary
+                  description: Profile avatar image
+      responses:
+        '200':
+          description: Documents uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id_card_url:
+                    type: string
+                    format: uri
+                  documents_urls:
+                    type: array
+                    items:
+                      type: string
+                      format: uri
+                  avatar_url:
+                    type: string
+                    format: uri
+        '400':
+          description: Invalid files or missing parameters
+        '401':
+          description: Unauthorized
+        '500':
+          description: Upload failed
+
+tags:
+  - name: Trips
+    description: Trip management endpoints
+  - name: Countries
+    description: Country data endpoints
+  - name: Admin - Trips
+    description: Admin trip management endpoints
+  - name: Admin - Bookings
+    description: Admin booking management endpoints
+  - name: Upload
+    description: File upload endpoints
