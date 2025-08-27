@@ -12,7 +12,7 @@ interface Trip {
   total_seats: number
   commission_type: string | null
   commission_value: number
-  geography_link: string | null
+  file_link: string | null
   cover_image_url: string | null
   is_active: boolean | null
   created_at: string | null
@@ -233,21 +233,21 @@ export default async function TripDetailPage({
                 </div>
               )}
 
-              {typedTrip.geography_link && (
+              {typedTrip.file_link && (
                 <div className="mt-8">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">ข้อมูลเพิ่มเติม</h3>
+                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">เอกสารประกอบ</h3>
                   <a 
-                    href={typedTrip.geography_link}
+                    href={typedTrip.file_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 px-6 py-3 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 font-medium"
+                    className="inline-flex items-center gap-3 px-6 py-3 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 hover:text-red-800 transition-colors duration-200 font-medium"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                     </svg>
-                    ดูข้อมูลเพิ่มเติม
+                    ดาวน์โหลดเอกสาร PDF
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </a>
                 </div>

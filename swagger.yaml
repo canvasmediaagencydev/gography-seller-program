@@ -36,7 +36,7 @@ components:
         cover_image_url:
           type: string
           format: uri
-        geography_link:
+        file_link:
           type: string
           format: uri
         is_active:
@@ -339,7 +339,7 @@ paths:
                 cover_image_url:
                   type: string
                   format: uri
-                geography_link:
+                file_link:
                   type: string
                   format: uri
                 country_id:
@@ -455,7 +455,7 @@ paths:
                 cover_image_url:
                   type: string
                   format: uri
-                geography_link:
+                file_link:
                   type: string
                   format: uri
                 country_id:
@@ -793,6 +793,90 @@ paths:
           description: Invalid URL or missing parameters
         '401':
           description: Unauthorized
+        '500':
+          description: Delete failed
+
+  /upload/file:
+    post:
+      summary: Upload PDF file
+      description: Upload a PDF file for trip documents (20MB limit)
+      tags:
+        - Upload
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF file to upload (max 20MB)
+                folder:
+                  type: string
+                  description: Folder path in bucket (default 'files')
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Storage path
+                  publicUrl:
+                    type: string
+                    format: uri
+                    description: Public URL
+                  fileName:
+                    type: string
+                    description: Original file name
+                  fileSize:
+                    type: integer
+                    description: File size in bytes
+                  fileType:
+                    type: string
+                    description: MIME type
+        '400':
+          description: Invalid file, size limit exceeded, or wrong file type
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+        '500':
+          description: Upload failed
+    delete:
+      summary: Delete PDF file
+      description: Delete an uploaded PDF file from storage
+      tags:
+        - Upload
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: path
+          in: query
+          required: true
+          description: The storage path of the file to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        '400':
+          description: File path is required
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
         '500':
           description: Delete failed
 
