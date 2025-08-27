@@ -183,13 +183,6 @@ function Sidebar({ className }: SidebarProps) {
                 isActive={isActive('/dashboard/trips')}
               />
 
-              <SidebarButton
-                icon={<BsColumnsGap />}
-                label="Dashboard"
-                href="/dashboard"
-                isActive={isActive('/dashboard')}
-              />
-
               {userProfile?.status === 'approved' ? (
                 <SidebarButton
                   icon={<TbUsers />}
@@ -203,6 +196,13 @@ function Sidebar({ className }: SidebarProps) {
                   <span>รายงานยอดขาย (ต้องได้รับการอนุมัติ)</span>
                 </div>
               )}
+
+                 <SidebarButton
+                icon={<BsColumnsGap />}
+                label="Dashboard"
+                href="/dashboard"
+                isActive={isActive('/dashboard')}
+              />
 
 
             </>

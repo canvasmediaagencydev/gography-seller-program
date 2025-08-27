@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal'
+import { BsBarChart, BsGraphUp, BsTrophy, BsCalendar, BsPeople, BsCurrencyDollar } from 'react-icons/bs'
 
 interface UserProfile {
   id: string
@@ -14,240 +15,100 @@ interface UserProfile {
   referral_code: string | null
 }
 
-export default function SellerDashboard() {
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [tripsCount, setTripsCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [showProfileModal, setShowProfileModal] = useState(false)
-  const supabase = createClient()
+interface ComingSoonCardProps {
+  title: string
+  description: string
+  mockValue: string
+  icon: React.ReactNode
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'yellow'
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-
-        // Get profile
-        const { data: profileData } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-
-        setProfile(profileData)
-
-        // Get trips count
-        const { count } = await supabase
-          .from('trips')
-          .select('*', { count: 'exact', head: true })
-
-        setTripsCount(count || 0)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [supabase])
-
-    const getStatusBadge = (status: string) => {
-    const statusColors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800'
-    }
-
-    const statusText = {
-      pending: 'รอการอนุมัติ',
-      approved: 'อนุมัติแล้ว',
-      rejected: 'ถูกปฏิเสธ'
-    }
-
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-lg font-medium ${statusColors[status as keyof typeof statusColors]}`}>
-        {statusText[status as keyof typeof statusText]}
-      </span>
-    )
+function ComingSoonCard({ title, description, mockValue, icon, color }: ComingSoonCardProps) {
+  const colorClasses = {
+    blue: 'from-blue-500 to-blue-600 text-blue-600 bg-blue-50 border-blue-200',
+    green: 'from-green-500 to-green-600 text-green-600 bg-green-50 border-green-200',
+    purple: 'from-purple-500 to-purple-600 text-purple-600 bg-purple-50 border-purple-200',
+    orange: 'from-orange-500 to-orange-600 text-orange-600 bg-orange-50 border-orange-200',
+    red: 'from-red-500 to-red-600 text-red-600 bg-red-50 border-red-200',
+    yellow: 'from-yellow-500 to-yellow-600 text-yellow-600 bg-yellow-50 border-yellow-200'
   }
 
-  const isProfileIncomplete = !profile?.full_name || !profile?.phone
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-gray-200 h-24 rounded-lg"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!profile) return null
+  const colors = colorClasses[color].split(' ')
+  const gradientColor = colors[0] + ' ' + colors[1]
+  const iconColor = colors[2]
+  const bgColor = colors[3]
+  const borderColor = colors[4]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          สวัสดี, {profile?.full_name || 'Seller'}
-            <p className="ml-4 inline">
-              {profile.status && getStatusBadge(profile.status)}
-            </p>
+    <div className="relative group">
+      {/* Coming Soon Overlay */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px] rounded-xl z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className={`bg-gradient-to-r ${gradientColor} text-white px-6 py-3 rounded-full font-semibold shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300`}>
+          <span className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Coming Soon
+          </span>
+        </div>
+      </div>
+
+      {/* Card Content */}
+      <div className={`bg-white border-2 ${borderColor} rounded-xl p-6 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl`}>
+        <div className="flex items-center justify-between mb-4">
+          <div className={`w-12 h-12 ${bgColor} rounded-xl flex items-center justify-center ${iconColor}`}>
+            {icon}
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-gray-400">{mockValue}</div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+          <p className="text-sm text-gray-500">{description}</p>
+        </div>
+
+        {/* Progress bar mockup */}
+        <div className="mt-4">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className={`h-full bg-gradient-to-r ${gradientColor} rounded-full animate-pulse`} style={{ width: '65%' }}></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function SellerDashboard() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="text-center max-w-md mx-auto p-8">
+        {/* Fun Icon */}
+        <div className="text-8xl mb-6 animate-bounce">
+          🚧
+        </div>
+        
+        {/* Main Message */}
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          อยู่ระหว่างพัฒนา
         </h1>
-        <p className="text-gray-600">ยินดีต้อนรับสู่ Seller Dashboard</p>
+        
+        <p className="text-lg text-gray-600 mb-8">
+          Dashboard กำลังสร้าง... <br />
+          รอหน่อยนะ จะเสร็จเร็วๆ นี้! 😊
+        </p>
+
+        {/* Simple Progress */}
+        <div className="bg-white rounded-full p-2 shadow-lg mb-6">
+          <div className="h-3 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+        </div>
+
+        {/* Small note */}
+        <p className="text-sm text-gray-500 mt-6">
+          ระหว่างนี้ลองดู <span className="font-semibold text-blue-600">ข้อมูล Trips</span> กันก่อนได้นะ!
+        </p>
       </div>
-
-      {/* Profile Incomplete Alert */}
-      {isProfileIncomplete && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-blue-800">
-                กรุณากรอกข้อมูลส่วนตัว
-              </h3>
-              <div className="mt-2 text-sm text-blue-700">
-                <p>
-                  คุณยังไม่ได้กรอกข้อมูลส่วนตัวให้ครบถ้วน กรุณากรอกชื่อ-นามสกุล และเบอร์โทรศัพท์
-                </p>
-              </div>
-              <div className="mt-3">
-                <button
-                  onClick={() => setShowProfileModal(true)}
-                  className="bg-blue-100 px-3 py-2 rounded-md text-sm font-medium text-blue-800 hover:bg-blue-200 transition-colors"
-                >
-                  กรอกข้อมูลเลย
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Status Alert */}
-      {profile?.status === 'pending' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">
-                บัญชีของคุณอยู่ในสถานะรอการอนุมัติ
-              </h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <p>
-                  คุณสามารถดูข้อมูล trips ได้ แต่ยังไม่สามารถเข้าถึงรายงานยอดขายได้ 
-                  กรุณารอการอนุมัติจากผู้ดูแลระบบ
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {profile?.status === 'approved' && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-green-800">
-                บัญชีของคุณได้รับการอนุมัติแล้ว
-              </h3>
-              <div className="mt-2 text-sm text-green-700">
-                <p>
-                  คุณสามารถใช้งานระบบได้เต็มรูปแบบ รวมถึงการดูรายงานยอดขาย
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">จำนวน Trips ทั้งหมด</dt>
-                  <dd className="text-lg font-medium text-gray-900">{tripsCount}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">เป้าหมายคอมมิชชั่น</dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    ฿{profile?.commission_goal ? Number(profile.commission_goal).toLocaleString() : '0'}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Referral Code</dt>
-                  <dd className="text-lg font-medium text-gray-900">{profile?.referral_code || 'ไม่มี'}</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      {/* Profile Completion Modal */}
-      <ProfileCompletionModal
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        userId={profile.id}
-      />
     </div>
   )
 }
