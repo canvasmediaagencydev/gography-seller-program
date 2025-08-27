@@ -298,7 +298,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Payment Status Summary */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      {/* <div className="bg-white rounded-lg border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">สรุปสถานะการชำระเงิน</h3>
         <div className="grid grid-cols-4 gap-6">
           <div className="text-center">
@@ -320,11 +320,11 @@ export default function ReportsPage() {
             <div className="text-sm text-gray-600 mt-1">% คอมมิชชั่นที่ได้รับ</div>
           </div>
         </div>
-      </div>
+      </div> */}
 
 
       {/* Performance Summary */}
-      {totalBookings > 0 && (
+      {/* {totalBookings > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">สรุปผลการดำเนินงาน</h3>
           <div className="grid grid-cols-3 gap-6">
@@ -348,7 +348,7 @@ export default function ReportsPage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Bookings Table */}
       <div className="bg-white rounded-lg border border-gray-200">
