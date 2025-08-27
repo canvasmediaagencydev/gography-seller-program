@@ -19,11 +19,17 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           booking_date: string | null
+          cancelled_at: string | null
           commission_amount: number
           created_at: string | null
           customer_id: string | null
+          deposit_amount: number | null
+          deposit_paid_at: string | null
+          full_payment_at: string | null
           id: string
           notes: string | null
+          payment_status: string | null
+          remaining_amount: number | null
           seller_id: string | null
           status: string | null
           total_amount: number
@@ -34,11 +40,17 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           booking_date?: string | null
+          cancelled_at?: string | null
           commission_amount: number
           created_at?: string | null
           customer_id?: string | null
+          deposit_amount?: number | null
+          deposit_paid_at?: string | null
+          full_payment_at?: string | null
           id?: string
           notes?: string | null
+          payment_status?: string | null
+          remaining_amount?: number | null
           seller_id?: string | null
           status?: string | null
           total_amount: number
@@ -49,11 +61,17 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           booking_date?: string | null
+          cancelled_at?: string | null
           commission_amount?: number
           created_at?: string | null
           customer_id?: string | null
+          deposit_amount?: number | null
+          deposit_paid_at?: string | null
+          full_payment_at?: string | null
           id?: string
           notes?: string | null
+          payment_status?: string | null
+          remaining_amount?: number | null
           seller_id?: string | null
           status?: string | null
           total_amount?: number
@@ -88,6 +106,63 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "trips_with_next_schedule"
             referencedColumns: ["next_schedule_id"]
+          },
+        ]
+      }
+      commission_payments: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          paid_at: string | null
+          payment_type: string
+          percentage: number
+          seller_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_type: string
+          percentage?: number
+          seller_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_type?: string
+          percentage?: number
+          seller_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_payments_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -400,7 +475,7 @@ export type Database = {
           description: string | null
           duration_days: number | null
           duration_nights: number | null
-          file_link: string | null
+          geography_link: string | null
           id: string | null
           is_active: boolean | null
           next_available_seats: number | null

@@ -48,6 +48,13 @@ export default async function AdminBookingsPage() {
             flag_emoji
           )
         )
+      ),
+      commission_payments (
+        id,
+        payment_type,
+        amount,
+        status,
+        paid_at
       )
     `)
     .order('created_at', { ascending: false })

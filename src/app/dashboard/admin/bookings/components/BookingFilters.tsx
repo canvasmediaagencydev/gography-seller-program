@@ -10,6 +10,8 @@ interface BookingFiltersProps {
   setSearchTerm: (value: string) => void
   statusFilter: string
   setStatusFilter: (value: any) => void
+  paymentStatusFilter: string
+  setPaymentStatusFilter: (value: string) => void
   sellerFilter: string
   setSellerId: (value: string) => void
   dateFilter: string
@@ -24,6 +26,8 @@ export default function BookingFilters({
   setSearchTerm,
   statusFilter,
   setStatusFilter,
+  paymentStatusFilter,
+  setPaymentStatusFilter,
   sellerFilter,
   setSellerId,
   dateFilter,
@@ -34,7 +38,7 @@ export default function BookingFilters({
 }: BookingFiltersProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         {/* Search */}
         <div className="lg:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -57,7 +61,7 @@ export default function BookingFilters({
         {/* Status Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            สถานะ
+            สถานะการจอง
           </label>
           <select
             value={statusFilter}
@@ -70,6 +74,24 @@ export default function BookingFilters({
             <option value="approved">อนุมัติแล้ว</option>
             <option value="rejected">ปฏิเสธ</option>
             <option value="cancelled">ยกเลิก</option>
+          </select>
+        </div>
+
+        {/* Payment Status Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            สถานะการชำระ
+          </label>
+          <select
+            value={paymentStatusFilter}
+            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <option value="all">ทั้งหมด</option>
+            <option value="pending">รอชำระ</option>
+            <option value="deposit_paid">จ่ายมัดจำแล้ว</option>
+            <option value="fully_paid">จ่ายครบแล้ว</option>
+            <option value="cancelled">ยกเลิกชำระ</option>
           </select>
         </div>
 

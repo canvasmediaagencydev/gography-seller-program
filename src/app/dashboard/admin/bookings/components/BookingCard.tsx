@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tables } from '../../../../../../database.types'
 import { MdOutlineEdit } from "react-icons/md";
 import { IoCall } from "react-icons/io5";
 import { PiAirplaneTakeoffBold } from "react-icons/pi";
 import { PiAirplaneLandingBold } from "react-icons/pi";
+import { BsCurrencyDollar, BsCheckCircle, BsClock, BsXCircle } from "react-icons/bs";
 
 interface BookingWithDetails extends Tables<'bookings'> {
   customers?: {
@@ -36,6 +37,13 @@ interface BookingWithDetails extends Tables<'bookings'> {
     referral_code: string | null
     avatar_url: string | null
   }
+  commission_payments?: {
+    id: string
+    payment_type: string
+    amount: number
+    status: string | null
+    paid_at: string | null
+  }[]
 }
 
 interface Seller {
@@ -49,14 +57,35 @@ interface Seller {
 interface BookingCardProps {
   booking: BookingWithDetails
   onStatusUpdate: (bookingId: string, status: string) => Promise<void>
+  onPaymentStatusUpdate: (bookingId: string, paymentStatus: string) => Promise<void>
   sellers: Seller[]
 }
 
-export default function BookingCard({ booking, onStatusUpdate, sellers }: BookingCardProps) {
+export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUpdate, sellers }: BookingCardProps) {
   const [updating, setUpdating] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [editingSeller, setEditingSeller] = useState(false)
   const [selectedSellerId, setSelectedSellerId] = useState(booking.seller_id || '')
+  const [commissionPayments, setCommissionPayments] = useState<any[]>([])
+
+  // Fetch commission payments for this booking
+  useEffect(() => {
+    const fetchCommissionPayments = async () => {
+      if (!booking.id) return
+      
+      try {
+        const response = await fetch(`/api/admin/bookings/${booking.id}/commission-payments`)
+        if (response.ok) {
+          const data = await response.json()
+          setCommissionPayments(data)
+        }
+      } catch (error) {
+        console.error('Error fetching commission payments:', error)
+      }
+    }
+
+    fetchCommissionPayments()
+  }, [booking.id])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('th-TH', {
@@ -95,12 +124,64 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
     )
   }
 
+  const getPaymentStatusBadge = (paymentStatus: string | null) => {
+    const statusConfig = {
+      pending: { label: 'รอชำระ', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: BsClock },
+      deposit_paid: { label: 'จ่ายมัดจำแล้ว', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: BsCurrencyDollar },
+      fully_paid: { label: 'จ่ายครบแล้ว', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', icon: BsCheckCircle },
+      cancelled: { label: 'ยกเลิกชำระ', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: BsXCircle }
+    }
+
+    const config = statusConfig[paymentStatus as keyof typeof statusConfig] || statusConfig.pending
+    const IconComponent = config.icon
+
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-medium border ${config.bg} ${config.text} ${config.border}`}>
+        <IconComponent className="text-xs" />
+        {config.label}
+      </span>
+    )
+  }
+
+  const getCommissionStatusBadge = (status: string | null) => {
+    const statusConfig = {
+      pending: { label: 'รอจ่าย', bg: 'bg-yellow-50', text: 'text-yellow-700' },
+      paid: { label: 'จ่ายแล้ว', bg: 'bg-green-50', text: 'text-green-700' },
+      cancelled: { label: 'ยกเลิก', bg: 'bg-red-50', text: 'text-red-700' }
+    }
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+
+    return (
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    )
+  }
+
   const handleStatusChange = async (newStatus: string) => {
     setUpdating(true)
     try {
       await onStatusUpdate(booking.id, newStatus)
     } catch (error) {
       console.error('Error updating status:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handlePaymentStatusChange = async (newPaymentStatus: string) => {
+    setUpdating(true)
+    try {
+      await onPaymentStatusUpdate(booking.id, newPaymentStatus)
+      // Refresh commission payments after payment status change
+      const response = await fetch(`/api/admin/bookings/${booking.id}/commission-payments`)
+      if (response.ok) {
+        const data = await response.json()
+        setCommissionPayments(data)
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error)
     } finally {
       setUpdating(false)
     }
@@ -151,7 +232,10 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
                     <span className="text-base">{trip.countries.flag_emoji}</span>
                   )}
                 </div>
-                {getStatusBadge(booking.status)}
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(booking.status)}
+                  {getPaymentStatusBadge(booking.payment_status)}
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -197,8 +281,39 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
             <div className="text-right min-w-0">
               <p className="text-xl font-semibold text-gray-900">฿{booking.total_amount.toLocaleString()}</p>
               <p className="text-md text-gray-600 mt-1">คอมมิชชั่น: ฿{booking.commission_amount.toLocaleString()}</p>
+              {booking.deposit_amount && (
+                <p className="text-sm text-blue-600 mt-1">มัดจำ: ฿{booking.deposit_amount.toLocaleString()}</p>
+              )}
+              {booking.remaining_amount && (
+                <p className="text-sm text-orange-600 mt-1">คงเหลือ: ฿{booking.remaining_amount.toLocaleString()}</p>
+              )}
             </div>
           </div>
+
+          {/* Commission Flow Info */}
+          {booking.seller && commissionPayments.length > 0 && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-md font-medium text-gray-900 mb-3">Commission Flow</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {commissionPayments.map((payment, index) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white rounded border">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {payment.payment_type === 'deposit_commission' ? 'Commission มัดจำ (50%)' : 'Commission ยอดสุดท้าย (50%)'}
+                      </p>
+                      <p className="text-sm text-gray-600">฿{payment.amount.toLocaleString()}</p>
+                      {payment.paid_at && (
+                        <p className="text-xs text-gray-500">จ่ายเมื่อ: {new Date(payment.paid_at).toLocaleDateString('th-TH')}</p>
+                      )}
+                    </div>
+                    <div>
+                      {getCommissionStatusBadge(payment.status)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Seller Info */}
           <div className="flex items-center justify-between mb-4 py-3 px-4 bg-white rounded-lg">
@@ -274,35 +389,44 @@ export default function BookingCard({ booking, onStatusUpdate, sellers }: Bookin
         </div>
       )}
           {/* Actions */}
-          <div className="flex items-center justify-end">
-            {/* <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="text-gray-600 hover:text-gray-700 text-md font-medium flex items-center gap-1 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors"
-            >
-              <svg className={`h-4 w-4 transform transition-transform ${showDetails ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-              </svg>
-              {showDetails ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'}
-            </button> */}
+          <div className="flex flex-col gap-4">
+            {/* Payment Status Control */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <p className="text-lg text-gray-600">สถานะการชำระ:</p>
+                <select
+                  value={booking.payment_status || 'pending'}
+                  onChange={(e) => handlePaymentStatusChange(e.target.value)}
+                  disabled={updating}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <option value="pending">รอชำระ</option>
+                  <option value="deposit_paid">จ่ายมัดจำแล้ว</option>
+                  <option value="fully_paid">จ่ายครบแล้ว</option>
+                  <option value="cancelled">ยกเลิกชำระ</option>
+                </select>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <p className="text-lg text-gray-600">สถานะ :</p>
-              <select
-                value={booking.status || 'pending'}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                disabled={updating}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <option value="pending">รออนุมัติ</option>
-                <option value="inprogress">กำลังดำเนินการ</option>
-                <option value="approved">อนุมัติแล้ว</option>
-                <option value="rejected">ปฏิเสธ</option>
-                <option value="cancelled">ยกเลิก</option>
-              </select>
+              {/* Booking Status Control */}
+              <div className="flex items-center gap-2">
+                <p className="text-lg text-gray-600">สถานะการจอง:</p>
+                <select
+                  value={booking.status || 'pending'}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  disabled={updating}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <option value="pending">รออนุมัติ</option>
+                  <option value="inprogress">กำลังดำเนินการ</option>
+                  <option value="approved">อนุมัติแล้ว</option>
+                  <option value="rejected">ปฏิเสธ</option>
+                  <option value="cancelled">ยกเลิก</option>
+                </select>
 
-              {updating && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-              )}
+                {updating && (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                )}
+              </div>
             </div>
           </div>
         </div>

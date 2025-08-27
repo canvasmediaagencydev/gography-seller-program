@@ -92,10 +92,10 @@ export default function CreateTripPage() {
       newErrors.country_id = 'Please select a country'
     }
 
-    const maxCommission = formData.commission_type === 'percentage' 
-      ? VALIDATION_RULES.COMMISSION_MAX_PERCENTAGE 
+    const maxCommission = formData.commission_type === 'percentage'
+      ? VALIDATION_RULES.COMMISSION_MAX_PERCENTAGE
       : VALIDATION_RULES.COMMISSION_MAX_FIXED
-    
+
     if (formData.commission_value < VALIDATION_RULES.COMMISSION_MIN || formData.commission_value > maxCommission) {
       newErrors.commission_value = `Commission must be between ${VALIDATION_RULES.COMMISSION_MIN} and ${maxCommission}`
     }
@@ -183,7 +183,7 @@ export default function CreateTripPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -241,7 +241,7 @@ export default function CreateTripPage() {
               <span className="font-medium">กลับสู่รายการทริป</span>
             </button>
           </div>
-          
+
           <div>
             <h1 className="text-xl font-medium text-gray-900 mb-1">สร้างทริปใหม่</h1>
             <p className="text-gray-600 text-sm">กรอกข้อมูลทริปและกำหนดการเดินทาง</p>
@@ -263,7 +263,7 @@ export default function CreateTripPage() {
           {/* Basic Trip Information */}
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <h2 className="text-base font-medium text-gray-900 mb-3 border-b border-gray-100 pb-2">ข้อมูลทริป</h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -273,9 +273,8 @@ export default function CreateTripPage() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                    errors.title ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.title ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="เช่น ทัวร์ญี่ปุ่น 5 วัน 4 คืน"
                 />
                 {errors.title && <p className="mt-2 text-sm text-red-600 font-medium">{errors.title}</p>}
@@ -288,9 +287,8 @@ export default function CreateTripPage() {
                 <select
                   value={formData.country_id}
                   onChange={(e) => setFormData({ ...formData, country_id: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                    errors.country_id ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.country_id ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   disabled={countriesLoading}
                 >
                   <option value="">เลือกประเทศ</option>
@@ -313,9 +311,8 @@ export default function CreateTripPage() {
                   onChange={(e) => setFormData({ ...formData, total_seats: Number(e.target.value) })}
                   min={VALIDATION_RULES.TOTAL_SEATS_MIN}
                   max={VALIDATION_RULES.TOTAL_SEATS_MAX}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                    errors.total_seats ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.total_seats ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                 />
                 {errors.total_seats && <p className="mt-2 text-sm text-red-600 font-medium">{errors.total_seats}</p>}
               </div>
@@ -328,9 +325,8 @@ export default function CreateTripPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                    errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.description ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                   placeholder="อธิบายรายละเอียดทริป จุดหมายปลายทาง กิจกรรม..."
                 />
                 {errors.description && <p className="mt-2 text-sm text-red-600 font-medium">{errors.description}</p>}
@@ -346,9 +342,8 @@ export default function CreateTripPage() {
                   onChange={(e) => setFormData({ ...formData, price_per_person: Number(e.target.value) })}
                   min={VALIDATION_RULES.PRICE_MIN}
                   max={VALIDATION_RULES.PRICE_MAX}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                    errors.price_per_person ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.price_per_person ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                 />
                 {errors.price_per_person && <p className="mt-2 text-sm text-red-600 font-medium">{errors.price_per_person}</p>}
               </div>
@@ -364,9 +359,8 @@ export default function CreateTripPage() {
                     onChange={(e) => setFormData({ ...formData, duration_days: Number(e.target.value) })}
                     min={VALIDATION_RULES.DURATION_MIN}
                     max={VALIDATION_RULES.DURATION_MAX}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                      errors.duration_days ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.duration_days ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      }`}
                   />
                   {errors.duration_days && <p className="mt-2 text-sm text-red-600 font-medium">{errors.duration_days}</p>}
                 </div>
@@ -391,7 +385,7 @@ export default function CreateTripPage() {
           {/* Commission Settings */}
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">ค่าคอมมิชชั่น</h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -421,9 +415,8 @@ export default function CreateTripPage() {
                   min={VALIDATION_RULES.COMMISSION_MIN}
                   max={formData.commission_type === 'percentage' ? VALIDATION_RULES.COMMISSION_MAX_PERCENTAGE : VALIDATION_RULES.COMMISSION_MAX_FIXED}
                   step={formData.commission_type === 'percentage' ? '0.1' : '1'}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                    errors.commission_value ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.commission_value ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
                 />
                 {errors.commission_value && <p className="mt-2 text-sm text-red-600 font-medium">{errors.commission_value}</p>}
               </div>
@@ -433,7 +426,7 @@ export default function CreateTripPage() {
           {/* Cover Image */}
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">รูปภาพและข้อมูลเพิ่มเติม</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -543,6 +536,7 @@ export default function CreateTripPage() {
                   )}
                 </div>
               </div>
+            </div>
           </div>
 
           {/* Trip Schedules */}
@@ -592,9 +586,8 @@ export default function CreateTripPage() {
                         type="date"
                         value={schedule.departure_date}
                         onChange={(e) => handleScheduleChange(index, 'departure_date', e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                          errors[`schedule_${index}_departure`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors[`schedule_${index}_departure`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                       />
                       {errors[`schedule_${index}_departure`] && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors[`schedule_${index}_departure`]}</p>
@@ -609,9 +602,8 @@ export default function CreateTripPage() {
                         type="date"
                         value={schedule.return_date}
                         onChange={(e) => handleScheduleChange(index, 'return_date', e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                          errors[`schedule_${index}_return`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors[`schedule_${index}_return`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                       />
                       {errors[`schedule_${index}_return`] && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors[`schedule_${index}_return`]}</p>
@@ -626,9 +618,8 @@ export default function CreateTripPage() {
                         type="date"
                         value={schedule.registration_deadline}
                         onChange={(e) => handleScheduleChange(index, 'registration_deadline', e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                          errors[`schedule_${index}_deadline`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors[`schedule_${index}_deadline`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                       />
                       {errors[`schedule_${index}_deadline`] && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors[`schedule_${index}_deadline`]}</p>
@@ -645,9 +636,8 @@ export default function CreateTripPage() {
                         onChange={(e) => handleScheduleChange(index, 'available_seats', Number(e.target.value))}
                         min={1}
                         max={formData.total_seats}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
-                          errors[`schedule_${index}_seats`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors[`schedule_${index}_seats`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                          }`}
                       />
                       {errors[`schedule_${index}_seats`] && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors[`schedule_${index}_seats`]}</p>
@@ -674,7 +664,7 @@ export default function CreateTripPage() {
           {/* Status */}
           <div className="bg-white rounded-2xl shadow-sm p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">สถานะทริป</h2>
-            
+
             <div className="flex items-center">
               <label className="flex items-center">
                 <input
