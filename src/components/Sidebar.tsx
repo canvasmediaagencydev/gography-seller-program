@@ -6,9 +6,11 @@ import { LuPlaneTakeoff } from "react-icons/lu";
 import { TbUsers } from "react-icons/tb";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
+import { BsShieldCheck } from "react-icons/bs";
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
+import ProfileCompletionModal from '@/components/ProfileCompletionModal'
 
 interface UserProfile {
   id: string
@@ -26,6 +28,7 @@ interface SidebarProps {
 function Sidebar({ className }: SidebarProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -98,21 +101,21 @@ function Sidebar({ className }: SidebarProps) {
                 href="/dashboard/admin"
                 isActive={isActive('/dashboard/admin')}
               />
-              
+
               <SidebarButton
                 icon={<TbUsers />}
                 label="จัดการ Seller"
                 href="/dashboard/admin/sellers"
                 isActive={isActive('/dashboard/admin/sellers')}
               />
-              
+
               <SidebarButton
                 icon={<LuPlaneTakeoff />}
                 label="จัดการ Trips"
                 href="/dashboard/admin/trips"
                 isActive={isActive('/dashboard/admin/trips')}
               />
-              
+
               <SidebarButton
                 icon={<TbUsers />}
                 label="จัดการการจอง"
@@ -129,7 +132,7 @@ function Sidebar({ className }: SidebarProps) {
                 href="/dashboard/trips"
                 isActive={isActive('/dashboard/trips')}
               />
-              
+
               <SidebarButton
                 icon={<BsColumnsGap />}
                 label="Dashboard"
@@ -150,13 +153,26 @@ function Sidebar({ className }: SidebarProps) {
                   <span>รายงานยอดขาย (ต้องได้รับการอนุมัติ)</span>
                 </div>
               )}
+
+
             </>
           )}
         </nav>
       </div>
 
       {/* Footer - User Info */}
+      {/* Profile Verification Button */}
+      <button
+        onClick={() => setShowProfileModal(true)}
+        className="w-full justify-center flex items-center gap-3 my-6 px-4 py-5 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+      >
+        <span className="text-lg"><BsShieldCheck /></span>
+        <span>ยืนยันตัวตน</span>
+      </button>
       <div className="p-4 border-t border-gray-200">
+
+
+
         {userProfile?.role !== 'admin' && (
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10  rounded-full flex items-center justify-center">
@@ -172,7 +188,7 @@ function Sidebar({ className }: SidebarProps) {
             </div>
           </div>
         )}
-        
+
         <button
           onClick={handleLogout}
           disabled={loading}
@@ -182,6 +198,18 @@ function Sidebar({ className }: SidebarProps) {
           {loading ? 'กำลังออกจากระบบ...' : 'ออกจากระบบ'}
         </button>
       </div>
+
+      {/* Profile Completion Modal */}
+      {userProfile && (
+        <ProfileCompletionModal
+          isOpen={showProfileModal}
+          onClose={() => {
+            setShowProfileModal(false)
+            fetchUserProfile() // Refresh user profile after modal closes
+          }}
+          userId={userProfile.id}
+        />
+      )}
     </div>
   )
 }
