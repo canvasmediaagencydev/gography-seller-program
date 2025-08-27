@@ -36,14 +36,13 @@ export async function GET(request: NextRequest) {
           })
       }
 
-      // Use production URL if available, fallback to origin
-      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
-      console.log('Callback - Final redirect URL:', `${redirectUrl}${next}`)
-      return NextResponse.redirect(`${redirectUrl}${next}`)
+      // Always use the origin that the user came from to avoid redirect loops
+      // This ensures we redirect to the same domain the user is currently on
+      console.log('Callback - Final redirect URL:', `${origin}${next}`)
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
   // Return the user to an error page with instructions
-  const errorRedirectUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
-  return NextResponse.redirect(`${errorRedirectUrl}/auth/login?error=Something went wrong`)
+  return NextResponse.redirect(`${origin}/auth/login?error=Something went wrong`)
 }
