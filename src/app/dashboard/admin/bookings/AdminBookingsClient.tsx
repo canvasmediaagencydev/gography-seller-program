@@ -83,6 +83,7 @@ export default function AdminBookingsClient({
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<BookingStatus>('all')
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all')
   const [sellerFilter, setSellerId] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
 
@@ -90,7 +91,7 @@ export default function AdminBookingsClient({
 
   useEffect(() => {
     filterBookings()
-  }, [bookings, searchTerm, statusFilter, sellerFilter, dateFilter])
+  }, [bookings, searchTerm, statusFilter, paymentStatusFilter, sellerFilter, dateFilter])
 
   const filterBookings = () => {
     let filtered = [...bookings]
@@ -108,6 +109,11 @@ export default function AdminBookingsClient({
     // Status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(booking => booking.status === statusFilter)
+    }
+
+    // Payment Status filter
+    if (paymentStatusFilter !== 'all') {
+      filtered = filtered.filter(booking => booking.payment_status === paymentStatusFilter)
     }
 
     // Seller filter
@@ -228,6 +234,32 @@ export default function AdminBookingsClient({
     }
   }
 
+  const updatePaymentStatus = async (bookingId: string, paymentStatus: string) => {
+    try {
+      const response = await fetch('/api/admin/bookings/update-payment-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bookingId,
+          paymentStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update payment status')
+      }
+
+      // Refresh bookings
+      await refreshBookings()
+    } catch (error) {
+      console.error('Error updating payment status:', error)
+      alert('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน: ' + (error as Error).message)
+    }
+  }
+
   const handleBookingCreated = () => {
     setShowCreateModal(false)
     refreshBookings()
@@ -265,6 +297,8 @@ export default function AdminBookingsClient({
         setSearchTerm={setSearchTerm}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
+        paymentStatusFilter={paymentStatusFilter}
+        setPaymentStatusFilter={setPaymentStatusFilter}
         sellerFilter={sellerFilter}
         setSellerId={setSellerId}
         dateFilter={dateFilter}
@@ -300,6 +334,7 @@ export default function AdminBookingsClient({
                 <BookingCard
                   booking={booking}
                   onStatusUpdate={updateBookingStatus}
+                  onPaymentStatusUpdate={updatePaymentStatus}
                   sellers={sellers}
                 />
               </div>
