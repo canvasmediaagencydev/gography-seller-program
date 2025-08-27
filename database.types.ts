@@ -82,6 +82,13 @@ export type Database = {
             referencedRelation: "trip_schedules"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bookings_trip_schedule_id_fkey"
+            columns: ["trip_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "trips_with_next_schedule"
+            referencedColumns: ["next_schedule_id"]
+          },
         ]
       }
       countries: {
@@ -216,6 +223,13 @@ export type Database = {
             referencedRelation: "trips"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "trip_schedules_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_with_next_schedule"
+            referencedColumns: ["id"]
+          },
         ]
       }
       trips: {
@@ -229,7 +243,7 @@ export type Database = {
           description: string | null
           duration_days: number
           duration_nights: number
-          geography_link: string | null
+          file_link: string | null
           id: string
           is_active: boolean | null
           price_per_person: number
@@ -247,7 +261,7 @@ export type Database = {
           description?: string | null
           duration_days: number
           duration_nights: number
-          geography_link?: string | null
+          file_link?: string | null
           id?: string
           is_active?: boolean | null
           price_per_person: number
@@ -265,7 +279,7 @@ export type Database = {
           description?: string | null
           duration_days?: number
           duration_nights?: number
-          geography_link?: string | null
+          file_link?: string | null
           id?: string
           is_active?: boolean | null
           price_per_person?: number
@@ -348,7 +362,67 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      seller_booking_stats: {
+        Row: {
+          booking_count: number | null
+          seller_id: string | null
+          total_amount: number | null
+          total_commission: number | null
+          trip_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_schedules_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_schedules_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_with_next_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trips_with_next_schedule: {
+        Row: {
+          commission_type: string | null
+          commission_value: number | null
+          country_flag: string | null
+          country_id: string | null
+          country_name: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          duration_days: number | null
+          duration_nights: number | null
+          file_link: string | null
+          id: string | null
+          is_active: boolean | null
+          next_available_seats: number | null
+          next_departure_date: string | null
+          next_registration_deadline: string | null
+          next_return_date: string | null
+          next_schedule_id: string | null
+          price_per_person: number | null
+          title: string | null
+          total_seats: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_available_countries: {
@@ -407,6 +481,10 @@ export type Database = {
           p_user_role: string
         }
         Returns: Json
+      }
+      refresh_seller_booking_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

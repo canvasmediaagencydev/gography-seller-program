@@ -26,7 +26,7 @@ export type TripFormData = {
   commission_value: number
   country_id: string
   cover_image_url?: string
-  geography_link?: string
+  file_link?: string
   is_active: boolean
   schedules: TripScheduleFormData[]
 }

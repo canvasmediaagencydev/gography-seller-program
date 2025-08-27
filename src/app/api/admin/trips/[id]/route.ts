@@ -108,7 +108,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         commission_value: formData.commission_value,
         country_id: formData.country_id,
         cover_image_url: formData.cover_image_url,
-        geography_link: formData.geography_link,
+        file_link: formData.file_link,
         is_active: formData.is_active
       })
       .eq('id', resolvedParams.id)
