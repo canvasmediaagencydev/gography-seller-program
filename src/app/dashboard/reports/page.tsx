@@ -5,9 +5,39 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ReportsLoading from '@/components/reports/ReportsLoading'
 import ReportsError from '@/components/reports/ReportsError'
-
-interface Booking {
-  [key: string]: any // Allow any additional properties from Supabase
+interface BookingWithDetails {
+  id: string
+  total_amount: number
+  commission_amount: number
+  status: string | null
+  payment_status: string | null
+  booking_date: string | null
+  created_at: string | null
+  deposit_amount: number | null
+  remaining_amount: number | null
+  deposit_paid_at: string | null
+  full_payment_at: string | null
+  cancelled_at: string | null
+  customers?: {
+    full_name: string
+    email: string
+    phone: string | null
+  }
+  trip_schedules?: {
+    departure_date: string
+    return_date: string
+    trips?: {
+      title: string
+      price_per_person: number
+    }
+  }
+  commission_payments?: {
+    id: string
+    payment_type: string
+    amount: number
+    status: string | null
+    paid_at: string | null
+  }[]
 }
 
 interface UserProfile {
@@ -17,7 +47,7 @@ interface UserProfile {
 export default function ReportsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [bookings, setBookings] = useState<Booking[]>([])
+  const [bookings, setBookings] = useState<BookingWithDetails[]>([])
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const router = useRouter()
   const supabase = createClient()
@@ -54,7 +84,7 @@ export default function ReportsPage() {
 
         setProfile(profileData)
 
-        // Get seller's bookings - try both user.id and referral_code
+        // Get seller's bookings with commission payments
         const { data: userBookings, error: bookingsError } = await supabase
           .from('bookings')
           .select(`
@@ -71,6 +101,13 @@ export default function ReportsPage() {
                 title,
                 price_per_person
               )
+            ),
+            commission_payments (
+              id,
+              payment_type,
+              amount,
+              status,
+              paid_at
             )
           `)
           .eq('seller_id', user.id)
@@ -96,6 +133,13 @@ export default function ReportsPage() {
                   title,
                   price_per_person
                 )
+              ),
+              commission_payments (
+                id,
+                payment_type,
+                amount,
+                status,
+                paid_at
               )
             `)
             .eq('referral_code', profileData.referral_code)
@@ -108,7 +152,7 @@ export default function ReportsPage() {
           console.error('Bookings error:', bookingsError)
         }
 
-        setBookings(allBookings)
+        setBookings(allBookings as BookingWithDetails[])
 
       } catch (error) {
         console.error('Error fetching reports data:', error)
@@ -121,13 +165,28 @@ export default function ReportsPage() {
     fetchData()
   }, [supabase, router])
 
-  // Calculate stats
+  // Calculate stats using new commission system
   const approvedBookings = bookings?.filter(b => b.status === 'approved') || []
-  const totalCommission = approvedBookings.reduce((sum, booking) => sum + Number(booking.commission_amount || 0), 0)
+  
+  // Calculate commission from commission_payments instead of booking.commission_amount
+  const allCommissionPayments = bookings?.flatMap(b => b.commission_payments || []) || []
+  const totalCommissionEarned = allCommissionPayments
+    .filter(cp => cp.status === 'paid')
+    .reduce((sum, cp) => sum + cp.amount, 0)
+  const totalCommissionPending = allCommissionPayments
+    .filter(cp => cp.status === 'pending')
+    .reduce((sum, cp) => sum + cp.amount, 0)
+  const totalCommissionAll = totalCommissionEarned + totalCommissionPending
+
   const totalSales = approvedBookings.reduce((sum, booking) => sum + Number(booking.total_amount || 0), 0)
   const totalBookings = bookings?.length || 0
   const confirmedBookings = approvedBookings.length
   const pendingBookings = bookings?.filter(b => b.status === 'pending').length || 0
+  
+  // Payment status breakdown
+  const fullyPaidBookings = bookings?.filter(b => b.payment_status === 'fully_paid').length || 0
+  const depositPaidBookings = bookings?.filter(b => b.payment_status === 'deposit_paid').length || 0
+  const pendingPaymentBookings = bookings?.filter(b => b.payment_status === 'pending').length || 0
 
   if (loading) {
     return <ReportsLoading />
@@ -158,18 +217,34 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">คอมมิชชั่นรวม</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">
-                ฿{totalCommission.toLocaleString()}
+              <p className="text-sm font-medium text-gray-600">คอมมิชชั่นที่ได้รับ</p>
+              <p className="text-2xl font-semibold text-green-600 mt-1">
+                ฿{totalCommissionEarned.toLocaleString()}
               </p>
             </div>
-            <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
-              <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">คอมมิชชั่นรอรับ</p>
+              <p className="text-2xl font-semibold text-orange-600 mt-1">
+                ฿{totalCommissionPending.toLocaleString()}
+              </p>
+            </div>
+            <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
@@ -222,6 +297,31 @@ export default function ReportsPage() {
         </div>
       </div>
 
+      {/* Payment Status Summary */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">สรุปสถานะการชำระเงิน</h3>
+        <div className="grid grid-cols-4 gap-6">
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-green-600">{fullyPaidBookings}</div>
+            <div className="text-sm text-gray-600 mt-1">จ่ายครบแล้ว</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-blue-600">{depositPaidBookings}</div>
+            <div className="text-sm text-gray-600 mt-1">จ่ายมัดจำแล้ว</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-orange-600">{pendingPaymentBookings}</div>
+            <div className="text-sm text-gray-600 mt-1">รอชำระ</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-purple-600">
+              {totalCommissionAll > 0 ? Math.round((totalCommissionEarned / totalCommissionAll) * 100) : 0}%
+            </div>
+            <div className="text-sm text-gray-600 mt-1">% คอมมิชชั่นที่ได้รับ</div>
+          </div>
+        </div>
+      </div>
+
 
       {/* Performance Summary */}
       {totalBookings > 0 && (
@@ -242,7 +342,7 @@ export default function ReportsPage() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-blue-600">
-                ฿{confirmedBookings > 0 ? Math.round(totalCommission / confirmedBookings).toLocaleString() : 0}
+                ฿{confirmedBookings > 0 ? Math.round(totalCommissionEarned / confirmedBookings).toLocaleString() : 0}
               </div>
               <div className="text-sm text-gray-600 mt-1">คอมมิชชั่นเฉลี่ย</div>
             </div>
@@ -274,10 +374,13 @@ export default function ReportsPage() {
                     ยอดรวม
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    สถานะการชำระ
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     คอมมิชชั่น
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    สถานะ
+                    สถานะการจอง
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     วันที่จอง
@@ -285,7 +388,30 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {bookings.map((booking: any) => (
+                {bookings.map((booking: BookingWithDetails) => {
+                  const commissionEarned = booking.commission_payments
+                    ?.filter(cp => cp.status === 'paid')
+                    .reduce((sum, cp) => sum + cp.amount, 0) || 0
+                  const commissionPending = booking.commission_payments
+                    ?.filter(cp => cp.status === 'pending')
+                    .reduce((sum, cp) => sum + cp.amount, 0) || 0
+
+                  const getPaymentStatusBadge = (status: string | null) => {
+                    const statusConfig = {
+                      pending: { label: 'รอชำระ', bg: 'bg-orange-50 text-orange-700 border-orange-200' },
+                      deposit_paid: { label: 'จ่ายมัดจำแล้ว', bg: 'bg-blue-50 text-blue-700 border-blue-200' },
+                      fully_paid: { label: 'จ่ายครบแล้ว', bg: 'bg-green-50 text-green-700 border-green-200' },
+                      cancelled: { label: 'ยกเลิกชำระ', bg: 'bg-red-50 text-red-700 border-red-200' }
+                    }
+                    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
+                    return (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg}`}>
+                        {config.label}
+                      </span>
+                    )
+                  }
+
+                  return (
                   <tr key={booking.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -324,10 +450,26 @@ export default function ReportsPage() {
                       <div className="text-sm font-medium text-gray-900">
                         ฿{Number(booking.total_amount).toLocaleString()}
                       </div>
+                      {booking.deposit_amount && (
+                        <div className="text-xs text-gray-500">
+                          มัดจำ: ฿{booking.deposit_amount.toLocaleString()}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getPaymentStatusBadge(booking.payment_status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        ฿{Number(booking.commission_amount).toLocaleString()}
+                        <span className="text-green-600">฿{commissionEarned.toLocaleString()}</span>
+                        {commissionPending > 0 && (
+                          <span className="text-orange-500 ml-1">
+                            (+฿{commissionPending.toLocaleString()})
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        รับแล้ว / รอรับ
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -361,7 +503,8 @@ export default function ReportsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

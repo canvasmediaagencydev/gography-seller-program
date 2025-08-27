@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
     const supabase = await createClient()
+    const { bookingId } = await params
     
     // Check if user is admin
     const { data: { user } } = await supabase.auth.getUser()
@@ -28,7 +29,7 @@ export async function GET(
     const { data: commissionPayments, error } = await supabase
       .from('commission_payments')
       .select('*')
-      .eq('booking_id', params.bookingId)
+      .eq('booking_id', bookingId)
       .order('created_at', { ascending: true })
 
     if (error) {
