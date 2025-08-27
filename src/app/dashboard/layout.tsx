@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Sidebar from '@/components/Sidebar'
+import SidebarLazy from '@/components/SidebarLazy'
 
 export default async function DashboardLayout({
   children,
@@ -17,7 +17,7 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('*')
+    .select('id, full_name, phone, role, status, referral_code, avatar_url')
     .eq('id', user.id)
     .single()
 
@@ -27,7 +27,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar />
+      <SidebarLazy initialProfile={profile} />
       <main className="flex-1 overflow-y-auto p-6">
         {children}
       </main>
