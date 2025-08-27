@@ -216,6 +216,75 @@ export default function AdminBookingsClient({
     }
   }
 
+  const updateBookingInState = async (bookingId: string) => {
+    try {
+      // Fetch updated booking data
+      const { data: updatedBooking } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          customers (
+            full_name,
+            email,
+            phone,
+            id_card,
+            passport_number
+          ),
+          trip_schedules (
+            departure_date,
+            return_date,
+            registration_deadline,
+            available_seats,
+            trips (
+              title,
+              price_per_person,
+              commission_type,
+              commission_value,
+              countries (
+                name,
+                flag_emoji
+              )
+            )
+          ),
+          commission_payments (
+            id,
+            payment_type,
+            amount,
+            status,
+            paid_at
+          )
+        `)
+        .eq('id', bookingId)
+        .single()
+
+      if (updatedBooking) {
+        // Fetch seller info if exists
+        let seller = null
+        if (updatedBooking.seller_id) {
+          const { data: sellerData } = await supabase
+            .from('user_profiles')
+            .select('id, full_name, email, referral_code, avatar_url')
+            .eq('id', updatedBooking.seller_id)
+            .single()
+          seller = sellerData
+        }
+
+        const bookingWithSeller = { ...updatedBooking, seller }
+
+        // Update state
+        setBookings(prevBookings => 
+          prevBookings.map(booking => 
+            booking.id === bookingId ? bookingWithSeller as BookingWithDetails : booking
+          )
+        )
+      }
+    } catch (error) {
+      console.error('Error updating booking in state:', error)
+      // Fallback to full refresh if single update fails
+      await refreshBookings()
+    }
+  }
+
   const updateBookingStatus = async (bookingId: string, status: string) => {
     try {
       const response = await fetch('/api/admin/bookings/update-status', {
@@ -233,8 +302,8 @@ export default function AdminBookingsClient({
         throw new Error('Failed to update booking status')
       }
 
-      // Refresh bookings
-      await refreshBookings()
+      // Update only the specific booking instead of refreshing all
+      await updateBookingInState(bookingId)
     } catch (error) {
       console.error('Error updating booking status:', error)
       alert('เกิดข้อผิดพลาดในการอัพเดทสถานะการจอง')
@@ -259,8 +328,8 @@ export default function AdminBookingsClient({
         throw new Error(errorData.error || 'Failed to update payment status')
       }
 
-      // Refresh bookings
-      await refreshBookings()
+      // Update only the specific booking instead of refreshing all
+      await updateBookingInState(bookingId)
     } catch (error) {
       console.error('Error updating payment status:', error)
       alert('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน: ' + (error as Error).message)
