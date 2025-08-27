@@ -6,7 +6,7 @@ import { LuPlaneTakeoff } from "react-icons/lu";
 import { TbUsers } from "react-icons/tb";
 import { FaRegUserCircle } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
-import { BsShieldCheck } from "react-icons/bs";
+import { BsShieldCheck, BsExclamationTriangle, BsClock, BsCheckCircle } from "react-icons/bs";
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
@@ -62,6 +62,56 @@ function Sidebar({ className }: SidebarProps) {
     router.push('/auth/login')
     setLoading(false)
   }
+
+  // Get verification status info
+  const getVerificationStatus = () => {
+    if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: BsShieldCheck }
+    
+    // Check if basic info is filled
+    const hasBasicInfo = userProfile.full_name && userProfile.phone
+    
+    if (!hasBasicInfo) {
+      return {
+        status: 'not_started',
+        text: 'ยืนยันตัวตน',
+        subtext: 'ต้องดำเนินการ',
+        color: 'red',
+        icon: BsExclamationTriangle,
+        pulse: true
+      }
+    }
+    
+    if (userProfile.status === 'pending') {
+      return {
+        status: 'pending',
+        text: 'แก้ไขข้อมูล',
+        subtext: 'อยู่ระหว่างตรวจสอบ',
+        color: 'yellow',
+        icon: BsClock
+      }
+    }
+    
+    if (userProfile.status === 'approved') {
+      return {
+        status: 'approved',
+        text: 'ยืนยันแล้ว',
+        subtext: 'ข้อมูลถูกต้อง',
+        color: 'green',
+        icon: BsCheckCircle
+      }
+    }
+    
+    return {
+      status: 'not_approved',
+      text: 'ยืนยันตัวตน',
+      subtext: 'จำเป็นต้องอัปเดต',
+      color: 'red',
+      icon: BsExclamationTriangle,
+      pulse: true
+    }
+  }
+
+  const verificationInfo = getVerificationStatus()
 
   // Active page detection
   const isActive = (path: string) => {
@@ -162,13 +212,60 @@ function Sidebar({ className }: SidebarProps) {
 
       {/* Footer - User Info */}
       {/* Profile Verification Button */}
-      <button
-        onClick={() => setShowProfileModal(true)}
-        className="w-full justify-center flex items-center gap-3 my-6 px-4 py-5 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
-      >
-        <span className="text-lg"><BsShieldCheck /></span>
-        <span>ยืนยันตัวตน</span>
-      </button>
+      {userProfile?.role !== 'admin' && (
+        <div className="px-6 mb-6">
+          <button
+            onClick={() => {
+              if (verificationInfo.status !== 'approved') {
+                setShowProfileModal(true)
+              }
+            }}
+            disabled={verificationInfo.status === 'approved'}
+            className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl text-sm font-medium transition-all duration-300 relative ${
+              verificationInfo.color === 'red'
+                ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100'
+                : verificationInfo.color === 'yellow'
+                ? 'bg-yellow-50 text-yellow-700 border-2 border-yellow-200 hover:bg-yellow-100'
+                : 'bg-green-50 text-green-700 border-2 border-green-200 cursor-default'
+            } ${verificationInfo.pulse ? 'animate-pulse' : ''}`}
+          >
+            {/* Status Dot */}
+            <div className="relative">
+              <verificationInfo.icon className="text-lg" />
+              {verificationInfo.status !== 'approved' && (
+                <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
+                  verificationInfo.color === 'red' ? 'bg-red-500' : 'bg-yellow-500'
+                } ${verificationInfo.pulse ? 'animate-ping' : ''}`}></div>
+              )}
+            </div>
+            
+            <div className="flex-1 text-left">
+              <div className="font-semibold">{verificationInfo.text}</div>
+              {verificationInfo.subtext && (
+                <div className="text-xs opacity-75">{verificationInfo.subtext}</div>
+              )}
+            </div>
+
+            {/* Arrow or Status Indicator */}
+            {verificationInfo.status === 'approved' ? (
+              <div className="text-green-600">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+            ) : verificationInfo.status === 'pending' ? (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </button>
+        </div>
+      )}
+
       <div className="p-4 border-t border-gray-200">
 
 
