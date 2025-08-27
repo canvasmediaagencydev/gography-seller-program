@@ -200,62 +200,34 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2">
-                    {/* Share Booking Link Button (only for sellers) */}
+                <div className="flex">
+                    {/* Trip Info Button (for sellers) */}
                     {viewType === 'seller' && (
-                        <>
-                            <button
-                                onClick={() => {
-                                    if (sellerStatus !== 'approved') {
-                                        alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
-                                        return
-                                    }
-                                    // Use selectedSchedule or first available schedule
-                                    const scheduleToUse = selectedSchedule || allSchedules[0] || trip.next_schedule
-                                    if (scheduleToUse) {
-                                        const bookingUrl = `${window.location.origin}/book/${trip.id}/${scheduleToUse.id}?ref=${sellerReferralCode || 'seller'}`
-                                        navigator.clipboard.writeText(bookingUrl)
-                                        alert('คัดลอก Link สมัครทริปแล้ว!')
-                                    } else {
-                                        alert('ไม่พบตารางเวลาสำหรับทริปนี้')
-                                    }
-                                }}
-                                disabled={sellerStatus !== 'approved' || (!selectedSchedule && !allSchedules[0] && !trip.next_schedule)}
-                                className="flex-1 bg-gray-800 text-white px-3 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <ImLink className='text-lg' />
-                                <span>แชร์ลิงก์</span>
-                            </button>
-                            
-                            <div className="relative group">
-                                <button
-                                    onClick={() => {
-                                        if (trip.geography_link) {
-                                            window.open(trip.geography_link, '_blank')
-                                        }
-                                    }}
-                                    disabled={!trip.geography_link}
-                                    className="bg-gray-100 text-gray-600 px-3 py-3 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <BsInfoCircle className='text-lg' />
-                                </button>
-                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 z-10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-gray-900/80 text-white text-xs rounded px-2 py-1 whitespace-nowrap shadow-lg">
-                                    ดูข้อมูลทริป
-                                </div>
-                            </div>
-                        </>
+                        <button
+                            onClick={() => {
+                                if (sellerStatus !== 'approved') {
+                                    alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
+                                    return
+                                }
+                                if (trip.file_link) {
+                                    window.open(trip.file_link, '_blank')
+                                } else {
+                                    alert('ไม่พบไฟล์ข้อมูลทริป')
+                                }
+                            }}
+                            disabled={sellerStatus !== 'approved' || !trip.file_link}
+                            className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <BsInfoCircle className="text-lg" />
+                            <span>ดูข้อมูลทริป</span>
+                        </button>
                     )}
                     
                     {/* View Trip Button (for general view) */}
                     {viewType !== 'seller' && (
                         <button 
-                            disabled={!trip.geography_link}
-                            onClick={() => {
-                                if (trip.geography_link) {
-                                    window.open(trip.geography_link, '_blank')
-                                }
-                            }}
-                            className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={true}
+                            className="w-full bg-gray-400 text-gray-200 px-4 py-2 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                         >
                             <BsInfoCircle className="text-lg" />
                             <span>ดูทริป</span>
