@@ -272,6 +272,38 @@ export default function AdminBookingsClient({
     refreshBookings()
   }
 
+  const fixCommissions = async () => {
+    if (!confirm('สร้าง commission payments สำหรับ booking ที่ยังไม่มี?\n\nการดำเนินการนี้จะสร้าง commission payments ให้กับ booking ทั้งหมดที่มี seller แต่ยังไม่มี commission payments')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/bookings/fix-commissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fix commissions')
+      }
+
+      const result = await response.json()
+      alert(`สำเร็จ! สร้าง commission payments สำหรับ ${result.created} booking`)
+      
+      if (result.errors && result.errors.length > 0) {
+        console.error('Commission errors:', result.errors)
+      }
+
+      // Refresh bookings to see the changes
+      await refreshBookings()
+    } catch (error) {
+      console.error('Error fixing commissions:', error)
+      alert('เกิดข้อผิดพลาดในการสร้าง commission payments')
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -283,15 +315,26 @@ export default function AdminBookingsClient({
               สร้าง แก้ไข และจัดการการจองทั้งหมดในระบบ
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-            </svg>
-            สร้างการจองใหม่
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={fixCommissions}
+              className="inline-flex items-center px-4 py-2 border border-orange-300 rounded-lg shadow-sm text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Fix Commission Payments
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+              </svg>
+              สร้างการจองใหม่
+            </button>
+          </div>
         </div>
       </div>
 

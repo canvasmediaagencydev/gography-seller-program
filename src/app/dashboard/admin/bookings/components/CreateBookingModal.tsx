@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../../../../../database.types'
 import { RiDeleteBin2Line } from "react-icons/ri";
+import { createCommissionPayments, calculateCommission as calcCommission } from '@/utils/commissionUtils'
 
 interface TripWithSchedules extends Tables<'trips'> {
   countries?: {
@@ -235,6 +236,22 @@ export default function CreateBookingModal({
           .single()
 
         if (bookingError) throw bookingError
+
+        // Create commission payments if there's a seller
+        if (selectedSeller && selectedTrip) {
+          const commissionCalc = calcCommission(
+            selectedTrip.price_per_person,
+            selectedTrip.commission_value,
+            selectedTrip.commission_type as 'fixed' | 'percentage'
+          )
+          
+          try {
+            await createCommissionPayments(booking.id, selectedSeller.id, commissionCalc)
+          } catch (commissionError) {
+            console.error('Failed to create commission payments:', commissionError)
+            // Don't fail the whole booking creation for commission error
+          }
+        }
       }
 
       onBookingCreated()
