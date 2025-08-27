@@ -48,12 +48,19 @@ function LoginForm() {
     setError('')
 
     try {
-      // Use production URL if available, fallback to current origin
-      const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
-        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-        : `${window.location.origin}/auth/callback`
+      // Check current domain
+      const currentDomain = window.location.hostname
+      
+      // Always use app.paydee.me if user is accessing through it or if NEXT_PUBLIC_SITE_URL is set
+      let redirectUrl
+      if (currentDomain === 'app.paydee.me' || process.env.NEXT_PUBLIC_SITE_URL?.includes('app.paydee.me')) {
+        redirectUrl = 'https://app.paydee.me/auth/callback'
+      } else {
+        redirectUrl = `${window.location.origin}/auth/callback`
+      }
 
       // Debug log
+      console.log('Current domain:', currentDomain)
       console.log('Environment NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
       console.log('Final redirect URL:', redirectUrl)
 
