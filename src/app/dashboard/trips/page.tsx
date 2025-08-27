@@ -136,7 +136,7 @@ export default function TripsPage() {
       )}
 
       {/* Grid Area - Shows skeleton when gridLoading is true */}
-      <div className="min-h-[400px]">
+      <div className="max-w-[1440px] px-10 mx-auto">
         {gridLoading ? (
           <TripsGridLoading />
         ) : trips && trips.length > 0 ? (
