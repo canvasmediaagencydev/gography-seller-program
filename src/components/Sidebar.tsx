@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal'
+import Image from 'next/image'
 
 interface UserProfile {
   id: string
@@ -19,14 +20,16 @@ interface UserProfile {
   role: string | null
   status: string | null
   referral_code: string | null
+  avatar_url: string | null
 }
 
 interface SidebarProps {
   className?: string
+  initialProfile?: UserProfile
 }
 
-function Sidebar({ className }: SidebarProps) {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+function Sidebar({ className, initialProfile }: SidebarProps) {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(initialProfile || null)
   const [loading, setLoading] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const pathname = usePathname()
@@ -34,8 +37,11 @@ function Sidebar({ className }: SidebarProps) {
   const supabase = createClient()
 
   useEffect(() => {
-    fetchUserProfile()
-  }, [])
+    // Only fetch if we don't have initial profile
+    if (!initialProfile) {
+      fetchUserProfile()
+    }
+  }, [initialProfile])
 
   const fetchUserProfile = async () => {
     try {
@@ -44,7 +50,7 @@ function Sidebar({ className }: SidebarProps) {
 
       const { data: profile } = await supabase
         .from('user_profiles')
-        .select('*')
+        .select('id, full_name, phone, role, status, referral_code, avatar_url')
         .eq('id', user.id)
         .single()
 
@@ -272,8 +278,23 @@ function Sidebar({ className }: SidebarProps) {
 
         {userProfile?.role !== 'admin' && (
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10  rounded-full flex items-center justify-center">
-              <FaRegUserCircle className="w-8 h-auto text-gray-400" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-gray-100">
+              {userProfile?.avatar_url ? (
+                <img
+                  src={userProfile.avatar_url}
+                  alt={userProfile.full_name || 'User'}
+                  className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    // Fallback to icon if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              <FaRegUserCircle 
+                className={`w-8 h-auto text-gray-400 ${userProfile?.avatar_url ? 'hidden' : ''}`} 
+              />
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-gray-900">
