@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Tables } from '../../../../../../database.types'
 import { MdOutlineEdit } from "react-icons/md";
 import { IoCall } from "react-icons/io5";
@@ -66,26 +66,9 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
   const [showDetails, setShowDetails] = useState(false)
   const [editingSeller, setEditingSeller] = useState(false)
   const [selectedSellerId, setSelectedSellerId] = useState(booking.seller_id || '')
-  const [commissionPayments, setCommissionPayments] = useState<any[]>([])
 
-  // Fetch commission payments for this booking
-  useEffect(() => {
-    const fetchCommissionPayments = async () => {
-      if (!booking.id) return
-      
-      try {
-        const response = await fetch(`/api/admin/bookings/${booking.id}/commission-payments`)
-        if (response.ok) {
-          const data = await response.json()
-          setCommissionPayments(data)
-        }
-      } catch (error) {
-        console.error('Error fetching commission payments:', error)
-      }
-    }
-
-    fetchCommissionPayments()
-  }, [booking.id])
+  // Use commission payments from booking data instead of fetching separately
+  const commissionPayments = booking.commission_payments || []
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('th-TH', {
@@ -174,12 +157,7 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
     setUpdating(true)
     try {
       await onPaymentStatusUpdate(booking.id, newPaymentStatus)
-      // Refresh commission payments after payment status change
-      const response = await fetch(`/api/admin/bookings/${booking.id}/commission-payments`)
-      if (response.ok) {
-        const data = await response.json()
-        setCommissionPayments(data)
-      }
+      // No need to refresh commission payments as parent will refresh
     } catch (error) {
       console.error('Error updating payment status:', error)
     } finally {

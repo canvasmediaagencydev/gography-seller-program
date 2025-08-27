@@ -179,6 +179,13 @@ export default function AdminBookingsClient({
                 flag_emoji
               )
             )
+          ),
+          commission_payments (
+            id,
+            payment_type,
+            amount,
+            status,
+            paid_at
           )
         `)
         .order('created_at', { ascending: false })
