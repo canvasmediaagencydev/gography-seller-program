@@ -26,10 +26,10 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
 
     // Get real-time seats for currently selected schedule
     const getCurrentScheduleSeats = () => {
-        if (!selectedSchedule) return trip.total_seats
+        if (!selectedSchedule) return trip.total_seats || 0
         
         const scheduleWithSeats = allSchedules.find(s => s.id === selectedSchedule.id)
-        return scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats
+        return scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats ?? 0
     }
 
     // Fetch seller referral code and status

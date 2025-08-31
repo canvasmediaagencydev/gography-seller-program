@@ -88,8 +88,8 @@ const TripCardOptimized = memo(function TripCard({
         
         <div className="absolute top-3 left-3 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm">
           <SeatIndicator 
-            availableSeats={trip.available_seats || 0}
-            totalSeats={trip.total_seats || 0}
+            availableSeats={trip.available_seats ?? (trip.next_schedule?.available_seats || 0)}
+            totalSeats={trip.next_schedule?.available_seats || trip.total_seats || 0}
             loading={false}
           />
         </div>
