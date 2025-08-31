@@ -7,7 +7,7 @@ export function useDebounce<T extends (...args: any[]) => void>(
   callback: T,
   delay: number
 ): T {
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   return useCallback(
     ((...args: any[]) => {
@@ -25,7 +25,7 @@ export function useIntersectionObserver(
   callback: (entries: IntersectionObserverEntry[]) => void,
   options: IntersectionObserverInit = {}
 ) {
-  const observerRef = useRef<IntersectionObserver>()
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
   const observe = useCallback((element: Element | null) => {
     if (observerRef.current) observerRef.current.disconnect()
