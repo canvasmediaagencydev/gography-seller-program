@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { TripWithRelations } from '../../../types/trip'
 import { TripsHeader } from '../../../components/trips/TripsHeader'
 import { TripTabs } from '../../../components/trips/TripTabs'
@@ -31,7 +31,7 @@ export default function TripsPage() {
 
   const pageSize = 6
 
-  const fetchTrips = async (page: number = currentPage, filter: string = activeTab, countries: string[] = selectedCountries, isGridUpdate = false) => {
+  const fetchTrips = useCallback(async (page: number = currentPage, filter: string = activeTab, countries: string[] = selectedCountries, isGridUpdate = false) => {
     try {
       if (isGridUpdate) {
         setGridLoading(true)
@@ -50,7 +50,12 @@ export default function TripsPage() {
         params.append('countries', countries.join(','))
       }
 
-      const response = await fetch(`/api/trips?${params}`)
+      const response = await fetch(`/api/trips?${params}`, {
+        // Add cache headers for better performance
+        headers: {
+          'Cache-Control': 'max-age=30'
+        }
+      })
       
       if (!response.ok) {
         throw new Error('Failed to fetch trips')
@@ -77,7 +82,7 @@ export default function TripsPage() {
         setLoading(false)
       }
     }
-  }
+  }, [currentPage, activeTab, selectedCountries])
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
