@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
           .from('user_profiles')
           .insert({
             id: data.user.id,
+            email: data.user.email,
             full_name: fullName,
             phone: '', // Will need to be updated later
             role: 'seller',
