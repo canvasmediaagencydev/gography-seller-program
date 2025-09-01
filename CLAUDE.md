@@ -9,9 +9,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Build project**: `npm run build`
 - **Start production**: `npm start`
 - **Lint code**: `npm run lint`
+- **Type check**: `npx tsc --noEmit` (manual type checking)
 
 ### Testing
 No test framework is currently configured. Check with user for testing requirements.
+
+### Local Development with Supabase
+- **Start local Supabase**: `npx supabase start` (requires Docker)
+- **Stop local Supabase**: `npx supabase stop`
+- **Generate types**: `npx supabase gen types typescript --project-id <project-id> > database.types.ts`
+- **Database migrations**: `npx supabase db push` (apply local changes to remote)
+- **Supabase Studio**: Available at `http://127.0.0.1:54323` when running locally
 
 ## Architecture Overview
 
@@ -106,6 +114,9 @@ Critical database indexes are documented in `TRIPS_API_OPTIMIZATION_GUIDE.md`. T
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (for admin operations)
+- `NEXT_PUBLIC_SITE_URL` (for production deployment)
+
+Copy `.env.example` to `.env.local` and fill in your Supabase project credentials.
 
 ### Cache System
 The project uses an in-memory cache (`@/lib/cache.ts`) for API performance. Cache keys include user ID to prevent data leaks between users.
