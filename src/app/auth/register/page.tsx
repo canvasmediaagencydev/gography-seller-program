@@ -40,11 +40,12 @@ export default function RegisterPage() {
       }
 
       if (authData.user) {
-        // Create basic user profile (without full_name and phone)
+        // Create basic user profile with email
         const { error: profileError } = await supabase
           .from('user_profiles')
           .insert({
             id: authData.user.id,
+            email: authData.user.email,
             role: 'seller',
             status: 'pending'
           })
