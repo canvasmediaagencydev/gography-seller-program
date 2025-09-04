@@ -39,10 +39,21 @@ function LoginForm() {
         setError(error.message)
         setLoading(false)
       } else {
-        // Keep loading state and show redirect message
-        setIsRedirecting(true)
-        router.push('/dashboard')
-        // Don't set loading to false - let page change handle it
+        // Get user role and redirect accordingly
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          
+          // Keep loading state and show redirect message
+          setIsRedirecting(true)
+          const redirectPath = profile?.role === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
+          router.push(redirectPath)
+          // Don't set loading to false - let page change handle it
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')

@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
+  const role = searchParams.get('role') ?? 'seller'
 
   console.log('Callback - Environment NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
   console.log('Callback - Origin:', origin)
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
         .eq('id', data.user.id)
         .single()
 
+      let finalRedirectPath = next
+      
       // If profile doesn't exist (Google signup), create one
       if (!profile) {
         const fullName = data.user.user_metadata?.full_name || data.user.user_metadata?.name || ''
@@ -32,15 +35,21 @@ export async function GET(request: NextRequest) {
             email: data.user.email,
             full_name: fullName,
             phone: '', // Will need to be updated later
-            role: 'seller',
+            role: role,
             status: 'pending'
           })
+        
+        // For new users (registration), use role-based redirect
+        finalRedirectPath = role === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
+      } else {
+        // For existing users (login), use their existing role
+        finalRedirectPath = profile.role === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
       }
 
       // Always use the origin that the user came from to avoid redirect loops
       // This ensures we redirect to the same domain the user is currently on
-      console.log('Callback - Final redirect URL:', `${origin}${next}`)
-      return NextResponse.redirect(`${origin}${next}`)
+      console.log('Callback - Final redirect URL:', `${origin}${finalRedirectPath}`)
+      return NextResponse.redirect(`${origin}${finalRedirectPath}`)
     }
   }
 

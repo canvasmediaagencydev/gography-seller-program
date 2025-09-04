@@ -63,7 +63,7 @@ export async function middleware(request: NextRequest) {
     // Redirect authenticated users away from auth pages
     if (isPublicRoute) {
       if (userProfile.role === 'admin') {
-        return NextResponse.redirect(new URL('/dashboard/admin', request.url))
+        return NextResponse.redirect(new URL('/dashboard/admin/sellers', request.url))
       } else {
         return NextResponse.redirect(new URL('/dashboard/trips', request.url))
       }
