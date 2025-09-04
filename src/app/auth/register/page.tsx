@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AuthLoading from '@/components/AuthLoading'
 import AuthPreloader from '@/components/AuthPreloader'
@@ -17,7 +17,11 @@ function RegisterPageContent() {
   const [isRedirecting, setIsRedirecting] = useState(false)
   
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
+  
+  // Get role from URL params, default to 'seller'
+  const userRole = searchParams.get('role') === 'admin' ? 'admin' : 'seller'
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,6 +44,7 @@ function RegisterPageContent() {
 
       if (authError) {
         setError(authError.message)
+        setLoading(false)
         return
       }
 
@@ -50,18 +55,21 @@ function RegisterPageContent() {
           .insert({
             id: authData.user.id,
             email: authData.user.email,
-            role: 'seller',
+            role: userRole,
             status: 'pending'
           })
 
         if (profileError) {
           setError('Failed to create user profile: ' + profileError.message)
+          setLoading(false)
           return
         }
 
         // Keep loading state and show redirect message
         setIsRedirecting(true)
-        router.push('/dashboard')
+        // Redirect based on user role
+        const redirectPath = userRole === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
+        router.push(redirectPath)
         // Don't set loading to false - let page change handle it
       }
     } catch (err) {
@@ -80,10 +88,11 @@ function RegisterPageContent() {
       
       // Always use app.paydee.me if user is accessing through it or if NEXT_PUBLIC_SITE_URL is set
       let redirectUrl
+      const redirectPath = userRole === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
       if (currentDomain === 'app.paydee.me' || process.env.NEXT_PUBLIC_SITE_URL?.includes('app.paydee.me')) {
-        redirectUrl = 'https://app.paydee.me/auth/callback'
+        redirectUrl = `https://app.paydee.me/auth/callback?next=${encodeURIComponent(redirectPath)}&role=${userRole}`
       } else {
-        redirectUrl = `${window.location.origin}/auth/callback`
+        redirectUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}&role=${userRole}`
       }
 
       const { error } = await supabase.auth.signInWithOAuth({
