@@ -96,19 +96,22 @@ export default function SellersManagement() {
         }
       }
 
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({
+      // Use API route instead of direct Supabase call
+      const response = await fetch(`/api/admin/sellers/${sellerId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           status: newStatus,
-          approved_by: user?.id,
-          approved_at: new Date().toISOString()
+          reason: `Admin updated status to ${newStatus}`
         })
-        .eq('id', sellerId)
+      })
 
-      if (error) {
-        setError(error.message)
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'เกิดข้อผิดพลาดในการอัปเดตสถานะ')
       } else {
         // Refresh the list
         await fetchSellers()
@@ -116,8 +119,9 @@ export default function SellersManagement() {
         // Show success message
         alert(`${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'} seller สำเร็จ`)
       }
-    } catch (err) {
-      setError('เกิดข้อผิดพลาดในการอัปเดตสถานะ')
+    } catch (err: any) {
+      console.error('Status update error:', err)
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อ API')
     } finally {
       setActionLoading(null)
     }

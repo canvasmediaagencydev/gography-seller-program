@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +44,23 @@ export async function POST(request: NextRequest) {
         { error: 'Category is required' },
         { status: 400 }
       )
+    }
+
+    // Check user permissions - only allow users to upload to their own folder
+    if (sellerId !== user.id) {
+      // Only admin can upload for other users
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      
+      if (!profile || profile.role !== 'admin') {
+        return NextResponse.json(
+          { error: 'You can only upload files to your own account' },
+          { status: 403 }
+        )
+      }
     }
 
     // Validate file based on category
@@ -93,8 +111,9 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = new Uint8Array(arrayBuffer)
 
-    // Upload to storage (using server client with admin privileges)
-    const { data, error: uploadError } = await supabase.storage
+    // Upload to storage using admin client (bypasses RLS)
+    const adminClient = createAdminClient()
+    const { data, error: uploadError } = await adminClient.storage
       .from('seller-assets')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -111,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = adminClient.storage
       .from('seller-assets')
       .getPublicUrl(filePath)
 
@@ -158,8 +177,9 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Delete from storage
-    const { error: deleteError } = await supabase.storage
+    // Delete from storage using admin client (bypasses RLS)
+    const adminClient = createAdminClient()
+    const { error: deleteError } = await adminClient.storage
       .from('seller-assets')
       .remove([filePath])
 

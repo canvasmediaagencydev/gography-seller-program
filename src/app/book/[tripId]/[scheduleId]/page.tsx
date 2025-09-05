@@ -9,8 +9,7 @@ import { useCustomers } from '@/hooks/useCustomers'
 import { useBookingActions } from '@/hooks/useBookingActions'
 
 // Components
-import LoadingSpinner from '@/components/booking/LoadingSpinner'
-import ErrorDisplay from '@/components/booking/ErrorDisplay'
+import { LoadingSystem, ErrorSystem } from '@/components/ui'
 import BookingHeader from '@/components/booking/BookingHeader'
 import TripInfoCard from '@/components/booking/TripInfoCard'
 import CustomerForm from '@/components/booking/CustomerForm'
@@ -65,22 +64,22 @@ export default function BookTripPage({
 
   // Loading state for params resolution
   if (!resolvedParams) {
-    return <LoadingSpinner message={SUPPORT_MESSAGES.booking.loading} />
+    return <LoadingSystem variant="spinner" message={SUPPORT_MESSAGES.booking.loading} />
   }
 
   // Loading state
   if (loading) {
-    return <LoadingSpinner message={SUPPORT_MESSAGES.booking.loadingData} />
+    return <LoadingSystem variant="spinner" message={SUPPORT_MESSAGES.booking.loadingData} />
   }
 
   // Error state
   if (dataError) {
-    return <ErrorDisplay error={dataError} />
+    return <ErrorSystem variant="fullscreen" message={dataError} />
   }
 
   // No data state
   if (!trip || !schedule) {
-    return <ErrorDisplay error={SUPPORT_MESSAGES.error.noTripData} />
+    return <ErrorSystem variant="fullscreen" message={SUPPORT_MESSAGES.error.noTripData} />
   }
 
   return (

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BsColumnsGap } from "react-icons/bs";
 import { LuPlaneTakeoff } from "react-icons/lu";
 import { TbUsers } from "react-icons/tb";
@@ -11,7 +11,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal'
-import AdminRoutePrefetcher from '@/components/AdminRoutePrefetcher'
 import Image from 'next/image'
 
 interface UserProfile {
@@ -29,7 +28,7 @@ interface SidebarProps {
   initialProfile?: UserProfile
 }
 
-const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProps) {
+function Sidebar({ className, initialProfile }: SidebarProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(initialProfile || null)
   const [loading, setLoading] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
@@ -63,15 +62,15 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     }
   }
 
-  const handleLogout = useCallback(async () => {
+  const handleLogout = async () => {
     setLoading(true)
     await supabase.auth.signOut()
     router.push('/auth/login')
     setLoading(false)
-  }, [supabase, router])
+  }
 
-  // Memoized verification status calculation
-  const verificationInfo = useMemo(() => {
+  // Get verification status info
+  const getVerificationStatus = () => {
     if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: BsShieldCheck }
     
     // Check if basic info is filled
@@ -116,10 +115,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       icon: BsExclamationTriangle,
       pulse: true
     }
-  }, [userProfile])
+  }
 
-  // Memoized active page detection
-  const isActive = useCallback((path: string) => {
+  const verificationInfo = getVerificationStatus()
+
+  // Active page detection
+  const isActive = (path: string) => {
     if (path === '/dashboard/trips') {
       return pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips'
     }
@@ -130,12 +131,10 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       return pathname.includes('/dashboard/admin/bookings')
     }
     return pathname === path
-  }, [pathname])
+  }
 
   return (
-    <>
-      <AdminRoutePrefetcher userRole={userProfile?.role} />
-      <div className={`${className} flex flex-col justify-between bg-white border-r border-gray-200 min-h-screen w-64`}>
+    <div className={`${className} flex flex-col justify-between bg-white border-r border-gray-200 min-h-screen w-64`}>
       <div className="p-6 flex-1">
         {/* Logo */}
         <div className="mb-8 flex items-center flex-col">
@@ -329,10 +328,8 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           userId={userProfile.id}
         />
       )}
-      </div>
-    </>
+    </div>
   )
-})
+}
 
-Sidebar.displayName = 'Sidebar'
 export default Sidebar
