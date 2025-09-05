@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 interface Customer {
   id: string
@@ -149,7 +150,7 @@ export function useCustomersAdmin() {
         
         // Show user-friendly error message
         const errorMessage = fallbackError?.message || error?.message || 'เกิดข้อผิดพลาดในการอัปเดตสถานะ'
-        alert(`เกิดข้อผิดพลาด: ${errorMessage}`)
+        toast.error(`เกิดข้อผิดพลาด: ${errorMessage}`)
       }
       
     } finally {

@@ -7,6 +7,7 @@ import SellerDetailsModal from '@/components/SellerDetailsModal'
 import { MdOutlineMail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { LuTag } from "react-icons/lu";
+import { toast } from 'sonner';
 
 interface UserProfile {
   id: string
@@ -117,7 +118,7 @@ export default function SellersManagement() {
         await fetchSellers()
         
         // Show success message
-        alert(`${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'} seller สำเร็จ`)
+        toast.success(`${newStatus === 'approved' ? 'อนุมัติ' : 'ปฏิเสธ'} seller สำเร็จ`)
       }
     } catch (err: any) {
       console.error('Status update error:', err)

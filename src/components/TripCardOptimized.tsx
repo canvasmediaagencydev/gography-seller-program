@@ -7,6 +7,7 @@ import SeatIndicator from './ui/SeatIndicator'
 import { TripCardProps } from '../types/trip'
 import { LuCalendarDays } from "react-icons/lu"
 import { BsInfoCircle } from "react-icons/bs"
+import { toast } from 'sonner'
 
 // Lazy load heavy components
 const TripScheduleDropdown = dynamic(() => import('./trips/TripScheduleDropdown'), {
@@ -59,13 +60,13 @@ const TripCardOptimized = memo(function TripCard({
 
   const handleTripInfoClick = () => {
     if (sellerData?.status !== 'approved') {
-      alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
+      toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
       return
     }
     if (trip.file_link) {
       window.open(trip.file_link, '_blank')
     } else {
-      alert('ไม่พบไฟล์ข้อมูลทริป')
+      toast.error('ไม่พบไฟล์ข้อมูลทริป')
     }
   }
 

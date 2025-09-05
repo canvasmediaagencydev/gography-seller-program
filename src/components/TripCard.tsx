@@ -11,6 +11,7 @@ import { Tables } from '../../database.types'
 import { LuCalendarDays } from "react-icons/lu";
 import { ImLink } from "react-icons/im";
 import { BsInfoCircle } from "react-icons/bs";
+import { toast } from 'sonner';
 
 export default function TripCard({ trip, viewType = 'general', currentSellerId }: TripCardProps) {
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
@@ -206,13 +207,13 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                         <button
                             onClick={() => {
                                 if (sellerStatus !== 'approved') {
-                                    alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
+                                    toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
                                     return
                                 }
                                 if (trip.file_link) {
                                     window.open(trip.file_link, '_blank')
                                 } else {
-                                    alert('ไม่พบไฟล์ข้อมูลทริป')
+                                    toast.error('ไม่พบไฟล์ข้อมูลทริป')
                                 }
                             }}
                             disabled={sellerStatus !== 'approved' || !trip.file_link}

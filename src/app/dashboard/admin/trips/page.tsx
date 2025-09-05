@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useAdminTrips } from '@/hooks/useAdminTrips'
 import TripImage from '@/components/TripImage'
+import { showConfirmDialog } from '@/lib/confirm-dialog'
 
 export default function AdminTripsPage() {
   const { trips, loading, error, deleteTrip, toggleTripStatus } = useAdminTrips()
@@ -11,7 +12,14 @@ export default function AdminTripsPage() {
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
   const handleDelete = async (tripId: string, tripTitle: string) => {
-    if (confirm(`คุณแน่ใจหรือไม่ที่จะลบทริป "${tripTitle}"?`)) {
+    const confirmed = await showConfirmDialog({
+      title: 'ลบทริป',
+      description: `คุณแน่ใจหรือไม่ที่จะลบทริป "${tripTitle}"?`,
+      confirmText: 'ลบ',
+      variant: 'destructive'
+    })
+    
+    if (confirmed) {
       setDeletingId(tripId)
       try {
         await deleteTrip(tripId)
