@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BsColumnsGap } from "react-icons/bs"
 import { LuPlaneTakeoff } from "react-icons/lu"
@@ -36,6 +36,7 @@ interface MobileBottomNavProps {
 
 export default function MobileBottomNav({ userProfile }: MobileBottomNavProps) {
   const pathname = usePathname()
+  const router = useRouter()
 
   // Don't show for admin users
   if (userProfile?.role === 'admin') {
@@ -74,8 +75,8 @@ export default function MobileBottomNav({ userProfile }: MobileBottomNavProps) {
         <FaRegUserCircle className="w-5 h-5" />
       ),
       label: verificationInfo.needsAction ? 'ยืนยันตัวตน' : 'โปรไฟล์',
-      href: '#',
-      active: false,
+      href: '/dashboard/profile',
+      active: pathname === '/dashboard/profile',
       isProfile: true,
       needsAction: verificationInfo.needsAction
     }
@@ -99,24 +100,22 @@ export default function MobileBottomNav({ userProfile }: MobileBottomNavProps) {
 
           if (item.isProfile) {
             return (
-              <button
+              <Link
                 key={index}
+                href={item.href}
                 className={`flex flex-col items-center justify-center transition-colors ${
-                  item.needsAction 
+                  item.active
+                    ? 'text-orange-600'
+                    : item.needsAction 
                     ? 'text-red-600 hover:text-red-700' 
                     : 'text-gray-600 hover:text-orange-600'
                 }`}
-                onClick={() => {
-                  // This will be handled by parent component
-                  const event = new CustomEvent('openProfileModal')
-                  window.dispatchEvent(event)
-                }}
               >
                 {item.icon}
                 <span className={`text-xs mt-1 font-medium ${
                   item.needsAction ? 'font-bold' : ''
                 }`}>{item.label}</span>
-              </button>
+              </Link>
             )
           }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import SidebarLazy from '@/components/SidebarLazy'
+import Sidebar from '@/components/Sidebar'
 import MobileBottomNav from '@/components/MobileBottomNav'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal'
 
@@ -25,6 +25,7 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
 
   useEffect(() => {
     const handleOpenProfileModal = () => {
+      // Modal will only show on desktop due to CSS classes
       setShowProfileModal(true)
     }
 
@@ -35,7 +36,7 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Desktop Sidebar */}
-      <SidebarLazy initialProfile={initialProfile} />
+      <Sidebar initialProfile={initialProfile} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-6">
@@ -45,16 +46,18 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav userProfile={initialProfile} />
 
-      {/* Profile Completion Modal */}
-      <ProfileCompletionModal
-        isOpen={showProfileModal}
-        onClose={() => {
-          setShowProfileModal(false)
-          // Force page refresh to update profile data
-          window.location.reload()
-        }}
-        userId={initialProfile.id}
-      />
+      {/* Profile Completion Modal - Desktop Only */}
+      <div className="hidden md:block">
+        <ProfileCompletionModal
+          isOpen={showProfileModal}
+          onClose={() => {
+            setShowProfileModal(false)
+            // Force page refresh to update profile data
+            window.location.reload()
+          }}
+          userId={initialProfile.id}
+        />
+      </div>
     </div>
   )
 }

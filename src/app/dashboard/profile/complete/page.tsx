@@ -2,16 +2,22 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { uploadSellerFile, updateSellerFiles } from '@/lib/storage'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
-interface ProfileCompletionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  userId: string
+interface UserProfile {
+  id: string
+  full_name: string | null
+  phone: string | null
+  role: string | null
+  status: string | null
+  referral_code: string | null
+  avatar_url: string | null
 }
 
-export default function ProfileCompletionModal({ isOpen, onClose, userId }: ProfileCompletionModalProps) {
+export default function ProfileCompletePage() {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   
@@ -34,6 +40,34 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
   
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    fetchUserProfile()
+  }, [])
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('id, full_name, phone, role, status, referral_code, avatar_url')
+        .eq('id', user.id)
+        .single()
+
+      if (profile) {
+        setUserProfile(profile)
+        setFullName(profile.full_name || '')
+        setPhone(profile.phone || '')
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    }
+  }
 
   // Handle file selection
   const handleIdCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,6 +131,11 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
     setUploadProgress('')
 
     try {
+      if (!userProfile) {
+        setError('ไม่พบข้อมูลผู้ใช้')
+        return
+      }
+
       // Validate required fields
       if (!fullName || !phone) {
         setError('กรุณากรอกชื่อ-นามสกุล และเบอร์โทรศัพท์')
@@ -115,14 +154,14 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
 
       // Upload ID card (required)
       setUploadProgress('กำลังอัปโหลดบัตรประชาชน...')
-      const idCardResult = await uploadSellerFile(idCardFile, userId, 'id-card')
+      const idCardResult = await uploadSellerFile(idCardFile, userProfile.id, 'id-card')
       updates.id_card_url = idCardResult.url
       updates.id_card_uploaded_at = new Date().toISOString()
 
       // Upload profile image (optional)
       if (profileFile) {
         setUploadProgress('กำลังอัปโหลดรูปโปรไฟล์...')
-        const profileResult = await uploadSellerFile(profileFile, userId, 'profile')
+        const profileResult = await uploadSellerFile(profileFile, userProfile.id, 'profile')
         updates.avatar_url = profileResult.url
         updates.avatar_uploaded_at = new Date().toISOString()
       }
@@ -134,7 +173,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
         for (let i = 0; i < documentFiles.length; i++) {
           const docResult = await uploadSellerFile(
             documentFiles[i], 
-            userId, 
+            userProfile.id, 
             'documents',
             `document-${i + 1}-${Date.now()}.pdf`
           )
@@ -146,10 +185,10 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
 
       // Update user profile
       setUploadProgress('กำลังบันทึกข้อมูล...')
-      await updateSellerFiles(userId, updates)
+      await updateSellerFiles(userProfile.id, updates)
 
-      // Success
-      onClose()
+      // Success - redirect back to dashboard
+      router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'เกิดข้อผิดพลาดที่ไม่คาดคิด')
@@ -159,38 +198,45 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
     }
   }
 
-  if (!isOpen) return null
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      </div>
+    )
+  }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start md:items-center justify-center p-0 md:p-4 z-50">
-      <div className="bg-white rounded-none md:rounded-2xl shadow-2xl w-full max-w-3xl h-[100vh] md:h-auto md:max-h-[95vh] flex flex-col border-0 md:border border-gray-200">
-        <div className="flex justify-between items-center p-4 md:p-8 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-none md:rounded-t-2xl flex-shrink-0">
-          <div>
-            <h3 className="text-xl md:text-2xl font-bold text-gray-900">
-              กรอกข้อมูลส่วนตัว
-            </h3>
-            <p className="text-blue-600 text-xs md:text-sm mt-1">
-              เพิ่มข้อมูลเพื่อเริ่มต้นเป็น Seller
-            </p>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between p-4">
           <button
-            onClick={onClose}
-            disabled={loading}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-50 p-2 hover:bg-white/50 rounded-full transition-all duration-200"
+            onClick={() => router.back()}
+            className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <ArrowLeftIcon className="w-6 h-6" />
           </button>
+          <h1 className="text-lg font-semibold text-gray-900">กรอกข้อมูลส่วนตัว</h1>
+          <div className="w-8" /> {/* Spacer */}
         </div>
+        <div className="px-4 pb-4">
+          <p className="text-sm text-blue-600">
+            เพิ่มข้อมูลเพื่อเริ่มต้นเป็น Seller
+          </p>
+        </div>
+      </div>
 
-        <div className="p-4 md:p-8 overflow-y-auto flex-1 pb-20 md:pb-8">
-          <p className="text-gray-600 mb-6 md:mb-8 bg-blue-50 border border-blue-200 rounded-xl p-3 md:p-4 text-xs md:text-sm">
+      {/* Content */}
+      <div className="p-4 pb-20">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <p className="text-sm text-blue-800 flex items-center">
             <svg className="inline w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             กรุณากรอกข้อมูลเพื่อให้เราสามารถติดต่อและตรวจสอบข้อมูลของคุณได้
           </p>
+        </div>
 
         {error && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-400 rounded-lg p-4">
@@ -219,19 +265,19 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Info */}
-          <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200">
-            <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               ข้อมูลส่วนตัว
             </h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div className="space-y-2">
-                <label htmlFor="fullName" className="block text-xs md:text-sm font-semibold text-gray-700">
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
                   ชื่อ-นามสกุล *
                 </label>
                 <input
@@ -240,15 +286,15 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                   type="text"
                   required
                   disabled={loading}
-                  className="w-full px-3 md:px-4 py-2.5 md:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm md:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200"
                   placeholder="กรอกชื่อ-นามสกุลของคุณ"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="phone" className="block text-xs md:text-sm font-semibold text-gray-700">
+              <div>
+                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
                   เบอร์โทรศัพท์ *
                 </label>
                 <input
@@ -257,7 +303,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                   type="tel"
                   required
                   disabled={loading}
-                  className="w-full px-3 md:px-4 py-2.5 md:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm md:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200"
                   placeholder="กรอกเบอร์โทรศัพท์ของคุณ"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -267,15 +313,15 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </div>
 
           {/* ID Card Upload */}
-          <div className="bg-red-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-red-100">
-            <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2 flex items-center">
+          <div className="bg-white rounded-xl p-4 border-2 border-red-100">
+            <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
               <svg className="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 118 0v2m-4 0a2 2 0 104 0m-4 0a2 2 0 014 0z" />
               </svg>
               รูปบัตรประชาชน *
             </h4>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 md:p-3 mb-4">
-              <p className="text-xs md:text-sm text-amber-800 flex items-center">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+              <p className="text-sm text-amber-800 flex items-center">
                 <svg className="w-4 h-4 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L12.732 4.5c-.77-.833-2.186-.833-2.956 0L2.857 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
@@ -283,73 +329,73 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
               </p>
             </div>
             
-            <div className="border-3 border-dashed border-red-200 rounded-xl md:rounded-2xl bg-white p-4 md:p-8 hover:border-red-300 hover:bg-red-25 transition-all duration-300">
-              <div className="space-y-3 md:space-y-4 text-center">
-                {idCardFile ? (
-                  <div className="space-y-4">
-                    {/* Preview Image */}
-                    <div className="mx-auto w-48 h-32 md:w-64 md:h-40 border-2 border-red-200 rounded-xl overflow-hidden bg-gray-50 shadow-lg">
-                      <img 
-                        src={idCardPreview || ''} 
-                        alt="ID Card Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex items-center justify-center space-x-3 bg-green-50 border border-green-200 rounded-xl p-3">
+            <div className="border-2 border-dashed border-red-200 rounded-xl bg-gray-50 p-6 hover:border-red-300 transition-all duration-300">
+              {idCardFile ? (
+                <div className="space-y-4">
+                  {/* Preview Image */}
+                  <div className="mx-auto w-full h-48 border-2 border-red-200 rounded-xl overflow-hidden bg-gray-50 shadow-lg">
+                    <img 
+                      src={idCardPreview || ''} 
+                      alt="ID Card Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl p-3">
+                    <div className="flex items-center space-x-3">
                       <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className="text-xs md:text-sm font-medium text-green-800 truncate max-w-[200px]">{idCardFile.name}</span>
-                      <button
-                        type="button"
-                        onClick={removeIdCardFile}
-                        disabled={loading}
-                        className="text-red-600 hover:text-red-800 disabled:opacity-50 p-1 hover:bg-red-100 rounded-full transition-colors"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                      <span className="text-sm font-medium text-green-800 truncate">{idCardFile.name}</span>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-red-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                    <button
+                      type="button"
+                      onClick={removeIdCardFile}
+                      disabled={loading}
+                      className="text-red-600 hover:text-red-800 disabled:opacity-50 p-1 hover:bg-red-100 rounded-full transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                    </div>
-                    <div>
-                      <label htmlFor="idCardFile" className="cursor-pointer">
-                        <span className="inline-flex items-center px-4 md:px-6 py-2.5 md:py-3 border-2 border-red-300 text-xs md:text-sm font-semibold rounded-xl text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                          อัปโหลดรูปบัตรประชาชน
-                        </span>
-                        <input
-                          id="idCardFile"
-                          name="idCardFile"
-                          type="file"
-                          className="sr-only"
-                          accept="image/jpeg,image/png,image/webp"
-                          disabled={loading}
-                          ref={idCardInputRef}
-                          onChange={handleIdCardChange}
-                        />
-                      </label>
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      รองรับไฟล์ PNG, JPG, WebP • ขนาดไม่เกิน 5MB
-                    </p>
-                  </>
-                )}
-              </div>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-center">
+                  <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-red-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <label htmlFor="idCardFile" className="cursor-pointer">
+                      <span className="inline-flex items-center px-6 py-3 border-2 border-red-300 text-sm font-semibold rounded-xl text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        อัปโหลดรูปบัตรประชาชน
+                      </span>
+                      <input
+                        id="idCardFile"
+                        name="idCardFile"
+                        type="file"
+                        className="sr-only"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={loading}
+                        ref={idCardInputRef}
+                        onChange={handleIdCardChange}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    รองรับไฟล์ PNG, JPG, WebP • ขนาดไม่เกิน 5MB
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Profile Image Upload */}
-          <div className="bg-green-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-green-100">
+          <div className="bg-white rounded-xl p-4 border-2 border-green-100">
             <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
               <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -358,73 +404,73 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
               <span className="text-sm font-normal text-green-600 ml-2">(ไม่บังคับ)</span>
             </h4>
             
-            <div className="border-3 border-dashed border-green-200 rounded-2xl bg-white p-8 hover:border-green-300 hover:bg-green-25 transition-all duration-300">
-              <div className="space-y-4 text-center">
-                {profileFile ? (
-                  <div className="space-y-4">
-                    {/* Preview Image */}
-                    <div className="mx-auto w-32 h-32 border-2 border-green-200 rounded-full overflow-hidden bg-gray-50 shadow-lg">
-                      <img 
-                        src={profilePreview || ''} 
-                        alt="Profile Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex items-center justify-center space-x-3 bg-green-50 border border-green-200 rounded-xl p-3">
+            <div className="border-2 border-dashed border-green-200 rounded-xl bg-gray-50 p-6 hover:border-green-300 transition-all duration-300">
+              {profileFile ? (
+                <div className="space-y-4">
+                  {/* Preview Image */}
+                  <div className="mx-auto w-32 h-32 border-2 border-green-200 rounded-full overflow-hidden bg-gray-50 shadow-lg">
+                    <img 
+                      src={profilePreview || ''} 
+                      alt="Profile Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl p-3">
+                    <div className="flex items-center space-x-3">
                       <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       <span className="text-sm font-medium text-green-800">{profileFile.name}</span>
-                      <button
-                        type="button"
-                        onClick={removeProfileFile}
-                        disabled={loading}
-                        className="text-red-600 hover:text-red-800 disabled:opacity-50 p-1 hover:bg-red-100 rounded-full transition-colors"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-green-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                    <button
+                      type="button"
+                      onClick={removeProfileFile}
+                      disabled={loading}
+                      className="text-red-600 hover:text-red-800 disabled:opacity-50 p-1 hover:bg-red-100 rounded-full transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                    </div>
-                    <div>
-                      <label htmlFor="profileFile" className="cursor-pointer">
-                        <span className="inline-flex items-center px-6 py-3 border-2 border-green-300 text-sm font-semibold rounded-xl text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
-                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                          </svg>
-                          อัปโหลดรูปโปรไฟล์
-                        </span>
-                        <input
-                          id="profileFile"
-                          name="profileFile"
-                          type="file"
-                          className="sr-only"
-                          accept="image/jpeg,image/png,image/webp"
-                          disabled={loading}
-                          ref={profileInputRef}
-                          onChange={handleProfileChange}
-                        />
-                      </label>
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      รองรับไฟล์ PNG, JPG, WebP • ขนาดไม่เกิน 5MB
-                    </p>
-                  </>
-                )}
-              </div>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-center">
+                  <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-green-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <label htmlFor="profileFile" className="cursor-pointer">
+                      <span className="inline-flex items-center px-6 py-3 border-2 border-green-300 text-sm font-semibold rounded-xl text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        อัปโหลดรูปโปรไฟล์
+                      </span>
+                      <input
+                        id="profileFile"
+                        name="profileFile"
+                        type="file"
+                        className="sr-only"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={loading}
+                        ref={profileInputRef}
+                        onChange={handleProfileChange}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    รองรับไฟล์ PNG, JPG, WebP • ขนาดไม่เกิน 5MB
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Documents Upload */}
-          <div className="bg-purple-50 rounded-2xl p-6 border-2 border-purple-100">
+          <div className="bg-white rounded-xl p-4 border-2 border-purple-100">
             <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
               <svg className="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -435,7 +481,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
             
             {/* แสดงไฟล์ที่เลือกแล้ว */}
             {documentFiles.length > 0 && (
-              <div className="mb-6 bg-white rounded-xl border border-purple-200 p-4">
+              <div className="mb-4 bg-purple-50 rounded-xl border border-purple-200 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-gray-700 flex items-center">
                     <svg className="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -453,9 +499,9 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                   </button>
                 </div>
                 
-                <div className="space-y-3 max-h-48 overflow-y-auto">
+                <div className="space-y-3">
                   {documentFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-purple-25 border border-purple-150 rounded-xl hover:bg-purple-50 transition-colors">
+                    <div key={index} className="flex items-center justify-between p-3 bg-white border border-purple-150 rounded-xl">
                       <div className="flex items-center space-x-3 min-w-0 flex-1">
                         <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                           <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -485,7 +531,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
             )}
 
             {/* Upload Area */}
-            <div className="border-3 border-dashed border-purple-200 rounded-2xl bg-white p-8 hover:border-purple-300 hover:bg-purple-25 transition-all duration-300">
+            <div className="border-2 border-dashed border-purple-200 rounded-xl bg-gray-50 p-6 hover:border-purple-300 transition-all duration-300">
               <div className="space-y-4 text-center">
                 <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
                   <svg className="w-8 h-8 text-purple-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -519,42 +565,33 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
               </div>
             </div>
           </div>
-
-          {/* Submit buttons */}
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4 pt-4 md:pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="w-full md:flex-1 px-4 md:px-6 py-3 md:py-4 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full md:flex-1 px-4 md:px-6 py-3 md:py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  กำลังบันทึก...
-                </div>
-              ) : (
-                <div className="flex items-center justify-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  บันทึกข้อมูล
-                </div>
-              )}
-            </button>
-          </div>
         </form>
-        </div>
+      </div>
+
+      {/* Fixed Bottom Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-10">
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-200"
+        >
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              กำลังบันทึก...
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              บันทึกข้อมูล
+            </div>
+          )}
+        </button>
       </div>
     </div>
   )

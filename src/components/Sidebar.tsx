@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
 import { BsColumnsGap } from "react-icons/bs";
 import { LuPlaneTakeoff } from "react-icons/lu";
 import { TbUsers } from "react-icons/tb";
@@ -13,10 +12,6 @@ import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import Image from 'next/image'
 
-// Import ProfileCompletionModal dynamically to avoid build issues
-const ProfileCompletionModal = dynamic(() => import('@/components/ProfileCompletionModal'), {
-  ssr: false
-})
 
 interface UserProfile {
   id: string
@@ -36,7 +31,6 @@ interface SidebarProps {
 function Sidebar({ className, initialProfile }: SidebarProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(initialProfile || null)
   const [loading, setLoading] = useState(false)
-  const [showProfileModal, setShowProfileModal] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -139,7 +133,7 @@ function Sidebar({ className, initialProfile }: SidebarProps) {
   }
 
   return (
-    <div className={`${className} flex flex-col justify-between bg-white border-r border-gray-200 min-h-screen w-64`}>
+    <div className={`${className} hidden md:flex flex-col justify-between bg-white border-r border-gray-200 min-h-screen w-64`}>
       <div className="p-6 flex-1">
         {/* Logo */}
         <div className="mb-8 flex items-center flex-col">
@@ -228,7 +222,9 @@ function Sidebar({ className, initialProfile }: SidebarProps) {
           <button
             onClick={() => {
               if (verificationInfo.status !== 'approved') {
-                setShowProfileModal(true)
+                // Desktop sidebar: always use modal
+                const event = new CustomEvent('openProfileModal')
+                window.dispatchEvent(event)
               }
             }}
             disabled={verificationInfo.status === 'approved'}
@@ -322,17 +318,6 @@ function Sidebar({ className, initialProfile }: SidebarProps) {
         </button>
       </div>
 
-      {/* Profile Completion Modal */}
-      {userProfile && (
-        <ProfileCompletionModal
-          isOpen={showProfileModal}
-          onClose={() => {
-            setShowProfileModal(false)
-            fetchUserProfile() // Refresh user profile after modal closes
-          }}
-          userId={userProfile.id}
-        />
-      )}
     </div>
   )
 }

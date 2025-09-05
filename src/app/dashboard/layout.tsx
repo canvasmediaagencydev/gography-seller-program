@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import SidebarLazy from '@/components/SidebarLazy'
+import DashboardLayout from '@/components/DashboardLayout'
 
-export default async function DashboardLayout({
+export default async function DashboardLayoutPage({
   children,
 }: {
   children: React.ReactNode
@@ -26,11 +26,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <SidebarLazy initialProfile={profile} />
-      <main className="flex-1 overflow-y-auto p-6">
-        {children}
-      </main>
-    </div>
+    <DashboardLayout initialProfile={profile}>
+      {children}
+    </DashboardLayout>
   )
 }
