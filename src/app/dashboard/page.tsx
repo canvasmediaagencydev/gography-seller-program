@@ -81,7 +81,7 @@ function ComingSoonCard({ title, description, mockValue, icon, color }: ComingSo
 
 export default function SellerDashboard() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] md:min-h-[calc(100vh-6rem)]">
       <div className="text-center max-w-md mx-auto p-8">
         {/* Fun Icon */}
         <div className="text-8xl mb-6 animate-bounce">
