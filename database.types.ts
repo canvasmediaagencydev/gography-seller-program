@@ -602,6 +602,14 @@ export type Database = {
         }
         Returns: Json
       }
+      is_storage_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_storage_file_owner: {
+        Args: { file_path: string }
+        Returns: boolean
+      }
       refresh_seller_booking_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined

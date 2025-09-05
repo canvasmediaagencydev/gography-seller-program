@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import ProfileCompletionModal from '@/components/ProfileCompletionModal'
 import { BsBarChart, BsGraphUp, BsTrophy, BsCalendar, BsPeople, BsCurrencyDollar } from 'react-icons/bs'
 
 interface UserProfile {

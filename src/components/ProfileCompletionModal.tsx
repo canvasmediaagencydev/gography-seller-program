@@ -162,14 +162,14 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-y-auto border border-gray-200">
-        <div className="flex justify-between items-center p-8 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 md:p-4 z-50">
+      <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-3xl max-h-[98vh] md:max-h-[95vh] overflow-y-auto border border-gray-200">
+        <div className="flex justify-between items-center p-4 md:p-8 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl md:rounded-t-2xl">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900">
               กรอกข้อมูลส่วนตัว
             </h3>
-            <p className="text-blue-600 text-sm mt-1">
+            <p className="text-blue-600 text-xs md:text-sm mt-1">
               เพิ่มข้อมูลเพื่อเริ่มต้นเป็น Seller
             </p>
           </div>
@@ -184,8 +184,8 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </button>
         </div>
 
-        <div className="p-8">
-          <p className="text-gray-600 mb-8 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm">
+        <div className="p-4 md:p-8">
+          <p className="text-gray-600 mb-6 md:mb-8 bg-blue-50 border border-blue-200 rounded-xl p-3 md:p-4 text-xs md:text-sm">
             <svg className="inline w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -219,19 +219,19 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
           {/* Basic Info */}
-          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-            <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200">
+            <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               ข้อมูลส่วนตัว
             </h4>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-2">
-                <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="fullName" className="block text-xs md:text-sm font-semibold text-gray-700">
                   ชื่อ-นามสกุล *
                 </label>
                 <input
@@ -240,7 +240,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                   type="text"
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200"
+                  className="w-full px-3 md:px-4 py-2.5 md:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm md:text-base"
                   placeholder="กรอกชื่อ-นามสกุลของคุณ"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -248,7 +248,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700">
+                <label htmlFor="phone" className="block text-xs md:text-sm font-semibold text-gray-700">
                   เบอร์โทรศัพท์ *
                 </label>
                 <input
@@ -257,7 +257,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                   type="tel"
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200"
+                  className="w-full px-3 md:px-4 py-2.5 md:py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 transition-all duration-200 text-sm md:text-base"
                   placeholder="กรอกเบอร์โทรศัพท์ของคุณ"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -267,15 +267,15 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </div>
 
           {/* ID Card Upload */}
-          <div className="bg-red-50 rounded-2xl p-6 border-2 border-red-100">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+          <div className="bg-red-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-red-100">
+            <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2 flex items-center">
               <svg className="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 118 0v2m-4 0a2 2 0 104 0m-4 0a2 2 0 014 0z" />
               </svg>
               รูปบัตรประชาชน *
             </h4>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-              <p className="text-sm text-amber-800 flex items-center">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-2 md:p-3 mb-4">
+              <p className="text-xs md:text-sm text-amber-800 flex items-center">
                 <svg className="w-4 h-4 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L12.732 4.5c-.77-.833-2.186-.833-2.956 0L2.857 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
@@ -283,12 +283,12 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
               </p>
             </div>
             
-            <div className="border-3 border-dashed border-red-200 rounded-2xl bg-white p-8 hover:border-red-300 hover:bg-red-25 transition-all duration-300">
-              <div className="space-y-4 text-center">
+            <div className="border-3 border-dashed border-red-200 rounded-xl md:rounded-2xl bg-white p-4 md:p-8 hover:border-red-300 hover:bg-red-25 transition-all duration-300">
+              <div className="space-y-3 md:space-y-4 text-center">
                 {idCardFile ? (
                   <div className="space-y-4">
                     {/* Preview Image */}
-                    <div className="mx-auto w-64 h-40 border-2 border-red-200 rounded-xl overflow-hidden bg-gray-50 shadow-lg">
+                    <div className="mx-auto w-48 h-32 md:w-64 md:h-40 border-2 border-red-200 rounded-xl overflow-hidden bg-gray-50 shadow-lg">
                       <img 
                         src={idCardPreview || ''} 
                         alt="ID Card Preview" 
@@ -299,7 +299,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                       <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className="text-sm font-medium text-green-800">{idCardFile.name}</span>
+                      <span className="text-xs md:text-sm font-medium text-green-800 truncate max-w-[200px]">{idCardFile.name}</span>
                       <button
                         type="button"
                         onClick={removeIdCardFile}
@@ -321,7 +321,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
                     </div>
                     <div>
                       <label htmlFor="idCardFile" className="cursor-pointer">
-                        <span className="inline-flex items-center px-6 py-3 border-2 border-red-300 text-sm font-semibold rounded-xl text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
+                        <span className="inline-flex items-center px-4 md:px-6 py-2.5 md:py-3 border-2 border-red-300 text-xs md:text-sm font-semibold rounded-xl text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200">
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
@@ -349,7 +349,7 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </div>
 
           {/* Profile Image Upload */}
-          <div className="bg-green-50 rounded-2xl p-6 border-2 border-green-100">
+          <div className="bg-green-50 rounded-xl md:rounded-2xl p-4 md:p-6 border-2 border-green-100">
             <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
               <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -521,19 +521,19 @@ export default function ProfileCompletionModal({ isOpen, onClose, userId }: Prof
           </div>
 
           {/* Submit buttons */}
-          <div className="flex gap-4 pt-6 border-t border-gray-200">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 pt-4 md:pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-6 py-4 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full md:flex-1 px-4 md:px-6 py-3 md:py-4 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              className="w-full md:flex-1 px-4 md:px-6 py-3 md:py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
               {loading ? (
                 <div className="flex items-center justify-center">

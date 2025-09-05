@@ -7,9 +7,10 @@ interface SidebarButtonProps {
   href: string
   isActive: boolean
   prefetch?: boolean
+  onClick?: () => void
 }
 
-const SidebarButton = memo(function SidebarButton({ icon, label, href, isActive, prefetch = true }: SidebarButtonProps) {
+const SidebarButton = memo(function SidebarButton({ icon, label, href, isActive, prefetch = true, onClick }: SidebarButtonProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isNavigating, setIsNavigating] = useState(false)
@@ -18,6 +19,11 @@ const SidebarButton = memo(function SidebarButton({ icon, label, href, isActive,
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Call onClick callback if provided (for mobile sidebar close)
+    if (onClick) {
+      onClick()
+    }
     
     if (!isActive && !isNavigating) {
       setIsNavigating(true)
