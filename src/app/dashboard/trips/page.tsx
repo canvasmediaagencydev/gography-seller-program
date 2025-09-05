@@ -5,9 +5,7 @@ import { TripWithRelations } from '../../../types/trip'
 import { TripsHeader } from '../../../components/trips/TripsHeader'
 import { TripTabs } from '../../../components/trips/TripTabs'
 import { TripsGrid } from '../../../components/trips/TripsGrid'
-import { TripsLoading } from '../../../components/trips/TripsLoading'
-import { TripsGridLoading } from '../../../components/trips/TripsGridLoading'
-import { TripsError } from '../../../components/trips/TripsError'
+import { LoadingSystem, ErrorSystem } from '@/components/ui'
 import { TripsEmpty } from '../../../components/trips/TripsEmpty'
 import { ViewMode } from '../../../components/ui/ViewToggle'
 import { Pagination } from '../../../components/ui/Pagination'
@@ -114,11 +112,11 @@ export default function TripsPage() {
 
   // Initial loading - show full page loading
   if (loading && !userId) {
-    return <TripsLoading />
+    return <LoadingSystem variant="grid" />
   }
 
   if (error) {
-    return <TripsError message={error} />
+    return <ErrorSystem variant="fullscreen" message={error} />
   }
 
   return (
@@ -143,7 +141,7 @@ export default function TripsPage() {
       {/* Grid Area - Shows skeleton when gridLoading is true */}
       <div className="max-w-[1440px] md:px-10 mx-auto">
         {gridLoading ? (
-          <TripsGridLoading />
+          <LoadingSystem variant="grid" />
         ) : trips && trips.length > 0 ? (
           <TripsGrid 
             trips={trips}

@@ -3,8 +3,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import ReportsLoading from '@/components/reports/ReportsLoading'
-import ReportsError from '@/components/reports/ReportsError'
+import { LoadingSystem, ErrorSystem } from '@/components/ui'
 interface BookingWithDetails {
   id: string
   total_amount: number
@@ -189,11 +188,11 @@ export default function ReportsPage() {
   const pendingPaymentBookings = bookings?.filter(b => b.payment_status === 'pending').length || 0
 
   if (loading) {
-    return <ReportsLoading />
+    return <LoadingSystem variant="dashboard" />
   }
 
   if (error) {
-    return <ReportsError message={error} />
+    return <ErrorSystem variant="fullscreen" message={error} />
   }
 
   return (

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import SidebarLazy from '@/components/SidebarLazy'
-import InstantNavigator from '@/components/InstantNavigator'
 
 export default async function DashboardLayout({
   children,
@@ -28,7 +27,6 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <InstantNavigator />
       <SidebarLazy initialProfile={profile} />
       <main className="flex-1 overflow-y-auto p-6">
         {children}
