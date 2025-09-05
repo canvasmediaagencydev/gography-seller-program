@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { handleAuthError, getRedirectPath, getUserRole, type UserRole } from '@/lib/auth'
+import { toast } from 'sonner'
 
 interface UseAuthFormReturn {
   loading: boolean
@@ -48,6 +49,7 @@ export function useAuthForm(): UseAuthFormReturn {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           const userRole = await getUserRole(user)
+          toast.success('เข้าสู่ระบบสำเร็จ')
           setIsRedirecting(true)
           router.push(getRedirectPath(userRole))
         }
@@ -79,6 +81,7 @@ export function useAuthForm(): UseAuthFormReturn {
             return
           }
 
+          toast.success('ลงทะเบียนสำเร็จ รอการอนุมัติจากแอดมิน')
           setIsRedirecting(true)
           router.push(getRedirectPath(role))
         }

@@ -61,13 +61,20 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       trips,
       totalCount: count || 0,
       currentPage: page,
       totalPages: Math.ceil((count || 0) / pageSize),
       pageSize
     })
+
+    // Add no-cache headers
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+
+    return response
 
   } catch (error: any) {
     console.error('Admin trips GET error:', error)

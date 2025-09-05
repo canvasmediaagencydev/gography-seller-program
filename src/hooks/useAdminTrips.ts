@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Trip, TripFormData, Country } from '@/types/admin'
+import { toast } from 'sonner'
 
 export interface UseAdminTripsResult {
   trips: Trip[]
@@ -30,10 +31,20 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
-        ...(search && { search })
+        ...(search && { search }),
+        // Add cache busting timestamp
+        _t: Date.now().toString()
       })
 
-      const response = await fetch(`/api/admin/trips?${params}`)
+      const response = await fetch(`/api/admin/trips?${params}`, {
+        // Disable caching
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      })
       
       if (!response.ok) {
         const errorData = await response.json()
@@ -77,10 +88,12 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
       // Refresh trips list
       await fetchTrips(currentPage)
       
+      toast.success('สร้างทริปสำเร็จ')
       return data.trip
 
     } catch (err: any) {
       setError(err.message)
+      toast.error(`เกิดข้อผิดพลาดในการสร้างทริป: ${err.message}`)
       throw err
     }
   }
@@ -107,10 +120,12 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
       // Refresh trips list
       await fetchTrips(currentPage)
       
+      toast.success('อัพเดททริปสำเร็จ')
       return data.trip
 
     } catch (err: any) {
       setError(err.message)
+      toast.error(`เกิดข้อผิดพลาดในการอัพเดททริป: ${err.message}`)
       throw err
     }
   }
@@ -119,20 +134,28 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
     try {
       setError(null)
 
+      // Optimistic update - remove from local state immediately
+      setTrips(prevTrips => prevTrips.filter(trip => trip.id !== id))
+
       const response = await fetch(`/api/admin/trips/${id}`, {
         method: 'DELETE'
       })
 
       if (!response.ok) {
+        // If delete failed, restore the trip to local state
+        await fetchTrips(currentPage)
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to delete trip')
       }
 
-      // Refresh trips list
-      await fetchTrips(currentPage)
+      // Small delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      toast.success('ลบทริปสำเร็จ')
 
     } catch (err: any) {
       setError(err.message)
+      toast.error(`เกิดข้อผิดพลาดในการลบทริป: ${err.message}`)
       throw err
     }
   }
@@ -155,9 +178,12 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
           trip.id === id ? { ...trip, is_active: isActive } : trip
         )
       )
+      
+      toast.success(`${isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}ทริปสำเร็จ`)
 
     } catch (err: any) {
       setError(err.message)
+      toast.error(`เกิดข้อผิดพลาดในการอัพเดทสถานะทริป: ${err.message}`)
       throw err
     }
   }
