@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { toast } from 'sonner'
 
 export type UserRole = 'admin' | 'seller'
 
@@ -63,4 +64,5 @@ export function handleAuthError(
 ): void {
   setError(error)
   setLoading(false)
+  toast.error(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ${error}`)
 }
