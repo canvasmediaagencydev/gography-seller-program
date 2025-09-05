@@ -7,6 +7,8 @@ import BookingCard from './components/BookingCard'
 import CreateBookingModal from './components/CreateBookingModal'
 import BookingFilters from './components/BookingFilters'
 import BookingStats from './components/BookingStats'
+import { toast } from 'sonner'
+import { showConfirmDialog } from '@/lib/confirm-dialog'
 
 interface BookingWithDetails extends Tables<'bookings'> {
   customers?: {
@@ -306,7 +308,7 @@ export default function AdminBookingsClient({
       await updateBookingInState(bookingId)
     } catch (error) {
       console.error('Error updating booking status:', error)
-      alert('เกิดข้อผิดพลาดในการอัพเดทสถานะการจอง')
+      toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการจอง')
     }
   }
 
@@ -332,7 +334,7 @@ export default function AdminBookingsClient({
       await updateBookingInState(bookingId)
     } catch (error) {
       console.error('Error updating payment status:', error)
-      alert('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน: ' + (error as Error).message)
+      toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน: ' + (error as Error).message)
     }
   }
 
@@ -342,7 +344,14 @@ export default function AdminBookingsClient({
   }
 
   const fixCommissions = async () => {
-    if (!confirm('สร้าง commission payments สำหรับ booking ที่ยังไม่มี?\n\nการดำเนินการนี้จะสร้าง commission payments ให้กับ booking ทั้งหมดที่มี seller แต่ยังไม่มี commission payments')) {
+    const confirmed = await showConfirmDialog({
+      title: 'สร้าง commission payments สำหรับ booking ที่ยังไม่มี?',
+      description: 'การดำเนินการนี้จะสร้าง commission payments ให้กับ booking ทั้งหมดที่มี seller แต่ยังไม่มี commission payments',
+      confirmText: 'สร้าง',
+      variant: 'default'
+    })
+    
+    if (!confirmed) {
       return
     }
 
@@ -359,17 +368,18 @@ export default function AdminBookingsClient({
       }
 
       const result = await response.json()
-      alert(`สำเร็จ! สร้าง commission payments สำหรับ ${result.created} booking`)
+      toast.success(`สำเร็จ! สร้าง commission payments สำหรับ ${result.created} booking`)
       
       if (result.errors && result.errors.length > 0) {
         console.error('Commission errors:', result.errors)
+        toast.warning(`มีข้อผิดพลาดบางส่วน: ${result.errors.length} รายการ`)
       }
 
       // Refresh bookings to see the changes
       await refreshBookings()
     } catch (error) {
       console.error('Error fixing commissions:', error)
-      alert('เกิดข้อผิดพลาดในการสร้าง commission payments')
+      toast.error('เกิดข้อผิดพลาดในการสร้าง commission payments')
     }
   }
 

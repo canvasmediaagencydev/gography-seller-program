@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminTrips, useCountries } from '@/hooks/useAdminTrips'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { TripFormData, TripScheduleFormData, COMMISSION_TYPES, VALIDATION_RULES } from '@/types/admin'
+import { toast } from 'sonner'
 
 export default function CreateTripPage() {
   const router = useRouter()
@@ -476,12 +477,12 @@ export default function CreateTripPage() {
                       const file = e.target.files?.[0]
                       if (file) {
                         if (file.type !== 'application/pdf') {
-                          alert('กรุณาเลือกไฟล์ PDF เท่านั้น')
+                          toast.error('กรุณาเลือกไฟล์ PDF เท่านั้น')
                           e.target.value = ''
                           return
                         }
                         if (file.size > 20 * 1024 * 1024) {
-                          alert('ขนาดไฟล์ต้องไม่เกิน 20MB')
+                          toast.error('ขนาดไฟล์ต้องไม่เกิน 20MB')
                           e.target.value = ''
                           return
                         }

@@ -1,6 +1,10 @@
 import StatusBadge from '../ui/StatusBadge'
 import StatusSelector from '../ui/StatusSelector'
 import { formatDate, formatPrice } from '@/utils/bookingUtils'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Mail, Phone, Calendar, UserCheck } from 'lucide-react'
 
 interface CustomerCardProps {
   customer: {
@@ -30,43 +34,41 @@ export default function CustomerCard({
   updatingStatus 
 }: CustomerCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
-      {/* Card Header */}
-      <div className="px-6 py-4 border-b border-gray-100">
+    <Card className="hover:shadow-md transition-shadow duration-200">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{customer.full_name}</h3>
-              <div className="flex items-center space-x-3 text-sm text-gray-500">
-                <span>เข้าร่วม {customer.created_at && formatDate(customer.created_at)}</span>
+              <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
+                <div className="flex items-center space-x-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>เข้าร่วม {customer.created_at && formatDate(customer.created_at)}</span>
+                </div>
                 {customer.referred_by_code && (
-                  <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                  <Badge variant="secondary" className="text-xs">
+                    <UserCheck className="w-3 h-3 mr-1" />
                     แนะนำโดย: {customer.referred_by_code}
-                  </span>
+                  </Badge>
                 )}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Card Body */}
-      <div className="px-6 py-5">
+      <CardContent className="pt-0">
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Contact Information */}
           <div>
             <h4 className="text-sm font-medium text-gray-900 mb-3">ข้อมูลติดต่อ</h4>
             <div className="space-y-2">
               <div className="flex items-center space-x-3 text-sm">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+                <Mail className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-600">{customer.email}</span>
               </div>
               <div className="flex items-center space-x-3 text-sm">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
+                <Phone className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-600">{customer.phone}</span>
               </div>
             </div>
@@ -90,9 +92,10 @@ export default function CustomerCard({
                     </div>
                     
                     {/* Status Management */}
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                    <Separator className="my-3" />
+                    <div className="flex items-center justify-between pt-2">
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-600">สถานะ:</span>
+                        <span className="text-xs text-muted-foreground">สถานะ:</span>
                         <StatusBadge status={booking.status} />
                       </div>
                       
@@ -108,17 +111,15 @@ export default function CustomerCard({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2H9.5" />
-                </svg>
-                <p className="text-gray-500 text-sm font-medium">ยังไม่มีการจอง</p>
-                <p className="text-gray-400 text-xs">รอลูกค้าจองทริป</p>
+              <div className="text-center py-8 bg-muted/50 rounded-lg">
+                <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm font-medium">ยังไม่มีการจอง</p>
+                <p className="text-muted-foreground/70 text-xs">รอลูกค้าจองทริป</p>
               </div>
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

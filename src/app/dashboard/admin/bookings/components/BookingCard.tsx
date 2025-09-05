@@ -1,10 +1,25 @@
 import { useState } from 'react'
 import { Tables } from '../../../../../../database.types'
-import { MdOutlineEdit } from "react-icons/md";
-import { IoCall } from "react-icons/io5";
-import { PiAirplaneTakeoffBold } from "react-icons/pi";
-import { PiAirplaneLandingBold } from "react-icons/pi";
-import { BsCurrencyDollar, BsCheckCircle, BsClock, BsXCircle } from "react-icons/bs";
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { 
+  Edit, 
+  Phone, 
+  PlaneTakeoff, 
+  PlaneLanding, 
+  DollarSign, 
+  CheckCircle, 
+  Clock, 
+  XCircle,
+  Mail,
+  User,
+  MapPin
+} from 'lucide-react'
 
 interface BookingWithDetails extends Tables<'bookings'> {
   customers?: {
@@ -91,54 +106,67 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
 
   const getStatusBadge = (status: string | null) => {
     const statusConfig = {
-      pending: { label: 'รออนุมัติ', bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
-      inprogress: { label: 'กำลังดำเนินการ', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-      approved: { label: 'อนุมัติแล้ว', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-      rejected: { label: 'ปฏิเสธ', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-      cancelled: { label: 'ยกเลิก', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' }
+      pending: { label: 'รออนุมัติ', variant: 'secondary' as const },
+      inprogress: { label: 'กำลังดำเนินการ', variant: 'default' as const },
+      approved: { label: 'อนุมัติแล้ว', variant: 'default' as const },
+      rejected: { label: 'ปฏิเสธ', variant: 'destructive' as const },
+      cancelled: { label: 'ยกเลิก', variant: 'outline' as const }
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
 
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-md font-medium border ${config.bg} ${config.text} ${config.border}`}>
+      <Badge variant={config.variant} className={cn(
+        status === 'approved' && 'bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80',
+        status === 'pending' && 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-50/80',
+        status === 'inprogress' && 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50/80'
+      )}>
         {config.label}
-      </span>
+      </Badge>
     )
   }
 
   const getPaymentStatusBadge = (paymentStatus: string | null) => {
     const statusConfig = {
-      pending: { label: 'รอชำระ', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: BsClock },
-      deposit_paid: { label: 'จ่ายมัดจำแล้ว', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: BsCurrencyDollar },
-      fully_paid: { label: 'จ่ายครบแล้ว', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200', icon: BsCheckCircle },
-      cancelled: { label: 'ยกเลิกชำระ', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', icon: BsXCircle }
+      pending: { label: 'รอชำระ', variant: 'secondary' as const, icon: Clock },
+      deposit_paid: { label: 'จ่ายมัดจำแล้ว', variant: 'default' as const, icon: DollarSign },
+      fully_paid: { label: 'จ่ายครบแล้ว', variant: 'default' as const, icon: CheckCircle },
+      cancelled: { label: 'ยกเลิกชำระ', variant: 'destructive' as const, icon: XCircle }
     }
 
     const config = statusConfig[paymentStatus as keyof typeof statusConfig] || statusConfig.pending
     const IconComponent = config.icon
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-sm font-medium border ${config.bg} ${config.text} ${config.border}`}>
-        <IconComponent className="text-xs" />
+      <Badge variant={config.variant} className={cn(
+        'gap-1.5',
+        paymentStatus === 'pending' && 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50/80',
+        paymentStatus === 'deposit_paid' && 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50/80',
+        paymentStatus === 'fully_paid' && 'bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80'
+      )}>
+        <IconComponent className="w-3 h-3" />
         {config.label}
-      </span>
+      </Badge>
     )
   }
 
   const getCommissionStatusBadge = (status: string | null) => {
     const statusConfig = {
-      pending: { label: 'รอจ่าย', bg: 'bg-yellow-50', text: 'text-yellow-700' },
-      paid: { label: 'จ่ายแล้ว', bg: 'bg-green-50', text: 'text-green-700' },
-      cancelled: { label: 'ยกเลิก', bg: 'bg-red-50', text: 'text-red-700' }
+      pending: { label: 'รอจ่าย', variant: 'secondary' as const },
+      paid: { label: 'จ่ายแล้ว', variant: 'default' as const },
+      cancelled: { label: 'ยกเลิก', variant: 'destructive' as const }
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
 
     return (
-      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${config.bg} ${config.text}`}>
+      <Badge variant={config.variant} className={cn(
+        'text-xs',
+        status === 'pending' && 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-50/80',
+        status === 'paid' && 'bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80'
+      )}>
         {config.label}
-      </span>
+      </Badge>
     )
   }
 
@@ -146,8 +174,10 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
     setUpdating(true)
     try {
       await onStatusUpdate(booking.id, newStatus)
+      toast.success('อัพเดทสถานะการจองสำเร็จ')
     } catch (error) {
       console.error('Error updating status:', error)
+      toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการจอง')
     } finally {
       setUpdating(false)
     }
@@ -157,9 +187,11 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
     setUpdating(true)
     try {
       await onPaymentStatusUpdate(booking.id, newPaymentStatus)
+      toast.success('อัพเดทสถานะการชำระเงินสำเร็จ')
       // No need to refresh commission payments as parent will refresh
     } catch (error) {
       console.error('Error updating payment status:', error)
+      toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน')
     } finally {
       setUpdating(false)
     }
@@ -183,11 +215,12 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
       }
 
       setEditingSeller(false)
+      toast.success('อัพเดท Seller สำเร็จ')
       // Trigger a refresh of the bookings list
       window.location.reload()
     } catch (error) {
       console.error('Error updating seller:', error)
-      alert('เกิดข้อผิดพลาดในการอัพเดท Seller')
+      toast.error('เกิดข้อผิดพลาดในการอัพเดท Seller')
     }
   }
 
@@ -195,26 +228,27 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
   const customer = booking.customers
 
   return (
-    <div className="p-6 transition-colors">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          {/* Trip and Customer Info */}
-          <div className="flex items-start gap-6 mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {trip?.title || 'ไม่พบข้อมูลทริป'}
-                  </h3>
-                  {trip?.countries?.flag_emoji && (
-                    <span className="text-base">{trip.countries.flag_emoji}</span>
-                  )}
+    <Card className="transition-colors hover:shadow-md">
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            {/* Trip and Customer Info */}
+            <div className="flex items-start gap-6 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {trip?.title || 'ไม่พบข้อมูลทริป'}
+                    </h3>
+                    {trip?.countries?.flag_emoji && (
+                      <span className="text-base">{trip.countries.flag_emoji}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(booking.status)}
+                    {getPaymentStatusBadge(booking.payment_status)}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(booking.status)}
-                  {getPaymentStatusBadge(booking.payment_status)}
-                </div>
-              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -225,8 +259,8 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                     </div>
                   </div>
                   {customer?.phone && (
-                    <p className="text-md text-gray-600 ">
-                      <IoCall className="inline-block mr-2" />
+                    <p className="text-md text-gray-600 flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
                       {customer.phone}
                     </p>
                   )}
@@ -235,17 +269,15 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                 <div className="space-y-1">
                   {booking.trip_schedules && (
                     <>
-                      <p className="text-md text-gray-600">
-                        <span className="font-medium">
-                          <PiAirplaneTakeoffBold className="inline-block mr-1" />
-                          วันเดินทาง:
-                        </span> {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      <p className="text-md text-gray-600 flex items-center gap-2">
+                        <PlaneTakeoff className="w-4 h-4" />
+                        <span className="font-medium">วันเดินทาง:</span> 
+                        {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
-                      <p className="text-md text-gray-600">
-                        <span className="font-medium">
-                          <PiAirplaneLandingBold className="inline-block mr-1" />
-                          วันกลับ:
-                        </span> {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      <p className="text-md text-gray-600 flex items-center gap-2">
+                        <PlaneLanding className="w-4 h-4" />
+                        <span className="font-medium">วันกลับ:</span> 
+                        {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </>
                   )}
@@ -321,142 +353,107 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                 )}
               </div>
             </div>
-            <button
+            <Button
               onClick={() => setEditingSeller(!editingSeller)}
-              className="text-blue-600 hover:text-blue-700 text-md font-medium px-3 py-1 rounded-md hover:bg-blue-50 transition-color hover:cursor-pointer"
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
-              <MdOutlineEdit className='inline-block mr-1 text-xl'/>
+              <Edit className="w-4 h-4 mr-1" />
               แก้ไข
-            </button>
+            </Button>
           </div>
   {/* Edit Seller */}
       {editingSeller && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-4">
+        <div className="mt-6">
+          <Separator className="mb-4" />
+          <div className="bg-muted/50 rounded-lg p-4">
             <h4 className="text-md font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
             <div className="flex items-center gap-3">
-              <select
-                value={selectedSellerId}
-                onChange={(e) => setSelectedSellerId(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">ไม่มี Seller</option>
-                {sellers.map((seller) => (
-                  <option key={seller.id} value={seller.id}>
-                    {seller.full_name || seller.email} ({seller.referral_code})
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={handleSellerUpdate}
-                className="px-4 py-2 bg-blue-600 text-white text-md font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
+              <Select value={selectedSellerId} onValueChange={setSelectedSellerId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="เลือก Seller" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">ไม่มี Seller</SelectItem>
+                  {sellers.map((seller) => (
+                    <SelectItem key={seller.id} value={seller.id}>
+                      {seller.full_name || seller.email} ({seller.referral_code})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button onClick={handleSellerUpdate}>
                 บันทึก
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setEditingSeller(false)
                   setSelectedSellerId(booking.seller_id || '')
                 }}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-md font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                variant="outline"
               >
                 ยกเลิก
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-          {/* Actions */}
-          <div className="flex flex-col gap-4">
-            {/* Payment Status Control */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <p className="text-lg text-gray-600">สถานะการชำระ:</p>
-                <select
-                  value={booking.payment_status || 'pending'}
-                  onChange={(e) => handlePaymentStatusChange(e.target.value)}
-                  disabled={updating}
-                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <option value="pending">รอชำระ</option>
-                  <option value="deposit_paid">จ่ายมัดจำแล้ว</option>
-                  <option value="fully_paid">จ่ายครบแล้ว</option>
-                  <option value="cancelled">ยกเลิกชำระ</option>
-                </select>
-              </div>
+          </div>
+        </div>
+      </CardHeader>
 
-              {/* Booking Status Control */}
-              <div className="flex items-center gap-2">
-                <p className="text-lg text-gray-600">สถานะการจอง:</p>
-                <select
-                  value={booking.status || 'pending'}
-                  onChange={(e) => handleStatusChange(e.target.value)}
-                  disabled={updating}
-                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <option value="pending">รออนุมัติ</option>
-                  <option value="inprogress">กำลังดำเนินการ</option>
-                  <option value="approved">อนุมัติแล้ว</option>
-                  <option value="rejected">ปฏิเสธ</option>
-                  <option value="cancelled">ยกเลิก</option>
-                </select>
+      <CardContent className="pt-0">
+        {/* Actions */}
+        <div className="flex flex-col gap-4">
+          {/* Payment Status Control */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground font-medium">สถานะการชำระ:</p>
+              <Select 
+                value={booking.payment_status || 'pending'}
+                onValueChange={handlePaymentStatusChange}
+                disabled={updating}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">รอชำระ</SelectItem>
+                  <SelectItem value="deposit_paid">จ่ายมัดจำแล้ว</SelectItem>
+                  <SelectItem value="fully_paid">จ่ายครบแล้ว</SelectItem>
+                  <SelectItem value="cancelled">ยกเลิกชำระ</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                {updating && (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-                )}
-              </div>
+            {/* Booking Status Control */}
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground font-medium">สถานะการจอง:</p>
+              <Select 
+                value={booking.status || 'pending'}
+                onValueChange={handleStatusChange}
+                disabled={updating}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">รออนุมัติ</SelectItem>
+                  <SelectItem value="inprogress">กำลังดำเนินการ</SelectItem>
+                  <SelectItem value="approved">อนุมัติแล้ว</SelectItem>
+                  <SelectItem value="rejected">ปฏิเสธ</SelectItem>
+                  <SelectItem value="cancelled">ยกเลิก</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {updating && (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Expanded Details */}
-      {/* {showDetails && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-md font-medium text-gray-900 mb-3">ข้อมูลลูกค้า</h4>
-                <div className="space-y-2 text-md">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">บัตรประชาชน:</span>
-                    <span className="text-gray-900">{customer?.id_card || 'ไม่ระบุ'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">หนังสือเดินทาง:</span>
-                    <span className="text-gray-900">{customer?.passport_number || 'ไม่ระบุ'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-md font-medium text-gray-900 mb-3">ข้อมูลทริป</h4>
-                <div className="space-y-2 text-md">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">ราคาต่อคน:</span>
-                    <span className="text-gray-900">฿{trip ? trip.price_per_person.toLocaleString() : 'ไม่ระบุ'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">ประเทศ:</span>
-                    <span className="text-gray-900">{trip?.countries?.name || 'ไม่ระบุ'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {booking.notes && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-md font-medium text-gray-900 mb-2">หมายเหตุ</h4>
-              <p className="text-md text-gray-700">{booking.notes}</p>
-            </div>
-          )}
-        </div>
-      )} */}
-
-    
-    </div>
+      </CardContent>
+    </Card>
   )
 }

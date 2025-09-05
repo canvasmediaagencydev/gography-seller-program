@@ -4,6 +4,7 @@ import { TripWithRelations, ViewType } from '../../types/trip'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 interface TripsListProps {
     trips: TripWithRelations[]
@@ -78,7 +79,7 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
 
     const copyShareLink = (trip: TripWithRelations) => {
         if (sellerStatus !== 'approved') {
-            alert('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
+            toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
             return
         }
         const shareUrl = `${window.location.origin}/trips/${trip.id}`
