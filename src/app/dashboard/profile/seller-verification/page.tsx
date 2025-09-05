@@ -195,16 +195,16 @@ export default function SellerVerificationPage() {
 
   if (!userProfile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b rounded-2xl border-gray-200">
         <div className="flex items-center justify-between p-4">
           <button
             onClick={() => router.push('/dashboard/profile')}
@@ -221,7 +221,7 @@ export default function SellerVerificationPage() {
       </div>
 
       {/* Content */}
-      <div className="p-4 pb-14">
+      <div className="p-4 pb-2">
         {/* Info Card */}
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl p-6 mb-6">
           <div className="flex items-center space-x-3 mb-3">
@@ -574,7 +574,7 @@ export default function SellerVerificationPage() {
       </div>
 
       {/* Fixed Bottom Button */}
-      <div className="bg-white border-t border-gray-200 p-4 z-10">
+      <div className="p-4">
         <button
           onClick={handleSubmit}
           disabled={loading}
