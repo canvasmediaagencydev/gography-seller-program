@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { BsColumnsGap } from "react-icons/bs";
 import { LuPlaneTakeoff } from "react-icons/lu";
 import { TbUsers } from "react-icons/tb";
@@ -10,8 +11,12 @@ import { BsShieldCheck, BsExclamationTriangle, BsClock, BsCheckCircle } from "re
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
-import ProfileCompletionModal from '@/components/ProfileCompletionModal'
 import Image from 'next/image'
+
+// Import ProfileCompletionModal dynamically to avoid build issues
+const ProfileCompletionModal = dynamic(() => import('@/components/ProfileCompletionModal'), {
+  ssr: false
+})
 
 interface UserProfile {
   id: string
