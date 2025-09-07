@@ -20,9 +20,9 @@ export function TripsHeader({
   availableCountries = [] 
 }: TripsHeaderProps) {
   return (
-    <div className="mb-6">
+    <div className="mb-6 md:mt-0 mt-5">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-5">
+        <div className="flex items-center md:gap-5 gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">ข้อมูล Trips</h1>
           </div>
@@ -32,7 +32,7 @@ export function TripsHeader({
         </div>
         
         {onCountriesChange && availableCountries.length > 0 && (
-          <div className="flex items-center">
+          <div className="flex items-center md:ml-0 ml-4">
             <CountryFilter
               selectedCountries={selectedCountries}
               onCountriesChange={onCountriesChange}

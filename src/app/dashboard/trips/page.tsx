@@ -120,7 +120,7 @@ export default function TripsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:px-0 px-4 md:py-0 py-4">
       <TripsHeader 
         totalTrips={totalCount}
         selectedCountries={selectedCountries}
