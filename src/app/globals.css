@@ -1,5 +1,32 @@
 @import "tailwindcss";
 
+/* Apply Noto Sans Thai font globally */
+*, *::before, *::after {
+  font-family: "Noto Sans Thai", sans-serif !important;
+  font-optical-sizing: auto;
+  font-variation-settings: "wdth" 100;
+}
+
+html {
+  font-family: "Noto Sans Thai", sans-serif !important;
+}
+
+body {
+  font-family: "Noto Sans Thai", sans-serif !important;
+}
+
+/* Override specific elements that might use different fonts */
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select, label {
+  font-family: "Noto Sans Thai", sans-serif !important;
+}
+
+/* Custom Font Utilities */
+.font-noto-thai {
+  font-family: "Noto Sans Thai", sans-serif !important;
+  font-optical-sizing: auto;
+  font-variation-settings: "wdth" 100;
+}
+
 /* Custom utilities */
 .line-clamp-2 {
   display: -webkit-box;
