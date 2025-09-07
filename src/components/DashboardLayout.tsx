@@ -39,7 +39,7 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
       <Sidebar initialProfile={initialProfile} />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-6">
+      <main className="flex-1 w-full md:py-6 md:px-6 lg:px-8 md:overflow-y-auto">
         {children}
       </main>
 
