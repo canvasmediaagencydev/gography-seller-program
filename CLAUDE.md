@@ -37,28 +37,38 @@ This is a seller dashboard for a trip booking platform with role-based access:
 ```
 src/
 ├── app/                     # Next.js App Router
-│   ├── (auth)/              # Auth pages (login)
-│   ├── (dashboard)/         # Protected dashboard routes
+│   ├── (auth)/              # Auth pages (login, register)
+│   ├── dashboard/           # Protected dashboard routes
 │   │   ├── admin/           # Admin-only pages (trips, bookings, sellers, customers)
-│   │   ├── trips/           # Seller trip management
+│   │   ├── trips/           # Seller trip management (currently empty - handled at /dashboard)
 │   │   └── reports/         # Seller reports
 │   ├── api/                 # API routes
 │   │   ├── trips/           # Trips API with caching
-│   │   ├── admin/           # Admin APIs (bookings, trips)
-│   │   └── upload/          # File upload endpoints
-│   └── book/                # Public booking pages
+│   │   ├── admin/           # Admin APIs (bookings, trips, sellers)
+│   │   ├── upload/          # File upload endpoints (image, file, seller)
+│   │   ├── countries/       # Countries lookup API
+│   │   └── storage/         # Storage management API
+│   ├── book/                # Public booking pages
+│   │   └── [tripId]/[scheduleId]/ # Dynamic booking routes
+│   └── api-docs/            # API documentation page
 ├── components/              # Reusable UI components
-│   ├── ui/                  # Basic UI components
+│   ├── ui/                  # Basic UI components (shadcn/ui based)
 │   ├── admin/               # Admin-specific components
+│   ├── auth/                # Authentication components
 │   ├── booking/             # Booking form components
+│   ├── reports/             # Report components
 │   └── trips/               # Trip display components
-├── hooks/                   # Custom React hooks
+├── constants/               # Application constants
+├── hooks/                   # Custom React hooks (currently empty)
 ├── lib/                     # Utilities and configurations
 │   ├── supabase/            # Database clients (client, server, admin)
+│   ├── auth/                # Auth utilities and helpers
 │   ├── cache.ts             # In-memory caching system
-│   └── storage.ts           # File storage utilities
-├── types/                   # TypeScript definitions
-└── utils/                   # Helper functions
+│   ├── storage.ts           # File storage utilities
+│   ├── utils.ts             # General utility functions
+│   └── performance.ts       # Performance monitoring utilities
+├── types/                   # TypeScript definitions (currently empty)
+└── middleware.ts            # Next.js middleware for auth & route protection
 ```
 
 ### Database Architecture
@@ -82,6 +92,13 @@ src/
 - **Client-side**: Use `createClient()` from `@/lib/supabase/client`
 - **Server-side**: Use `createClient()` from `@/lib/supabase/server`
 - **Admin operations**: Use `createAdminClient()` from `@/lib/supabase/admin`
+
+### Route Protection & Middleware
+- **Middleware**: Located at `src/middleware.ts` - handles authentication and role-based route protection
+- **Public routes**: `/auth/*`, `/book/*`, `/api/docs`, `/api-docs`, and root `/`
+- **Role-based access**: Admin users get redirected to `/dashboard/admin/sellers`, sellers to `/dashboard`
+- **Status-based access**: Rejected users are signed out automatically, unapproved sellers cannot access reports
+- **Authentication flow**: Unauthenticated users are redirected to `/auth/login`
 
 ### API Routes
 - All API routes include caching via `@/lib/cache`
@@ -116,10 +133,31 @@ Critical database indexes are documented in `TRIPS_API_OPTIMIZATION_GUIDE.md`. T
 - `SUPABASE_SERVICE_ROLE_KEY` (for admin operations)
 - `NEXT_PUBLIC_SITE_URL` (for production deployment)
 
-Copy `.env.example` to `.env.local` and fill in your Supabase project credentials.
+**Note**: No `.env.example` file exists in the project. Create `.env.local` with the above variables and fill in your Supabase project credentials.
 
 ### Cache System
 The project uses an in-memory cache (`@/lib/cache.ts`) for API performance. Cache keys include user ID to prevent data leaks between users.
 
 ### Commission System
 Complex commission calculations are handled server-side with proper tracking of seller attributions and referral bonuses.
+
+## Additional Development Notes
+
+### UI Components
+- **Component Library**: Uses shadcn/ui components with Radix UI primitives
+- **Styling**: Tailwind CSS v4 with custom design system
+- **Icons**: Multiple icon libraries including Heroicons, Lucide React, and React Icons
+- **Fonts**: Noto Sans Thai for Thai language support (loaded from Google Fonts)
+
+### Performance Optimizations
+- **Next.js Features**: Uses Turbopack for fast development builds
+- **Bundle Optimization**: Package imports are optimized for react-icons
+- **Image Optimization**: Configured for WebP and AVIF formats with remote patterns allowed
+- **Caching Strategy**: API responses cached with stale-while-revalidate pattern
+- **Static Assets**: Long-term caching (1 year) for static assets
+
+### Key Configuration Files
+- **Next.js Config**: `next.config.ts` - includes performance optimizations and headers
+- **TypeScript**: `tsconfig.json` - strict mode enabled with path mapping (`@/*` → `./src/*`)
+- **Database Types**: `database.types.ts` - auto-generated Supabase types
+- **Components Config**: `components.json` - shadcn/ui configuration

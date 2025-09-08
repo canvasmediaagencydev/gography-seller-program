@@ -1,10 +1,15 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import * as React from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { AuthLayout, AuthButton } from '@/components/auth'
 import { useAuthForm } from '@/hooks/useAuthForm'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import AuthSkeleton from '@/components/auth/AuthSkeleton'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -12,6 +17,16 @@ function LoginForm() {
   
   const searchParams = useSearchParams()
   const { loading, error, isRedirecting, setError, handleEmailAuth, handleGoogleAuth } = useAuthForm()
+  
+  // Focus management for accessibility
+  const emailRef = React.useRef<HTMLInputElement>(null)
+  
+  React.useEffect(() => {
+    // Auto-focus email input when component mounts
+    if (emailRef.current) {
+      emailRef.current.focus()
+    }
+  }, [])
 
   const errorMessage = searchParams.get('error')
   const displayError = error || errorMessage || undefined
@@ -37,37 +52,45 @@ function LoginForm() {
         </>
       }
       error={displayError}
+      errorId="login-error"
     >
       <form className="space-y-6" onSubmit={handleEmailLogin}>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               อีเมล
-            </label>
-            <input
+            </Label>
+            <Input
+              ref={emailRef}
               id="email"
               name="email"
               type="email"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 sm:text-sm"
+              autoComplete="email"
+              className="h-12 px-4 text-base md:h-10 md:text-sm"
               placeholder="กรอกอีเมลของคุณ"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              aria-describedby={error ? "login-error" : undefined}
+              aria-invalid={!!error}
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
               รหัสผ่าน
-            </label>
-            <input
+            </Label>
+            <Input
               id="password"
               name="password"
               type="password"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 sm:text-sm"
+              autoComplete="current-password"
+              className="h-12 px-4 text-base md:h-10 md:text-sm"
               placeholder="กรอกรหัสผ่านของคุณ"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              aria-describedby={error ? "login-error" : undefined}
+              aria-invalid={!!error}
             />
           </div>
         </div>
@@ -120,11 +143,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    }>
+    <Suspense fallback={<AuthSkeleton />}>
       <LoginForm />
     </Suspense>
   )
