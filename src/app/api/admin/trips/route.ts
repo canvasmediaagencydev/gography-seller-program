@@ -28,12 +28,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
-    // Query trips with countries
+    // Query trips with countries - optimized with select only needed fields
     let query = supabase
       .from('trips')
       .select(`
-        *,
-        countries (
+        id,
+        title,
+        description,
+        price_per_person,
+        total_seats,
+        is_active,
+        duration_days,
+        duration_nights,
+        created_at,
+        updated_at,
+        created_by,
+        country_id,
+        cover_image_url,
+        countries!inner (
           id,
           name,
           flag_emoji

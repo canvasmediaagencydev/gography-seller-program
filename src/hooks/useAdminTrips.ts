@@ -23,7 +23,7 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
   const [totalPages, setTotalPages] = useState(0)
   const supabase = createClient()
 
-  const fetchTrips = async (page: number = 1, search: string = '') => {
+  const fetchTrips = async (page: number = 1, search: string = '', forceRefresh: boolean = false) => {
     try {
       setLoading(true)
       setError(null)
@@ -31,19 +31,24 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
-        ...(search && { search }),
-        // Add cache busting timestamp
-        _t: Date.now().toString()
+        ...(search && { search })
       })
 
       const response = await fetch(`/api/admin/trips?${params}`, {
-        // Disable caching
-        cache: 'no-cache',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
+        // Use cache unless we force refresh (e.g., after updates)
+        ...(forceRefresh ? {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        } : {
+          next: { revalidate: 30 },
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
       })
       
       if (!response.ok) {
@@ -143,13 +148,13 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
 
       if (!response.ok) {
         // If delete failed, restore the trip to local state
-        await fetchTrips(currentPage)
+        await fetchTrips(currentPage, '', true)
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to delete trip')
       }
 
-      // Small delay to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Refresh trips list immediately after successful delete
+      await fetchTrips(currentPage, '', true)
 
       toast.success('ลบทริปสำเร็จ')
 
@@ -179,6 +184,11 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
         )
       )
       
+      // Also refresh from server to ensure consistency
+      setTimeout(() => {
+        fetchTrips(currentPage, '', true) // Force refresh after toggle
+      }, 100)
+      
       toast.success(`${isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}ทริปสำเร็จ`)
 
     } catch (err: any) {
@@ -189,7 +199,7 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
   }
 
   const refreshTrips = async (): Promise<void> => {
-    await fetchTrips(currentPage)
+    await fetchTrips(currentPage, '', true) // Force refresh
   }
 
   // Fetch trips on component mount

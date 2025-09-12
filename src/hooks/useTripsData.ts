@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { TripWithRelations } from '../types/trip'
+import { useBackgroundSync } from './useBackgroundSync'
 
 export function useTripsData() {
     const [trips, setTrips] = useState<TripWithRelations[]>([])
@@ -10,6 +11,13 @@ export function useTripsData() {
     const [userRole, setUserRole] = useState<string | null>(null)
 
     const supabase = createClient()
+    
+    // Enable background sync for sellers
+    useBackgroundSync({ 
+      enabled: true, 
+      interval: 60000, // เช็คทุก 1 นาที
+      userRole 
+    })
 
     const fetchTrips = async () => {
         try {
@@ -99,6 +107,18 @@ export function useTripsData() {
 
     useEffect(() => {
         fetchTrips()
+        
+        // Listen for trips updates from background sync
+        const handleTripsUpdate = () => {
+            console.log('🔄 Refreshing trips data due to admin updates...')
+            fetchTrips()
+        }
+        
+        window.addEventListener('tripsUpdated', handleTripsUpdate)
+        
+        return () => {
+            window.removeEventListener('tripsUpdated', handleTripsUpdate)
+        }
     }, [])
 
     return {

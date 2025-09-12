@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import MobileBottomNav from '@/components/MobileBottomNav'
 import ProfileCompletionModal from '@/components/ProfileCompletionModal'
+import { useBackgroundSync } from '@/hooks/useBackgroundSync'
 
 interface UserProfile {
   id: string
@@ -22,6 +23,13 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, initialProfile }: DashboardLayoutProps) {
   const [showProfileModal, setShowProfileModal] = useState(false)
+  
+  // Enable background sync for sellers to detect admin updates
+  useBackgroundSync({ 
+    enabled: true,
+    interval: 30000, // เช็คทุก 30 วินาที
+    userRole: initialProfile?.role 
+  })
 
   useEffect(() => {
     const handleOpenProfileModal = () => {
