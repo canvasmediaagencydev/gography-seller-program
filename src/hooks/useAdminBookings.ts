@@ -100,6 +100,7 @@ export function useAdminBookings(pageSize: number = 20): UseAdminBookingsResult 
   // Update single booking in state (for optimistic updates)
   const updateBookingInState = useCallback(async (bookingId: string) => {
     try {
+      console.log('Updating booking in state:', bookingId)
       // Use API endpoint to get updated booking data (with proper admin permissions)
       const response = await fetch(`/api/admin/bookings/${bookingId}`, {
         headers: {
@@ -112,14 +113,21 @@ export function useAdminBookings(pageSize: number = 20): UseAdminBookingsResult 
       }
 
       const { booking: updatedBooking } = await response.json()
+      console.log('Updated booking data:', updatedBooking?.payment_status)
 
       if (updatedBooking) {
         // Update state
-        setBookings(prevBookings => 
-          prevBookings.map(booking => 
+        setBookings(prevBookings => {
+          const updated = prevBookings.map(booking => 
             booking.id === bookingId ? updatedBooking : booking
           )
-        )
+          console.log('Updated bookings state, new payment_status:', updatedBooking.payment_status)
+          return updated
+        })
+        
+        // Force re-render by updating state timestamp
+        const timestamp = Date.now()
+        console.log('Force refresh at:', timestamp)
       }
     } catch (error) {
       console.error('Error updating booking in state:', error)

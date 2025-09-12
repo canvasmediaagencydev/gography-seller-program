@@ -317,242 +317,214 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Bookings List - Professional Card Layout */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">รายการจองล่าสุด</h3>
-                <p className="text-sm text-gray-600">รายการการจองที่อัปเดตล่าสุด</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-sm">
-                <span className="px-3 py-1 bg-white rounded-full text-gray-700 border border-gray-200">
-                  {Math.min(bookings?.length || 0, 10)} / {bookings?.length || 0} รายการ
-                </span>
-              </div>
+      {/* Bookings List */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h3 className="text-lg font-semibold text-gray-900">รายการจองล่าสุด</h3>
+            <div className="flex items-center gap-2 md:gap-4 text-sm">
+              <span className="text-gray-500">{Math.min(bookings?.length || 0, 10)} / {bookings?.length || 0} รายการ</span>
               {totalCommissionEarned > 0 && (
-                <div className="px-3 py-1 bg-green-100 rounded-full text-green-700 text-sm font-medium">
+                <span className="font-medium text-green-600">
                   ได้รับแล้ว ฿{totalCommissionEarned.toLocaleString()}
-                </div>
+                </span>
               )}
             </div>
           </div>
         </div>
         
         {bookings && bookings.length > 0 ? (
-          <div className="divide-y divide-gray-100">
-            {bookings.slice(0, 10).map((booking, index) => {
-              const commissionEarned = booking.commission_payments
-                ?.filter(cp => cp.status === 'paid')
-                .reduce((sum, cp) => sum + cp.amount, 0) || 0
-              const commissionPending = booking.commission_payments
-                ?.filter(cp => cp.status === 'pending')
-                .reduce((sum, cp) => sum + cp.amount, 0) || 0
+          <div className="space-y-4 p-4">
+            {bookings.slice(0, 10).map((booking) => {
+                    const commissionEarned = booking.commission_payments
+                      ?.filter(cp => cp.status === 'paid')
+                      .reduce((sum, cp) => sum + cp.amount, 0) || 0
+                    const commissionPending = booking.commission_payments
+                      ?.filter(cp => cp.status === 'pending')
+                      .reduce((sum, cp) => sum + cp.amount, 0) || 0
 
-              const getPaymentStatusBadge = (status: string | null) => {
-                const statusConfig = {
-                  partial: { 
-                    label: 'จ่ายมัดจำแล้ว', 
-                    bg: 'bg-blue-50 text-blue-700', 
-                    border: 'border-blue-200',
-                    dot: 'bg-blue-400'
-                  },
-                  completed: { 
-                    label: 'จ่ายครบแล้ว', 
-                    bg: 'bg-green-50 text-green-700', 
-                    border: 'border-green-200',
-                    dot: 'bg-green-400'
-                  },
-                  refunded: { 
-                    label: 'ยกเลิกชำระ', 
-                    bg: 'bg-red-50 text-red-700', 
-                    border: 'border-red-200',
-                    dot: 'bg-red-400'
-                  }
-                }
-                const config = statusConfig[status as keyof typeof statusConfig]
-                
-                if (!config) return null
-                
-                return (
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${config.bg} ${config.border}`}>
-                    <div className={`w-2 h-2 rounded-full ${config.dot}`}></div>
-                    {config.label}
-                  </span>
-                )
-              }
+                    const getPaymentStatusBadge = (status: string | null) => {
+                      const statusConfig = {
+                        partial: { label: 'จ่ายมัดจำแล้ว', bg: 'bg-blue-50 text-blue-700 border-blue-200' },
+                        completed: { label: 'จ่ายครบแล้ว', bg: 'bg-green-50 text-green-700 border-green-200' },
+                        refunded: { label: 'ยกเลิกชำระ', bg: 'bg-red-50 text-red-700 border-red-200' }
+                      }
+                      const config = statusConfig[status as keyof typeof statusConfig]
+                      
+                      if (!config) return null
+                      
+                      return (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg}`}>
+                          {config.label}
+                        </span>
+                      )
+                    }
 
-              const getBookingStatusBadge = (status: string | null) => {
-                const statusConfig = {
-                  approved: { 
-                    label: 'ยืนยันแล้ว', 
-                    bg: 'bg-green-50 text-green-700', 
-                    border: 'border-green-200',
-                    dot: 'bg-green-400'
-                  },
-                  pending: { 
-                    label: 'รอดำเนินการ', 
-                    bg: 'bg-yellow-50 text-yellow-700', 
-                    border: 'border-yellow-200',
-                    dot: 'bg-yellow-400'
-                  },
-                  inprogress: { 
-                    label: 'กำลังดำเนินการ', 
-                    bg: 'bg-blue-50 text-blue-700', 
-                    border: 'border-blue-200',
-                    dot: 'bg-blue-400'
-                  },
-                  cancelled: { 
-                    label: 'ยกเลิกแล้ว', 
-                    bg: 'bg-gray-50 text-gray-700', 
-                    border: 'border-gray-200',
-                    dot: 'bg-gray-400'
-                  },
-                  rejected: { 
-                    label: 'ไม่อนุมัติ', 
-                    bg: 'bg-red-50 text-red-700', 
-                    border: 'border-red-200',
-                    dot: 'bg-red-400'
-                  }
-                }
-                const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
-                
-                return (
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border ${config.bg} ${config.border}`}>
-                    <div className={`w-2 h-2 rounded-full ${config.dot}`}></div>
-                    {config.label}
-                  </span>
-                )
-              }
-
-              return (
-                <div key={booking.id} className={`relative p-6 hover:bg-gray-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                  {/* Card Content */}
-                  <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                    {/* Left Section - Customer & Trip Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-4">
-                        {/* Avatar */}
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                        </div>
-                        {/* Customer Info */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-base font-semibold text-gray-900 truncate">
-                            {booking.customers?.full_name || 'ไม่มีข้อมูลลูกค้า'}
-                          </h4>
-                          <p className="text-sm text-gray-600 mt-1 truncate">
-                            {booking.trip_schedules?.trips?.title || 'ไม่มีข้อมูลทริป'}
-                          </p>
+                    return (
+                      <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {booking.customers?.full_name || 'ไม่มีข้อมูล'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {booking.customers?.email}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {booking.trip_schedules?.trips?.title || 'ไม่มีข้อมูล'}
+                          </div>
                           {booking.trip_schedules?.departure_date && (
-                            <div className="flex items-center gap-1 mt-2">
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              <span className="text-xs text-gray-500">
-                                {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', {
-                                  year: 'numeric',
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
-                              </span>
+                            <div className="text-sm text-gray-500">
+                              {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
                             </div>
                           )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            ฿{Number(booking.total_amount).toLocaleString()}
+                          </div>
+                          {booking.deposit_amount && (
+                            <div className="text-xs text-gray-500">
+                              มัดจำ: ฿{booking.deposit_amount.toLocaleString()}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getPaymentStatusBadge(booking.payment_status)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            <div className="text-green-600">ได้รับ: ฿{commissionEarned.toLocaleString()}</div>
+                            {commissionPending > 0 && (
+                              <div className="text-orange-600">รอรับ: ฿{commissionPending.toLocaleString()}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            booking.status === 'approved' 
+                              ? 'bg-green-50 text-green-700 border border-green-200'
+                              : booking.status === 'pending'
+                              ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                              : booking.status === 'inprogress'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : booking.status === 'cancelled'
+                              ? 'bg-gray-50 text-gray-700 border border-gray-200'
+                              : booking.status === 'rejected'
+                              ? 'bg-red-50 text-red-700 border border-red-200'
+                              : 'bg-gray-50 text-gray-700 border border-gray-200'
+                          }`}>
+                            {booking.status === 'approved' ? 'ยืนยันแล้ว' : 
+                             booking.status === 'pending' ? 'รอดำเนินการ' :
+                             booking.status === 'inprogress' ? 'กำลังดำเนินการ' :
+                             booking.status === 'cancelled' ? 'ยกเลิกแล้ว' : 
+                             booking.status === 'rejected' ? 'ไม่อนุมัติ' : booking.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(booking.created_at || '').toLocaleDateString('th-TH')}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden">
+              {bookings.map((booking) => {
+                const commissionEarned = booking.commission_payments
+                  ?.filter(cp => cp.status === 'paid')
+                  .reduce((sum, cp) => sum + cp.amount, 0) || 0
+                const commissionPending = booking.commission_payments
+                  ?.filter(cp => cp.status === 'pending')
+                  .reduce((sum, cp) => sum + cp.amount, 0) || 0
+
+                const getPaymentStatusBadge = (status: string | null) => {
+                  const statusConfig = {
+                    partial: { label: 'จ่ายมัดจำแล้ว', bg: 'bg-blue-50 text-blue-700 border-blue-200' },
+                    completed: { label: 'จ่ายครบแล้ว', bg: 'bg-green-50 text-green-700 border-green-200' },
+                    refunded: { label: 'ยกเลิกชำระ', bg: 'bg-red-50 text-red-700 border-red-200' }
+                  }
+                  const config = statusConfig[status as keyof typeof statusConfig]
+                  
+                  if (!config) return null
+                  
+                  return (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.bg}`}>
+                      {config.label}
+                    </span>
+                  )
+                }
+
+                return (
+                  <div key={booking.id} className="p-4 border-b border-gray-200 last:border-b-0">
+                    <div className="space-y-3">
+                      {/* Customer & Trip */}
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {booking.customers?.full_name || 'ไม่มีข้อมูล'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {booking.trip_schedules?.trips?.title || 'ไม่มีข้อมูล'}
                         </div>
                       </div>
-                    </div>
 
-                    {/* Middle Section - Financial Info */}
-                    <div className="flex flex-col sm:flex-row gap-6 lg:gap-8">
-                      {/* Amount */}
-                      <div className="text-center sm:text-left">
-                        <p className="text-xs text-gray-500 mb-1">ยอดรวม</p>
-                        <p className="text-xl font-bold text-gray-900">
-                          ฿{Number(booking.total_amount).toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(booking.created_at || '').toLocaleDateString('th-TH')}
-                        </p>
+                      {/* Amount & Status */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            ฿{Number(booking.total_amount).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(booking.created_at || '').toLocaleDateString('th-TH')}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          {getPaymentStatusBadge(booking.payment_status)}
+                          <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                            booking.status === 'approved' 
+                              ? 'bg-green-50 text-green-700'
+                              : booking.status === 'pending'
+                              ? 'bg-yellow-50 text-yellow-700'
+                              : 'bg-gray-50 text-gray-700'
+                          }`}>
+                            {booking.status === 'approved' ? 'ยืนยันแล้ว' : 
+                             booking.status === 'pending' ? 'รอดำเนินการ' : booking.status}
+                          </span>
+                        </div>
                       </div>
 
                       {/* Commission */}
-                      <div className="text-center sm:text-left">
-                        <p className="text-xs text-gray-500 mb-1">คอมมิชชั่น</p>
-                        <div className="space-y-1">
-                          <p className="text-lg font-semibold text-green-600">
-                            ฿{commissionEarned.toLocaleString()}
-                          </p>
-                          {commissionPending > 0 && (
-                            <p className="text-sm text-orange-600">
-                              + ฿{commissionPending.toLocaleString()} รอรับ
-                            </p>
-                          )}
-                        </div>
+                      <div className="text-xs text-gray-500 flex justify-between">
+                        <span>ได้รับ: ฿{commissionEarned.toLocaleString()}</span>
+                        <span>รอรับ: ฿{commissionPending.toLocaleString()}</span>
                       </div>
                     </div>
-
-                    {/* Right Section - Status */}
-                    <div className="flex flex-col gap-3 lg:items-end">
-                      {getPaymentStatusBadge(booking.payment_status)}
-                      {getBookingStatusBadge(booking.status)}
-                    </div>
                   </div>
-                </div>
-              )
-            })}
-
-            {/* Show More Section */}
-            {bookings.length > 10 && (
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4">
-                <div className="text-center">
-                  <button className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                    ดูเพิ่มเติม ({bookings.length - 10} รายการ)
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-16 px-6">
-            <div className="max-w-sm mx-auto">
-              {/* Empty State Icon */}
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-6">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              
-              {/* Empty State Content */}
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">ยังไม่มีการจองเข้ามา</h3>
-              <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                เมื่อมีลูกค้าจองทริปผ่านลิงก์ของคุณ<br />
-                รายการจองจะแสดงที่นี่
-              </p>
-              
-              {/* CTA Button */}
-              <div className="space-y-3">
-                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                  แชร์ลิงก์ของคุณ
-                </button>
-                <p className="text-xs text-gray-500">
-                  หรือตรวจสอบสถานะการอนุมัติ
-                </p>
-              </div>
+                )
+              })}
             </div>
+          </>
+        ) : (
+          <div className="px-6 py-12 text-center">
+            <div className="mx-auto h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 className="mt-4 text-sm font-medium text-gray-900">ยังไม่มีการจอง</h3>
+            <p className="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
+              เมื่อมีลูกค้าจองทริปผ่านคุณ ข้อมูลจะแสดงในตารางนี้
+            </p>
           </div>
         )}
       </div>

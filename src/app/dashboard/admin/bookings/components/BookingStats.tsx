@@ -37,6 +37,9 @@ interface BookingStatsProps {
 }
 
 export default function BookingStats({ bookings }: BookingStatsProps) {
+  // Debug: ดู status ของ bookings ทั้งหมด
+  console.log('Bookings status:', bookings.map(b => ({ id: b.id, status: b.status, total_amount: b.total_amount, commission_amount: b.commission_amount })))
+
   const totalBookings = bookings.length
   const pendingBookings = bookings.filter(b => b.status === 'pending').length
   const approvedBookings = bookings.filter(b => b.status === 'approved').length
@@ -44,13 +47,24 @@ export default function BookingStats({ bookings }: BookingStatsProps) {
   const cancelledBookings = bookings.filter(b => b.status === 'cancelled').length
   const inProgressBookings = bookings.filter(b => b.status === 'inprogress').length
 
+  // คำนวณยอดขายจาก bookings ที่มีการชำระเงินแล้วเท่านั้น
   const totalRevenue = bookings
-    .filter(b => b.status === 'approved')
-    .reduce((sum, b) => sum + b.total_amount, 0)
+    .filter(b => ['approved', 'confirmed'].includes(b.status || '') && 
+                 ['deposit_paid', 'fully_paid'].includes(b.payment_status || ''))
+    .reduce((sum, b) => sum + (b.total_amount || 0), 0)
 
+  // คำนวณคอมมิชชั่นจาก bookings ที่มีการชำระเงินแล้วเท่านั้น  
   const totalCommission = bookings
-    .filter(b => b.status === 'approved')
-    .reduce((sum, b) => sum + b.commission_amount, 0)
+    .filter(b => ['approved', 'confirmed'].includes(b.status || '') && 
+                 ['deposit_paid', 'fully_paid'].includes(b.payment_status || ''))
+    .reduce((sum, b) => sum + (b.commission_amount || 0), 0)
+
+  console.log('Revenue calculation:', {
+    filteredBookings: bookings.filter(b => ['approved', 'confirmed'].includes(b.status || '') && 
+                                           ['deposit_paid', 'fully_paid'].includes(b.payment_status || '')),
+    totalRevenue,
+    totalCommission
+  })
 
   const stats = [
     {
@@ -95,8 +109,8 @@ export default function BookingStats({ bookings }: BookingStatsProps) {
     },
     {
       title: 'ยอดขายรวม',
-      value: `฿${totalRevenue.toLocaleString()}`,
-      subtitle: 'บาท',
+      value: totalRevenue > 0 ? `฿${totalRevenue.toLocaleString()}` : '฿0',
+      subtitle: 'บาท (จากการชำระเงิน)',
       icon: (
         <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -105,8 +119,8 @@ export default function BookingStats({ bookings }: BookingStatsProps) {
     },
     {
       title: 'คอมมิชชั่นรวม',
-      value: `฿${totalCommission.toLocaleString()}`,
-      subtitle: 'บาท',
+      value: totalCommission > 0 ? `฿${totalCommission.toLocaleString()}` : '฿0',
+      subtitle: 'บาท (จากการชำระเงิน)',
       icon: (
         <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />

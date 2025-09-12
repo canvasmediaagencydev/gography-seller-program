@@ -141,6 +141,49 @@ export async function PATCH(
       }, { status: 400 })
     }
 
+    // Update booking payment status based on commission payments
+    // Check all commission payments for this booking to determine booking status
+    const { data: allPayments, error: allPaymentsError } = await adminSupabase
+      .from('commission_payments')
+      .select('*')
+      .eq('booking_id', bookingId)
+
+    if (allPaymentsError) {
+      console.error('Error fetching all payments:', allPaymentsError)
+    } else {
+      let bookingPaymentStatus = 'pending'
+      
+      const partialPayment = allPayments.find(p => p.payment_type === 'partial_commission')
+      const finalPayment = allPayments.find(p => p.payment_type === 'final_commission')
+      
+      console.log('Commission payments status check:', {
+        bookingId,
+        partialPayment: partialPayment?.status,
+        finalPayment: finalPayment?.status,
+        allPayments: allPayments.map(p => ({ type: p.payment_type, status: p.status }))
+      })
+      
+      if (partialPayment?.status === 'paid' && finalPayment?.status === 'paid') {
+        bookingPaymentStatus = 'completed'
+      } else if (partialPayment?.status === 'paid') {
+        bookingPaymentStatus = 'partial'
+      }
+
+      console.log('Setting booking payment status to:', bookingPaymentStatus)
+
+      // Update booking payment status
+      const { error: bookingUpdateError } = await adminSupabase
+        .from('bookings')
+        .update({ payment_status: bookingPaymentStatus })
+        .eq('id', bookingId)
+
+      if (bookingUpdateError) {
+        console.error('Error updating booking payment status:', bookingUpdateError)
+      } else {
+        console.log('Successfully updated booking payment status')
+      }
+    }
+
     return NextResponse.json({ 
       success: true, 
       data: data[0],
