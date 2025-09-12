@@ -105,6 +105,15 @@ export async function GET(
       }
     }
 
+    console.log('GET booking details:', {
+      id: booking.id,
+      payment_status: booking.payment_status,
+      commission_payments: booking.commission_payments?.map(cp => ({ 
+        type: cp.payment_type, 
+        status: cp.status 
+      }))
+    })
+
     return NextResponse.json({ 
       success: true,
       booking: bookingWithDetails
@@ -146,16 +155,18 @@ export async function DELETE(
     // Use admin client to delete booking
     const adminSupabase = createAdminClient()
 
-    // First check if booking exists
+    // First check if booking exists and get customer_id
     const { data: existingBooking, error: checkError } = await adminSupabase
       .from('bookings')
-      .select('id, status')
+      .select('id, status, customer_id')
       .eq('id', bookingId)
       .single()
 
     if (checkError || !existingBooking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
+
+    const customerId = existingBooking.customer_id
 
     // Delete commission payments first (due to foreign key constraint)
     const { error: commissionError } = await adminSupabase
@@ -175,6 +186,20 @@ export async function DELETE(
 
     if (deleteError) {
       throw new Error(`Failed to delete booking: ${deleteError.message}`)
+    }
+
+    // Delete the customer if exists
+    if (customerId) {
+      const { error: customerError } = await adminSupabase
+        .from('customers')
+        .delete()
+        .eq('id', customerId)
+
+      if (customerError) {
+        console.error('Failed to delete customer:', customerError)
+        // Don't throw error here as booking is already deleted
+        // Just log the error for debugging
+      }
     }
 
     return NextResponse.json({ 
