@@ -19,9 +19,6 @@ export type TripFormData = {
   title: string
   description: string
   price_per_person: number
-  duration_days: number
-  duration_nights: number
-  total_seats: number
   commission_type: 'fixed' | 'percentage'
   commission_value: number
   country_id: string
@@ -56,10 +53,8 @@ export const VALIDATION_RULES = {
   DESCRIPTION_MAX_LENGTH: 2000,
   PRICE_MIN: 1,
   PRICE_MAX: 1000000,
-  DURATION_MIN: 1,
-  DURATION_MAX: 365,
-  TOTAL_SEATS_MIN: 1,
-  TOTAL_SEATS_MAX: 1000,
+  AVAILABLE_SEATS_MIN: 1,
+  AVAILABLE_SEATS_MAX: 1000,
   COMMISSION_MIN: 0,
   COMMISSION_MAX_PERCENTAGE: 100,
   COMMISSION_MAX_FIXED: 50000,

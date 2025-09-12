@@ -159,7 +159,21 @@ export default function AdminTripsPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-sm">ระยะเวลา</span>
                       <span className="text-gray-900 font-medium">
-                        {trip.duration_days} วัน {trip.duration_nights} คืน
+                        {(() => {
+                          if (!trip.trip_schedules || trip.trip_schedules.length === 0) return '- วัน - คืน'
+                          
+                          // ใช้ schedule แรกในการคำนวณระยะเวลา
+                          const schedule = trip.trip_schedules[0]
+                          const departure = new Date(schedule.departure_date)
+                          const returnDate = new Date(schedule.return_date)
+                          
+                          // คำนวณจำนวนวัน: return_date - departure_date + 1
+                          const diffTime = returnDate.getTime() - departure.getTime()
+                          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
+                          const nights = Math.max(0, diffDays - 1)
+                          
+                          return `${diffDays} วัน ${nights} คืน`
+                        })()}
                       </span>
                     </div>
                     
@@ -172,7 +186,12 @@ export default function AdminTripsPage() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-sm">จำนวนที่นั่ง</span>
-                      <span className="text-gray-900 font-medium">{trip.total_seats} คน</span>
+                      <span className="text-gray-900 font-medium">
+                        {trip.trip_schedules && trip.trip_schedules.length > 0 
+                          ? Math.max(...trip.trip_schedules.map(s => s.available_seats)) 
+                          : 0
+                        } คน
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">

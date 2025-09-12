@@ -27,10 +27,20 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
 
     // Get real-time seats for currently selected schedule
     const getCurrentScheduleSeats = () => {
-        if (!selectedSchedule) return trip.total_seats || 0
+        if (!selectedSchedule) return trip.available_seats ?? 0
         
         const scheduleWithSeats = allSchedules.find(s => s.id === selectedSchedule.id)
-        return scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats ?? 0
+        const newResult = trip.available_seats ?? scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats ?? 0
+        console.log('TripCard getCurrentScheduleSeats:', {
+            tripTitle: trip.title,
+            tripAvailableSeats: trip.available_seats,
+            selectedScheduleSeats: selectedSchedule.available_seats,
+            realTimeSeats: scheduleWithSeats?.realTimeSeats,
+            newResult: newResult
+        })
+        
+        // Prioritize trip.available_seats from API over realTimeSeats due to RLS issues
+        return trip.available_seats ?? scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats ?? 0
     }
 
     // Fetch seller referral code and status
@@ -98,6 +108,25 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         return `${depDay} ${depMonth} - ${retDay} ${retMonth}`
     }
 
+    const calculateDuration = (schedule: Tables<'trip_schedules'> | null) => {
+        if (!schedule) return { days: 0, nights: 0 }
+        
+        const departure = new Date(schedule.departure_date)
+        const returnDate = new Date(schedule.return_date)
+        
+        // Calculate difference in milliseconds
+        const diffTime = returnDate.getTime() - departure.getTime()
+        // Convert to days: return_date - departure_date + 1
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
+        
+        // Days = number of calendar days
+        // Nights = days - 1 (nights spent away)
+        const days = diffDays
+        const nights = Math.max(0, diffDays - 1)
+        
+        return { days: Math.max(days, 1), nights: Math.max(nights, 0) }
+    }
+
     return (
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 w-full max-w-sm mx-auto">
             {/* Cover Image */}
@@ -116,7 +145,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 <div className="absolute top-3 left-3 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm">
                     <SeatIndicator 
                         availableSeats={getCurrentScheduleSeats()}
-                        totalSeats={selectedSchedule?.available_seats || trip.total_seats}
+                        totalSeats={selectedSchedule?.available_seats || 0}
                         loading={schedulesLoading}
                     />
                 </div>
@@ -157,7 +186,10 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                             className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white text-left flex justify-between items-center hover:border-gray-400 transition-colors"
                         >
                             <span>
-                                {formatDateRange(selectedSchedule)} ({trip.duration_days} วัน {trip.duration_nights} คืน)
+                                {(() => {
+                                    const duration = calculateDuration(selectedSchedule)
+                                    return `${formatDateRange(selectedSchedule)} (${duration.days} วัน ${duration.nights} คืน)`
+                                })()}
                             </span>
                             <svg 
                                 className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 

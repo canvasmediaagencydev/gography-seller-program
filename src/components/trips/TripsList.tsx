@@ -67,13 +67,17 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
     }
 
     const getSalesData = (trip: TripWithRelations) => {
-        // คำนวณข้อมูลการขายจากข้อมูล trip
-        const totalSoldSeats = trip.total_seats - (trip.available_seats || trip.total_seats)
+        // ใช้ข้อมูลจาก next_schedule ที่มี available_seats ที่คำนวณแล้ว
+        const nextSchedule = trip.next_schedule
+        const originalSeats = nextSchedule?.available_seats || 0 // จำนวนที่นั่งจริงจากตาราง
+        const remainingSeats = trip.available_seats ?? originalSeats // ที่นั่งคงเหลือหลังจากหักการจองแล้ว
         const mySales = trip.seller_bookings_count || 0
         
         return {
             soldSeats: mySales, // จำนวนที่ seller คนนี้ขายได้
-            totalSoldSeats: totalSoldSeats // จำนวนที่ขายไปแล้วทั้งหมด
+            totalSoldSeats: originalSeats - remainingSeats, // จำนวนที่ขายไปแล้วทั้งหมด
+            maxSeats: originalSeats, // จำนวนที่นั่งจริงจาก trip_schedules
+            remainingSeats: remainingSeats // ที่นั่งคงเหลือ (คำนวณจาก API แล้ว)
         }
     }
 
@@ -103,8 +107,8 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
                 <tbody>
                     {trips.map((trip) => {
                         const salesData = getSalesData(trip)
-                        const remainingSeats = trip.total_seats - salesData.totalSoldSeats
-                        const remainingPercent = (remainingSeats / trip.total_seats) * 100
+                        const remainingSeats = salesData.remainingSeats
+                        const remainingPercent = salesData.maxSeats > 0 ? (remainingSeats / salesData.maxSeats) * 100 : 0
                         const isLowSeats = remainingPercent < 20
 
                         return (
@@ -159,14 +163,14 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
                                             <span className={`${isLowSeats ? 'text-red-600' : 'text-gray-800'} font-semibold`}>
                                                 {remainingSeats}
                                             </span>
-                                            /{trip.total_seats} <FaUser className='inline text-gray-400 ml-1' />
+                                            /{salesData.maxSeats} <FaUser className='inline text-gray-400 ml-1' />
                                         </div>
                                         {/* Progress bar */}
                                         <div className="w-20 h-2 bg-gray-300 rounded-full mt-1">
                                             <div
                                                 className="h-2 rounded-full transition-all bg-gray-900"
                                                 style={{
-                                                    width: `${Math.min(((trip.total_seats - remainingSeats) / trip.total_seats) * 100, 100)}%`
+                                                    width: `${salesData.maxSeats > 0 ? Math.min(((salesData.maxSeats - remainingSeats) / salesData.maxSeats) * 100, 100) : 0}%`
                                                 }}
                                             />
                                         </div>

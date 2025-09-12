@@ -101,9 +101,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         title: formData.title,
         description: formData.description,
         price_per_person: formData.price_per_person,
-        duration_days: formData.duration_days,
-        duration_nights: formData.duration_nights,
-        total_seats: formData.total_seats,
+        duration_days: 1, // Default value - will be calculated from schedules
+        duration_nights: 0, // Default value - will be calculated from schedules
+        total_seats: 1, // Default value - individual schedules control available seats
         commission_type: formData.commission_type,
         commission_value: formData.commission_value,
         country_id: formData.country_id,
@@ -230,19 +230,7 @@ function validateTripFormData(data: TripFormData): string | null {
     return 'Price must be between ฿1 - ฿1,000,000'
   }
 
-  // Duration validation
-  if (data.duration_days < 1 || data.duration_days > 365) {
-    return 'Duration days must be between 1-365'
-  }
 
-  if (data.duration_nights < 0 || data.duration_nights > 364) {
-    return 'Duration nights must be between 0-364'
-  }
-
-  // Seats validation
-  if (data.total_seats < 1 || data.total_seats > 1000) {
-    return 'Total seats must be between 1-1000'
-  }
 
   // Commission validation
   if (data.commission_type === 'percentage' && (data.commission_value < 0 || data.commission_value > 100)) {
@@ -270,14 +258,14 @@ function validateTripFormData(data: TripFormData): string | null {
   // Validate each schedule
   for (let i = 0; i < data.schedules.length; i++) {
     const schedule = data.schedules[i]
-    const scheduleError = validateSchedule(schedule, data.total_seats, i + 1)
+    const scheduleError = validateSchedule(schedule, i + 1)
     if (scheduleError) return scheduleError
   }
 
   return null
 }
 
-function validateSchedule(schedule: any, totalSeats: number, index: number): string | null {
+function validateSchedule(schedule: any, index: number): string | null {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -299,8 +287,8 @@ function validateSchedule(schedule: any, totalSeats: number, index: number): str
   }
 
   // Available seats validation
-  if (schedule.available_seats < 1 || schedule.available_seats > totalSeats) {
-    return `Schedule ${index}: Available seats must be between 1-${totalSeats}`
+  if (schedule.available_seats < 1 || schedule.available_seats > 1000) {
+    return `Schedule ${index}: Available seats must be between 1-1000`
   }
 
   return null

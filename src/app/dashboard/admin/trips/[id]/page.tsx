@@ -1,35 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import TripImage from '@/components/TripImage'
+import { Trip, TripSchedule } from '@/types/admin'
 
-interface Trip {
-  id: string
-  title: string
-  description: string | null
-  duration_days: number
-  duration_nights: number
-  price_per_person: number
-  total_seats: number
-  commission_type: string | null
-  commission_value: number
-  file_link: string | null
-  cover_image_url: string | null
-  is_active: boolean | null
-  created_at: string | null
-  countries?: {
-    name: string
-    flag_emoji: string | null
-  }
-}
-
-interface Schedule {
-  id: string
-  departure_date: string
-  return_date: string
-  registration_deadline: string
-  available_seats: number
-  is_active: boolean | null
-}
 
 interface Booking {
   id: string
@@ -103,7 +76,7 @@ export default async function TripDetailPage({
   }
 
   const typedTrip = trip as Trip
-  const typedSchedules = (schedules || []) as Schedule[]
+  const typedSchedules = (schedules || []) as TripSchedule[]
   const typedBookings = (bookings || []) as Booking[]
 
   // Calculate statistics
@@ -202,7 +175,12 @@ export default async function TripDetailPage({
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">จำนวนที่นั่ง</h3>
-                    <p className="text-lg font-medium text-gray-900">{typedTrip.total_seats} คน</p>
+                    <p className="text-lg font-medium text-gray-900">
+                      {typedTrip.trip_schedules && typedTrip.trip_schedules.length > 0 
+                        ? `${Math.max(...typedTrip.trip_schedules.map(s => s.available_seats))} คน (จากกำหนดการ)`
+                        : '0 คน'
+                      }
+                    </p>
                   </div>
 
                   <div>
