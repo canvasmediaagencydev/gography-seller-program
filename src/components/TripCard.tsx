@@ -127,9 +127,9 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 w-full max-w-sm mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-sm mx-auto relative">
             {/* Cover Image */}
-            <div className="relative h-48 w-full">
+            <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
                 {trip.cover_image_url ? (
                     <TripImage
                         src={trip.cover_image_url}
@@ -202,26 +202,43 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
 
                         {/* Dropdown */}
                         {isDropdownOpen && allSchedules.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
-                                {allSchedules.map((schedule) => (
-                                    <button
-                                        key={schedule.id}
-                                        onClick={() => {
-                                            setSelectedSchedule(schedule)
-                                            setIsDropdownOpen(false)
-                                        }}
-                                        className={`w-full p-2 text-left text-sm hover:bg-gray-50 ${
-                                            selectedSchedule?.id === schedule.id ? 'bg-orange-50 text-orange-600' : ''
-                                        }`}
-                                    >
-                                        {formatDateRange(schedule)} ({
-                                            // ใช้ realTimeSeats ถ้ามี แต่ถ้าเป็น 0 หรือ null ให้ fallback เป็น available_seats
-                                            (schedule.realTimeSeats !== null && schedule.realTimeSeats !== undefined && schedule.realTimeSeats > 0) 
-                                                ? schedule.realTimeSeats 
-                                                : schedule.available_seats
-                                        } ที่นั่งเหลือ)
-                                    </button>
-                                ))}
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                {allSchedules.map((schedule) => {
+                                    const duration = calculateDuration(schedule)
+                                    // ใช้ realTimeSeats ถ้าพร้อมใช้งาน ไม่เช่นนั้นใช้ available_seats
+                                    const seatsToShow = (schedule.realTimeSeats !== null && schedule.realTimeSeats !== undefined) 
+                                        ? schedule.realTimeSeats 
+                                        : schedule.available_seats
+                                    
+                                    return (
+                                        <button
+                                            key={schedule.id}
+                                            onClick={() => {
+                                                setSelectedSchedule(schedule)
+                                                setIsDropdownOpen(false)
+                                            }}
+                                            className={`w-full p-3 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
+                                                selectedSchedule?.id === schedule.id ? 'bg-orange-50 text-orange-600' : ''
+                                            }`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <div className="font-medium">
+                                                        {formatDateRange(schedule)}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 mt-1">
+                                                        {duration.days} วัน {duration.nights} คืน
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-medium text-emerald-600">
+                                                        {seatsToShow} ที่นั่งเหลือ
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    )
+                                })}
                             </div>
                         )}
                     </div>
