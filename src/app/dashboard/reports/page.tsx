@@ -46,16 +46,19 @@ interface UserProfile {
 
 export default function ReportsPage() {
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [bookings, setBookings] = useState<BookingWithDetails[]>([])
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async (isRefresh = false) => {
       try {
-        setLoading(true)
+        // Only show full loading screen on initial load, not on refresh
+        if (!isRefresh) {
+          setLoading(true)
+        }
         setError(null)
 
         // Get user
@@ -158,12 +161,33 @@ export default function ReportsPage() {
         console.error('Error fetching reports data:', error)
         setError('เกิดข้อผิดพลาดในการโหลดข้อมูลรายงาน')
       } finally {
-        setLoading(false)
+        if (isRefresh) {
+          setRefreshing(false)
+        } else {
+          setLoading(false)
+        }
       }
     }
 
-    fetchData()
-  }, [supabase, router])
+    const handleRefresh = async () => {
+      if (refreshing) return // Prevent multiple clicks
+      
+      setRefreshing(true)
+      setError(null)
+      
+      try {
+        await fetchData(true)
+      } catch (error) {
+        console.error('Refresh error:', error)
+        setError('เกิดข้อผิดพลาดในการรีเฟรชข้อมูล')
+      } finally {
+        setRefreshing(false)
+      }
+    }
+
+    useEffect(() => {
+      fetchData()
+    }, [supabase, router])
 
   // Calculate stats using new commission system
   const approvedBookings = bookings?.filter(b => b.status === 'approved') || []
@@ -208,11 +232,33 @@ export default function ReportsPage() {
               ภาพรวมและสถิติการจองของคุณ
             </p>
           </div>
-          <div className="text-left sm:text-right">
-            <p className="text-sm text-gray-500">อัปเดตล่าสุด</p>
-            <p className="text-sm font-medium text-gray-900">
-              {new Date().toLocaleDateString('th-TH')}
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="text-left sm:text-right">
+              <p className="text-sm text-gray-500">อัปเดตล่าสุด</p>
+              <p className="text-sm font-medium text-gray-900">
+                {new Date().toLocaleDateString('th-TH')}
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm font-medium hover:bg-blue-100 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg 
+                className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                />
+              </svg>
+              {refreshing ? 'กำลังโหลด...' : 'รีเฟรช'}
+            </button>
           </div>
         </div>
       </div>
@@ -333,7 +379,7 @@ export default function ReportsPage() {
                 <p className="text-sm text-gray-600">รายการการจองที่อัปเดตล่าสุด</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="text-sm">
                 <span className="px-3 py-1 bg-white rounded-full text-gray-700 border border-gray-200">
                   {Math.min(bookings?.length || 0, 10)} / {bookings?.length || 0} รายการ
@@ -344,6 +390,27 @@ export default function ReportsPage() {
                   ได้รับแล้ว ฿{totalCommissionEarned.toLocaleString()}
                 </div>
               )}
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-blue-700 border border-blue-200 rounded-lg text-sm font-medium hover:bg-blue-50 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="รีเฟรชข้อมูล"
+              >
+                <svg 
+                  className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                  />
+                </svg>
+                {refreshing ? '' : 'รีเฟรช'}
+              </button>
             </div>
           </div>
         </div>
