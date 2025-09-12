@@ -254,20 +254,10 @@ async function processTripsBatch(supabase: any, trips: any[], userId: string, us
 
   const tripIds = trips.map(t => t.id)
   
-  // Single query to get all schedules with their booking counts
-  const { data: schedulesWithBookings } = await supabase
+  // Single query to get all schedules 
+  const { data: schedulesWithBookings, error: schedulesError } = await supabase
     .from('trip_schedules')
-    .select(`
-      *,
-      bookings!left (
-        id,
-        status,
-        seller_id,
-        customers (
-          referred_by_seller_id
-        )
-      )
-    `)
+    .select('*')
     .in('trip_id', tripIds)
     .eq('is_active', true)
     .order('departure_date', { ascending: true })
@@ -281,46 +271,37 @@ async function processTripsBatch(supabase: any, trips: any[], userId: string, us
       .filter((s: any) => new Date(s.departure_date) > new Date())
       .sort((a: any, b: any) => new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime())[0] || null
 
-    // Calculate available seats from next schedule
+    // For now, use the original available_seats from schedule without booking deduction
+    // TODO: Fix bookings query when RLS policy is resolved
     let availableSeats = null
     if (nextSchedule) {
-      const bookedSeats = nextSchedule.bookings?.filter((b: any) => 
-        b.status === 'approved' || b.status === 'pending' || b.status === 'inprogress'
-      ).length || 0
-      availableSeats = Math.max(0, nextSchedule.available_seats - bookedSeats)
+      availableSeats = nextSchedule.available_seats // Use original seats
     }
 
-    // Calculate seller bookings count from all schedules
+    // Seller bookings count - set to 0 for now due to RLS issues
+    // TODO: Fix this when RLS policy is resolved
     let sellerBookingsCount = 0
-    if (userRole === 'seller') {
-      tripSchedules.forEach((schedule: any) => {
-        const sellerBookings = schedule.bookings?.filter((b: any) => {
-          if (!b || (b.status !== 'inprogress' && b.status !== 'approved')) return false
-          
-          // Direct seller booking
-          if (b.seller_id === userId) return true
-          
-          // Referral booking
-          if (b.customers?.referred_by_seller_id === userId) return true
-          
-          return false
-        }) || []
-        
-        sellerBookingsCount += sellerBookings.length
-      })
-    }
 
-    // Remove bookings from next_schedule to keep response clean
-    const cleanNextSchedule = nextSchedule ? {
-      ...nextSchedule,
-      bookings: undefined
-    } : null
+    // Clean next schedule data
+    const cleanNextSchedule = nextSchedule
 
-    return {
+    // Clean trip schedules
+    const cleanTripSchedules = tripSchedules
+
+    // Debug log the final result
+    const result = {
       ...trip,
+      trip_schedules: cleanTripSchedules,
       next_schedule: cleanNextSchedule,
       available_seats: availableSeats,
       seller_bookings_count: sellerBookingsCount
     }
+    
+    console.log(`Final result for ${trip.title}:`, {
+      available_seats: result.available_seats,
+      next_schedule_available_seats: result.next_schedule?.available_seats
+    })
+    
+    return result
   })
 }

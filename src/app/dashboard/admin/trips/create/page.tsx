@@ -6,6 +6,7 @@ import { useAdminTrips, useCountries } from '@/hooks/useAdminTrips'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { TripFormData, TripScheduleFormData, COMMISSION_TYPES, VALIDATION_RULES } from '@/types/admin'
 import { toast } from 'sonner'
+import { Combobox } from '@/components/ui/combobox'
 
 export default function CreateTripPage() {
   const router = useRouter()
@@ -36,9 +37,6 @@ export default function CreateTripPage() {
     title: '',
     description: '',
     price_per_person: 0,
-    duration_days: 1,
-    duration_nights: 0,
-    total_seats: 1,
     commission_type: 'percentage',
     commission_value: 0,
     country_id: '',
@@ -81,13 +79,7 @@ export default function CreateTripPage() {
       newErrors.price_per_person = `Price must be between ฿${VALIDATION_RULES.PRICE_MIN} and ฿${VALIDATION_RULES.PRICE_MAX}`
     }
 
-    if (formData.duration_days < VALIDATION_RULES.DURATION_MIN || formData.duration_days > VALIDATION_RULES.DURATION_MAX) {
-      newErrors.duration_days = `Duration must be between ${VALIDATION_RULES.DURATION_MIN} and ${VALIDATION_RULES.DURATION_MAX} days`
-    }
 
-    if (formData.total_seats < VALIDATION_RULES.TOTAL_SEATS_MIN || formData.total_seats > VALIDATION_RULES.TOTAL_SEATS_MAX) {
-      newErrors.total_seats = `Total seats must be between ${VALIDATION_RULES.TOTAL_SEATS_MIN} and ${VALIDATION_RULES.TOTAL_SEATS_MAX}`
-    }
 
     if (!formData.country_id) {
       newErrors.country_id = 'Please select a country'
@@ -116,8 +108,8 @@ export default function CreateTripPage() {
       if (!schedule.registration_deadline) {
         newErrors[`schedule_${index}_deadline`] = 'Registration deadline is required'
       }
-      if (schedule.available_seats < 1 || schedule.available_seats > formData.total_seats) {
-        newErrors[`schedule_${index}_seats`] = `Available seats must be between 1 and ${formData.total_seats}`
+      if (schedule.available_seats < 1 || schedule.available_seats > 1000) {
+        newErrors[`schedule_${index}_seats`] = `Available seats must be between 1 and 1000`
       }
 
       // Date validation
@@ -167,7 +159,7 @@ export default function CreateTripPage() {
             departure_date: '',
             return_date: '',
             registration_deadline: '',
-            available_seats: formData.total_seats,
+            available_seats: 1,
             is_active: true
           }
         ]
@@ -224,6 +216,34 @@ export default function CreateTripPage() {
 
   const loading = tripLoading || imageUploading || fileUploading
   const error = tripError || imageError
+
+  // Prepare countries data for combobox
+  const countryOptions = countries.map(country => ({
+    value: country.id,
+    label: `${country.flag_emoji} ${country.name} (${country.code})`
+  }))
+
+  // Calculate duration for schedule
+  const calculateScheduleDuration = (schedule: TripScheduleFormData) => {
+    if (!schedule.departure_date || !schedule.return_date) {
+      return { days: 0, nights: 0 }
+    }
+
+    const departure = new Date(schedule.departure_date)
+    const returnDate = new Date(schedule.return_date)
+    
+    // Calculate difference in milliseconds
+    const diffTime = returnDate.getTime() - departure.getTime()
+    // Convert to days: return_date - departure_date + 1
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
+    
+    // Days = number of calendar days
+    // Nights = days - 1 (nights spent away)
+    const days = diffDays
+    const nights = Math.max(0, diffDays - 1)
+    
+    return { days: Math.max(days, 1), nights: Math.max(nights, 0) }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -285,38 +305,20 @@ export default function CreateTripPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   ประเทศ *
                 </label>
-                <select
+                <Combobox
+                  options={countryOptions}
                   value={formData.country_id}
-                  onChange={(e) => setFormData({ ...formData, country_id: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.country_id ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  onChange={(value) => setFormData({ ...formData, country_id: value })}
+                  placeholder="เลือกประเทศ"
+                  searchPlaceholder="ค้นหาประเทศ..."
+                  emptyMessage="ไม่พบประเทศที่ค้นหา"
+                  className={`${errors.country_id ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}
                   disabled={countriesLoading}
-                >
-                  <option value="">เลือกประเทศ</option>
-                  {countries.map((country) => (
-                    <option key={country.id} value={country.id}>
-                      {country.flag_emoji} {country.name} ({country.code})
-                    </option>
-                  ))}
-                </select>
+                />
                 {errors.country_id && <p className="mt-2 text-sm text-red-600 font-medium">{errors.country_id}</p>}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  จำนวนที่นั่งทั้งหมด *
-                </label>
-                <input
-                  type="number"
-                  value={formData.total_seats}
-                  onChange={(e) => setFormData({ ...formData, total_seats: Number(e.target.value) })}
-                  min={VALIDATION_RULES.TOTAL_SEATS_MIN}
-                  max={VALIDATION_RULES.TOTAL_SEATS_MAX}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.total_seats ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                    }`}
-                />
-                {errors.total_seats && <p className="mt-2 text-sm text-red-600 font-medium">{errors.total_seats}</p>}
-              </div>
 
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -349,37 +351,6 @@ export default function CreateTripPage() {
                 {errors.price_per_person && <p className="mt-2 text-sm text-red-600 font-medium">{errors.price_per_person}</p>}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    จำนวนวัน *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.duration_days}
-                    onChange={(e) => setFormData({ ...formData, duration_days: Number(e.target.value) })}
-                    min={VALIDATION_RULES.DURATION_MIN}
-                    max={VALIDATION_RULES.DURATION_MAX}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.duration_days ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
-                  />
-                  {errors.duration_days && <p className="mt-2 text-sm text-red-600 font-medium">{errors.duration_days}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    จำนวนคืน
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.duration_nights}
-                    onChange={(e) => setFormData({ ...formData, duration_nights: Number(e.target.value) })}
-                    min={0}
-                    max={VALIDATION_RULES.DURATION_MAX}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                  />
-                </div>
-              </div>
             </div>
           </div>
 
@@ -636,7 +607,7 @@ export default function CreateTripPage() {
                         value={schedule.available_seats}
                         onChange={(e) => handleScheduleChange(index, 'available_seats', Number(e.target.value))}
                         min={1}
-                        max={formData.total_seats}
+                        max={1000}
                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors[`schedule_${index}_seats`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
                           }`}
                       />
@@ -645,7 +616,7 @@ export default function CreateTripPage() {
                       )}
                     </div>
 
-                    <div className="flex items-end">
+                    <div className="flex flex-col gap-3">
                       <label className="flex items-center">
                         <input
                           type="checkbox"
@@ -655,6 +626,23 @@ export default function CreateTripPage() {
                         />
                         <span className="ml-3 text-sm font-medium text-gray-700">เปิดใช้งาน</span>
                       </label>
+
+                      {/* Duration Display */}
+                      {schedule.departure_date && schedule.return_date && (
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm font-medium text-emerald-800">
+                              ระยะเวลา: {(() => {
+                                const duration = calculateScheduleDuration(schedule)
+                                return `${duration.days} วัน ${duration.nights} คืน`
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

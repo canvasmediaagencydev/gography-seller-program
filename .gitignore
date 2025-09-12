@@ -43,4 +43,7 @@ next-env.d.ts
 /folder-structure.md
 /supabase-info.md
 
+/.claude
+/.bmad-core
+
 CLAUDE.md*
