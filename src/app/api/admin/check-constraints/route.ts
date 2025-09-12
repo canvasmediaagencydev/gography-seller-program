@@ -3,38 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const adminSupabase = createAdminClient()
+    // Since we can't directly access information_schema tables through Supabase client,
+    // we'll return a mock response indicating constraint checking is not available
+    // This endpoint appears to be for debugging/admin purposes
     
-    // Query to get constraint definition
-    const { data, error } = await adminSupabase
-      .rpc('sql', {
-        query: `
-          SELECT 
-            constraint_name,
-            check_clause
-          FROM information_schema.check_constraints 
-          WHERE constraint_name LIKE '%payment_status%' 
-             OR constraint_name LIKE '%bookings%status%'
-        `
-      })
-    
-    if (error) {
-      console.error('Error fetching constraints:', error)
-      // Try alternative query
-      const { data: altData, error: altError } = await adminSupabase
-        .from('information_schema.table_constraints')
-        .select('*')
-        .eq('table_name', 'bookings')
-        .eq('constraint_type', 'CHECK')
-      
-      return NextResponse.json({ 
-        constraints: altData,
-        error: error.message,
-        alternativeMethod: true
-      })
-    }
-
-    return NextResponse.json({ constraints: data })
+    return NextResponse.json({ 
+      constraints: [],
+      message: 'Constraint information not available through Supabase client',
+      note: 'Database constraints are enforced but cannot be queried through this API'
+    })
     
   } catch (error) {
     console.error('API Error:', error)
