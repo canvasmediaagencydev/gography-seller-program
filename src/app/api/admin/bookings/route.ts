@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // GET - List all bookings (Admin only) with optimized pagination
 export async function GET(request: NextRequest) {
@@ -137,7 +138,9 @@ export async function GET(request: NextRequest) {
 
     let sellersMap = new Map()
     if (sellerIds.length > 0) {
-      const { data: sellers } = await supabase
+      // Use admin client to bypass RLS policy restrictions
+      const adminSupabase = createAdminClient()
+      const { data: sellers } = await adminSupabase
         .from('user_profiles')
         .select('id, full_name, email, referral_code, avatar_url')
         .in('id', sellerIds)

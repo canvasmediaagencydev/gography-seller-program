@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { memo, useCallback, useMemo, useTransition } from 'react'
+import React, { memo, useCallback, useMemo, useTransition } from 'react'
 import { BsColumnsGap } from "react-icons/bs"
 import { LuPlaneTakeoff } from "react-icons/lu"
 import { TbUsers } from "react-icons/tb"
@@ -16,6 +16,16 @@ interface UserProfile {
   status: string | null
   referral_code: string | null
   avatar_url: string | null
+}
+
+interface NavItem {
+  icon: React.ReactElement
+  label: string
+  href: string
+  active: boolean
+  disabled?: boolean
+  isProfile?: boolean
+  needsAction?: boolean
 }
 
 // Get verification status info (memoized function outside component)
@@ -37,7 +47,7 @@ const NavButton = memo(function NavButton({
   index, 
   onNavigate 
 }: { 
-  item: any
+  item: NavItem
   index: number 
   onNavigate: (href: string) => void 
 }) {
@@ -99,10 +109,32 @@ interface MobileBottomNavProps {
   userProfile: UserProfile | null
 }
 
-const MobileBottomNav = memo(function MobileBottomNav({ userProfile }: MobileBottomNavProps) {
+const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUserProfile }: MobileBottomNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [userProfile, setUserProfile] = React.useState(initialUserProfile)
+
+  // Update local state when props change
+  React.useEffect(() => {
+    setUserProfile(initialUserProfile)
+  }, [initialUserProfile])
+
+  // Listen for profile updates
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      console.log('Profile updated, refreshing mobile nav data...')
+      // Force re-render by updating the state with a new object reference
+      setUserProfile(prev => prev ? { ...prev } : null)
+    }
+
+    // Listen for custom profile update events
+    window.addEventListener('profileUpdated', handleProfileUpdate)
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate)
+    }
+  }, [])
 
   // Don't show for admin users
   if (userProfile?.role === 'admin') {
@@ -125,46 +157,55 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile }: MobileBot
   }, [pathname, router])
 
   // Memoize navigation items to prevent recreation on every render
-  const navItems = useMemo(() => [
-    {
-      icon: <BsColumnsGap className="w-5 h-5" />,
-      label: 'Dashboard',
-      href: '/dashboard',
-      active: pathname === '/dashboard'
-    },
-    {
-      icon: <LuPlaneTakeoff className="w-5 h-5" />,
-      label: 'Trips',
-      href: '/dashboard/trips',
-      active: pathname.includes('/dashboard/trips')
-    },
-    {
-      icon: <TbUsers className="w-5 h-5" />,
-      label: 'รายงาน',
-      href: '/dashboard/reports',
-      active: pathname === '/dashboard/reports',
-      disabled: userProfile?.status !== 'approved'
-    },
-    {
-      icon: verificationInfo.needsAction ? (
-        <div className="relative">
+  const navItems = useMemo((): NavItem[] => {
+    const baseItems: NavItem[] = [
+      {
+        icon: <BsColumnsGap className="w-5 h-5" />,
+        label: 'Dashboard',
+        href: '/dashboard',
+        active: pathname === '/dashboard'
+      },
+      {
+        icon: <LuPlaneTakeoff className="w-5 h-5" />,
+        label: 'Trips',
+        href: '/dashboard/trips',
+        active: pathname.includes('/dashboard/trips')
+      },
+      {
+        icon: <TbUsers className="w-5 h-5" />,
+        label: 'รายงาน',
+        href: '/dashboard/reports',
+        active: pathname === '/dashboard/reports',
+        disabled: userProfile?.status !== 'approved'
+      }
+    ]
+
+    // Profile item - only for sellers (not admin)
+    if (userProfile?.role !== 'admin') {
+      // Seller: Profile with verification status
+      baseItems.push({
+        icon: verificationInfo.needsAction ? (
+          <div className="relative">
+            <FaRegUserCircle className="w-5 h-5" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+          </div>
+        ) : (
           <FaRegUserCircle className="w-5 h-5" />
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-        </div>
-      ) : (
-        <FaRegUserCircle className="w-5 h-5" />
-      ),
-      label: verificationInfo.needsAction ? 'ยืนยันตัวตน' : 'โปรไฟล์',
-      href: '/dashboard/profile',
-      active: pathname === '/dashboard/profile',
-      isProfile: true,
-      needsAction: verificationInfo.needsAction
+        ),
+        label: verificationInfo.needsAction ? 'ยืนยันตัวตน' : 'โปรไฟล์',
+        href: '/dashboard/profile',
+        active: pathname === '/dashboard/profile',
+        isProfile: true,
+        needsAction: verificationInfo.needsAction
+      })
     }
-  ], [pathname, userProfile?.status, verificationInfo.needsAction])
+
+    return baseItems
+  }, [pathname, userProfile?.status, userProfile?.role, verificationInfo.needsAction])
 
   return (
     <div className={`md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-inset-bottom`}>
-      <div className="grid grid-cols-4 h-16">
+      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-4'} h-16`}>
         {navItems.map((item, index) => (
           <NavButton 
             key={`nav-${index}-${item.href}`}

@@ -13,6 +13,8 @@ interface SellerData {
     id: string
     full_name: string | null
     referral_code: string | null
+    role?: string | null
+    status?: string | null
 }
 
 export function useBookingData(tripId: string | null, scheduleId: string | null, sellerRef?: string | null) {
@@ -70,6 +72,15 @@ export function useBookingData(tripId: string | null, scheduleId: string | null,
                 if (sellerRef) {
                     console.log('🔎 กำลังหา seller ด้วย referral code:', sellerRef)
                     
+                    // First, check if seller exists regardless of status
+                    const { data: allSellersWithRef, error: checkError } = await supabase
+                        .from('user_profiles')
+                        .select('id, full_name, referral_code, role, status')
+                        .eq('referral_code', sellerRef)
+                    
+                    console.log('🔍 All sellers with this ref:', allSellersWithRef)
+                    
+                    // Then fetch approved seller
                     const { data: sellerData, error: sellerError } = await supabase
                         .from('user_profiles')
                         .select('id, full_name, referral_code, role, status')
@@ -78,8 +89,17 @@ export function useBookingData(tripId: string | null, scheduleId: string | null,
                         .eq('status', 'approved')
                         .single()
 
-                    console.log('👤 Seller data:', sellerData)
+                    console.log('👤 Approved Seller data:', sellerData)
                     console.log('❌ Seller error:', sellerError)
+
+                    if (!sellerData && allSellersWithRef && allSellersWithRef.length > 0) {
+                        console.log('⚠️ พบ seller แต่ไม่ได้ approved หรือไม่ใช่ role seller')
+                        console.log('📊 Status ของ sellers ที่พบ:', allSellersWithRef.map(s => ({ 
+                            id: s.id.slice(-5), 
+                            status: s.status, 
+                            role: s.role 
+                        })))
+                    }
 
                     setSeller(sellerData)
                 } else {

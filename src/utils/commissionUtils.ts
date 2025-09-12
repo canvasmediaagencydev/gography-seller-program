@@ -42,9 +42,10 @@ export const calculateCommission = (
 export const createCommissionPayments = async (
   bookingId: string, 
   sellerId: string, 
-  commissionCalculation: CommissionCalculation
+  commissionCalculation: CommissionCalculation,
+  supabaseClient?: any
 ) => {
-  const supabase = createClient()
+  const supabase = supabaseClient || createClient()
 
   const commissionPayments: CommissionPaymentInsert[] = [
     {

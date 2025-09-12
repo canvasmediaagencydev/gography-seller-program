@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminBookingsClient from './AdminBookingsClient'
 
@@ -57,6 +58,9 @@ export default async function AdminBookingsPage() {
     .order('created_at', { ascending: false })
     .limit(20) // Reduced initial load
 
+  // Create admin client for all admin operations
+  const adminSupabase = createAdminClient()
+
   // Get sellers in one optimized query
   const sellerIds = [...new Set(
     bookings?.filter(b => b.seller_id).map(b => b.seller_id).filter(Boolean) || []
@@ -64,7 +68,7 @@ export default async function AdminBookingsPage() {
 
   let sellersMap = new Map()
   if (sellerIds.length > 0) {
-    const { data: sellersData } = await supabase
+    const { data: sellersData } = await adminSupabase
       .from('user_profiles')
       .select('id, full_name, email, referral_code, avatar_url')
       .in('id', sellerIds)
@@ -107,12 +111,17 @@ export default async function AdminBookingsPage() {
   })) || []
 
   // Fetch sellers for the create booking form (lightweight query)
-  const { data: sellers } = await supabase
+  // Use admin client to bypass RLS policy restrictions (reuse existing adminSupabase)
+  const { data: sellers, error: sellersError } = await adminSupabase
     .from('user_profiles')
-    .select('id, full_name, email, referral_code, avatar_url')
+    .select('id, full_name, email, referral_code, avatar_url, status, role')
     .eq('role', 'seller')
     .eq('status', 'approved')
     .order('full_name')
+
+  if (sellersError) {
+    console.error('Error fetching sellers:', sellersError)
+  }
 
   // Fetch active trips with schedules for the create booking form (lightweight query)
   const { data: trips } = await supabase

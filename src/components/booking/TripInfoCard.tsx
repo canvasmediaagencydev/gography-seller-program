@@ -77,6 +77,31 @@ export default function TripInfoCard({ trip, schedule, seller }: TripInfoCardPro
                     </div>
                 </div>
                 
+                {/* Seller Info */}
+                {seller && (
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-medium">S</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-blue-900">
+                                        ผู้แนะนำ: {seller.full_name || 'ไม่ระบุชื่อ'}
+                                    </p>
+                                    <p className="text-xs text-blue-600">
+                                        ID: {seller.id.slice(-5)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs text-blue-600">Ref Code</p>
+                                <p className="text-sm font-medium text-blue-900">{seller.referral_code}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
             </div>
         </div>
     )

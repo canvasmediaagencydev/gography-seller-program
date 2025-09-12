@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -39,7 +40,8 @@ export async function POST(request: NextRequest) {
 
     // Validate seller if provided
     if (sellerId) {
-      const { data: seller } = await supabase
+      const adminSupabase = createAdminClient()
+      const { data: seller } = await adminSupabase
         .from('user_profiles')
         .select('id, role, status')
         .eq('id', sellerId)
@@ -53,8 +55,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update booking seller
-    const { data, error } = await supabase
+    // Update booking seller using admin client to avoid RLS issues
+    const adminSupabase = createAdminClient()
+    const { data, error } = await adminSupabase
       .from('bookings')
       .update({ 
         seller_id: sellerId || null,

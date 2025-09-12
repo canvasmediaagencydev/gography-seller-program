@@ -99,73 +99,24 @@ export function useAdminBookings(pageSize: number = 20): UseAdminBookingsResult 
   // Update single booking in state (for optimistic updates)
   const updateBookingInState = useCallback(async (bookingId: string) => {
     try {
-      // Fetch updated booking data
-      const { data: updatedBooking } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          customers (
-            full_name,
-            email,
-            phone,
-            id_card,
-            passport_number
-          ),
-          trip_schedules (
-            departure_date,
-            return_date,
-            registration_deadline,
-            available_seats,
-            trips (
-              title,
-              price_per_person,
-              commission_type,
-              commission_value,
-              countries (
-                name,
-                flag_emoji
-              )
-            )
-          ),
-          commission_payments (
-            id,
-            payment_type,
-            amount,
-            status,
-            paid_at
-          )
-        `)
-        .eq('id', bookingId)
-        .single()
+      // Use API endpoint to get updated booking data (with proper admin permissions)
+      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch updated booking')
+      }
+
+      const { booking: updatedBooking } = await response.json()
 
       if (updatedBooking) {
-        // Fetch seller info if exists
-        let seller = null
-        if (updatedBooking.seller_id) {
-          const { data: sellerData } = await supabase
-            .from('user_profiles')
-            .select('id, full_name, email, referral_code, avatar_url')
-            .eq('id', updatedBooking.seller_id)
-            .single()
-          seller = sellerData
-        }
-
-        const bookingWithSeller = { 
-          ...updatedBooking, 
-          seller,
-          trip_schedules: {
-            ...updatedBooking.trip_schedules,
-            trips: {
-              ...updatedBooking.trip_schedules?.trips,
-              countries: updatedBooking.trip_schedules?.trips?.countries || undefined
-            }
-          }
-        }
-
         // Update state
         setBookings(prevBookings => 
           prevBookings.map(booking => 
-            booking.id === bookingId ? bookingWithSeller : booking
+            booking.id === bookingId ? updatedBooking : booking
           )
         )
       }
@@ -174,7 +125,7 @@ export function useAdminBookings(pageSize: number = 20): UseAdminBookingsResult 
       // Fallback to full refresh if single update fails
       await refreshBookings()
     }
-  }, [supabase, refreshBookings])
+  }, [refreshBookings])
 
   // Initial fetch
   useEffect(() => {

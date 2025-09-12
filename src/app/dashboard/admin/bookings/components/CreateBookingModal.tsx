@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../../../../../database.types'
-import { RiDeleteBin2Line } from "react-icons/ri";
-import { createCommissionPayments, calculateCommission as calcCommission } from '@/utils/commissionUtils'
+import { RiDeleteBin2Line } from "react-icons/ri"
 
 interface TripWithSchedules extends Tables<'trips'> {
   countries?: {
@@ -26,6 +25,7 @@ interface Seller {
   full_name: string | null
   email: string | null
   referral_code: string | null
+  status?: string | null
 }
 
 interface CreateBookingModalProps {
@@ -171,87 +171,24 @@ export default function CreateBookingModal({
     setError(null)
 
     try {
-      // Check available seats
-      const { data: availableSeats, error: seatsError } = await supabase
-        .rpc('get_available_seats', { schedule_id: selectedScheduleId })
+      const response = await fetch('/api/admin/bookings/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          selectedTripId,
+          selectedScheduleId,
+          selectedSellerId: selectedSellerId || null,
+          customers,
+          notes
+        }),
+      })
 
-      if (seatsError) {
-        console.warn('Failed to get real-time seats, using fallback calculation')
-        
-        // Fallback: manual calculation
-        const { data: bookings } = await supabase
-          .from('bookings')
-          .select('status')
-          .eq('trip_schedule_id', selectedScheduleId)
-          .in('status', ['approved', 'pending', 'inprogress'])
+      const result = await response.json()
 
-        const bookedSeats = bookings?.length || 0
-        const calculatedSeats = Math.max(0, (selectedSchedule?.available_seats || 0) - bookedSeats)
-        
-        if (customers.length > calculatedSeats) {
-          setError(`ที่นั่งไม่เพียงพอ มีที่นั่งเหลือเพียง ${calculatedSeats} ที่นั่ง`)
-          return
-        }
-      } else {
-        if (customers.length > (availableSeats || 0)) {
-          setError(`ที่นั่งไม่เพียงพอ มีที่นั่งเหลือเพียง ${availableSeats || 0} ที่นั่ง`)
-          return
-        }
-      }
-
-      // Create customers and bookings
-      for (let i = 0; i < customers.length; i++) {
-        const customerData = customers[i]
-        const isMainCustomer = i === 0
-
-        // Create customer
-        const { data: customer, error: customerError } = await supabase
-          .from('customers')
-          .insert({
-            ...customerData,
-            referred_by_code: selectedSeller?.referral_code,
-            referred_by_seller_id: selectedSeller?.id
-          })
-          .select()
-          .single()
-
-        if (customerError) throw customerError
-
-        // Create booking
-        const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .insert({
-            trip_schedule_id: selectedScheduleId,
-            customer_id: customer.id,
-            seller_id: selectedSeller?.id,
-            total_amount: selectedTrip!.price_per_person,
-            commission_amount: calculateCommission(selectedTrip!),
-            status: 'inprogress',
-            notes: isMainCustomer
-              ? `Admin สร้างการจอง - ผู้ติดต่อหลัก (จองทั้งหมด ${customers.length} คน) ${notes ? ` - ${notes}` : ''}`
-              : `Admin สร้างการจอง - ผู้เดินทางร่วมกับ ${customers[0].full_name}`,
-            booking_date: new Date().toISOString()
-          })
-          .select()
-          .single()
-
-        if (bookingError) throw bookingError
-
-        // Create commission payments if there's a seller
-        if (selectedSeller && selectedTrip) {
-          const commissionCalc = calcCommission(
-            selectedTrip.price_per_person,
-            selectedTrip.commission_value,
-            selectedTrip.commission_type as 'fixed' | 'percentage'
-          )
-          
-          try {
-            await createCommissionPayments(booking.id, selectedSeller.id, commissionCalc)
-          } catch (commissionError) {
-            console.error('Failed to create commission payments:', commissionError)
-            // Don't fail the whole booking creation for commission error
-          }
-        }
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create booking')
       }
 
       onBookingCreated()
@@ -324,10 +261,10 @@ export default function CreateBookingModal({
           onChange={(e) => setSelectedSellerId(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-          <option value="">-- ไม่มี Seller --</option>
+          <option value="">-- เลือก Seller --</option>
           {sellers.map((seller) => (
             <option key={seller.id} value={seller.id}>
-              {seller.full_name || seller.email} ({seller.referral_code})
+              {seller.id.slice(-5)} - {seller.full_name || seller.email}
             </option>
           ))}
         </select>
