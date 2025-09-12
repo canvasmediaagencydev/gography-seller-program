@@ -13,37 +13,46 @@ export default function AdminRoutePrefetcher({ userRole }: AdminRoutePrefetcherP
   
   useEffect(() => {
     if (userRole === 'admin') {
-      // Prefetch common admin routes
+      // Prefetch common admin routes immediately  
       const adminRoutes = [
         '/dashboard/admin',
         '/dashboard/admin/sellers', 
         '/dashboard/admin/trips',
-        '/dashboard/admin/bookings'
+        '/dashboard/admin/bookings',
+        '/dashboard/admin/customers'
       ]
       
-      // Small delay to not block initial render
-      const timeoutId = setTimeout(() => {
-        adminRoutes.forEach(route => {
-          router.prefetch(route)
-        })
-      }, 100)
+      // Immediate prefetch without any delay
+      adminRoutes.forEach(route => {
+        router.prefetch(route)
+      })
       
-      return () => clearTimeout(timeoutId)
+      // Also prefetch API routes that admin pages use
+      const apiRoutes = [
+        '/api/admin/trips',
+        '/api/admin/sellers', 
+        '/api/admin/bookings'
+      ]
+      
+      // Prefetch API routes after a short delay
+      setTimeout(() => {
+        apiRoutes.forEach(route => {
+          fetch(route, { method: 'HEAD' }).catch(() => {})
+        })
+      }, 50)
+      
     } else if (userRole === 'seller') {
-      // Prefetch seller routes
+      // Prefetch seller routes immediately
       const sellerRoutes = [
         '/dashboard',
         '/dashboard/trips',
         '/dashboard/reports'
       ]
       
-      const timeoutId = setTimeout(() => {
-        sellerRoutes.forEach(route => {
-          router.prefetch(route)
-        })
-      }, 100)
-      
-      return () => clearTimeout(timeoutId)
+      // Immediate prefetch without delay
+      sellerRoutes.forEach(route => {
+        router.prefetch(route)
+      })
     }
   }, [userRole, router])
   

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useAdminTrips } from '@/hooks/useAdminTrips'
 import TripImage from '@/components/TripImage'
 import { showConfirmDialog } from '@/lib/confirm-dialog'
@@ -11,7 +11,7 @@ export default function AdminTripsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
-  const handleDelete = async (tripId: string, tripTitle: string) => {
+  const handleDelete = useCallback(async (tripId: string, tripTitle: string) => {
     const confirmed = await showConfirmDialog({
       title: 'ลบทริป',
       description: `คุณแน่ใจหรือไม่ที่จะลบทริป "${tripTitle}"?`,
@@ -27,16 +27,23 @@ export default function AdminTripsPage() {
         setDeletingId(null)
       }
     }
-  }
+  }, [deleteTrip])
 
-  const handleToggleStatus = async (tripId: string, currentStatus: boolean) => {
+  const handleToggleStatus = useCallback(async (tripId: string, currentStatus: boolean) => {
     setTogglingId(tripId)
     try {
       await toggleTripStatus(tripId, !currentStatus)
     } finally {
       setTogglingId(null)
     }
-  }
+  }, [toggleTripStatus])
+
+  // Memoize skeleton items to prevent re-renders
+  const skeletonItems = useMemo(() => 
+    Array.from({ length: 5 }, (_, i) => (
+      <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
+    )), []
+  )
 
   if (loading) {
     return (
@@ -46,9 +53,7 @@ export default function AdminTripsPage() {
             <div className="animate-pulse">
               <div className="h-4 bg-gray-300 rounded w-1/4 mb-4"></div>
               <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                ))}
+                {skeletonItems}
               </div>
             </div>
           </div>
@@ -136,12 +141,6 @@ export default function AdminTripsPage() {
                       </div>
                     </div>
                     
-                    {/* {trip.description && (
-                      <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-                        {trip.description}
-                      </p>
-                    )} */}
-
                     <div className="flex items-center gap-2 mb-3">
                       {(trip.countries as any)?.flag_emoji && (
                         <span className="text-lg">
