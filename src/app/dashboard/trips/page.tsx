@@ -120,7 +120,7 @@ export default function TripsPage() {
   }
 
   return (
-    <div className="space-y-6 md:px-0 px-4 md:py-0 py-4">
+    <div className="space-y-6 md:px-0 px-4 md:py-0 py-4 min-h-screen mobile-page-content">
       <TripsHeader 
         totalTrips={totalCount}
         selectedCountries={selectedCountries}
@@ -156,7 +156,7 @@ export default function TripsPage() {
           
       {/* Pagination - Always visible when there are multiple pages */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-8 mb-8 md:mb-0">
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

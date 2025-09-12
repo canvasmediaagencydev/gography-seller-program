@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
 import { BsColumnsGap } from "react-icons/bs";
 import { LuPlaneTakeoff } from "react-icons/lu";
 import { TbUsers } from "react-icons/tb";
@@ -11,7 +11,6 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import Image from 'next/image'
-
 
 interface UserProfile {
   id: string
@@ -28,7 +27,53 @@ interface SidebarProps {
   initialProfile?: UserProfile
 }
 
-function Sidebar({ className, initialProfile }: SidebarProps) {
+// Memoized verification status function outside component to prevent recreation
+const getVerificationStatus = (userProfile: UserProfile | null) => {
+  if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: BsShieldCheck }
+  
+  const hasBasicInfo = userProfile.full_name && userProfile.phone
+  
+  if (!hasBasicInfo) {
+    return {
+      status: 'not_started',
+      text: 'ยืนยันตัวตน',
+      subtext: 'ต้องดำเนินการ',
+      color: 'red',
+      icon: BsExclamationTriangle,
+      pulse: true
+    }
+  }
+  
+  if (userProfile.status === 'pending') {
+    return {
+      status: 'pending',
+      text: 'แก้ไขข้อมูล',
+      subtext: 'อยู่ระหว่างตรวจสอบ',
+      color: 'yellow',
+      icon: BsClock
+    }
+  }
+  
+  if (userProfile.status === 'approved') {
+    return {
+      status: 'verified',
+      text: 'โปรไฟล์',
+      subtext: 'ยืนยันแล้ว',
+      color: 'green',
+      icon: BsCheckCircle
+    }
+  }
+  
+  return {
+    status: 'error',
+    text: 'ปัญหาการยืนยัน',
+    subtext: 'ติดต่อแอดมิน',
+    color: 'red',
+    icon: BsExclamationTriangle
+  }
+}
+
+const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(initialProfile || null)
   const [loading, setLoading] = useState(false)
   const pathname = usePathname()
@@ -42,7 +87,7 @@ function Sidebar({ className, initialProfile }: SidebarProps) {
     }
   }, [initialProfile])
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -59,267 +104,213 @@ function Sidebar({ className, initialProfile }: SidebarProps) {
     } catch (error) {
       console.error('Error fetching user profile:', error)
     }
-  }
+  }, [supabase])
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setLoading(true)
     await supabase.auth.signOut()
     router.push('/auth/login')
     setLoading(false)
-  }
+  }, [supabase, router])
 
-  // Get verification status info
-  const getVerificationStatus = () => {
-    if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: BsShieldCheck }
-    
-    // Check if basic info is filled
-    const hasBasicInfo = userProfile.full_name && userProfile.phone
-    
-    if (!hasBasicInfo) {
-      return {
-        status: 'not_started',
-        text: 'ยืนยันตัวตน',
-        subtext: 'ต้องดำเนินการ',
-        color: 'red',
-        icon: BsExclamationTriangle,
-        pulse: true
-      }
-    }
-    
-    if (userProfile.status === 'pending') {
-      return {
-        status: 'pending',
-        text: 'แก้ไขข้อมูล',
-        subtext: 'อยู่ระหว่างตรวจสอบ',
-        color: 'yellow',
-        icon: BsClock
-      }
-    }
-    
-    if (userProfile.status === 'approved') {
-      return {
-        status: 'approved',
-        text: 'ยืนยันแล้ว',
-        subtext: 'ข้อมูลถูกต้อง',
-        color: 'green',
-        icon: BsCheckCircle
-      }
-    }
-    
-    return {
-      status: 'not_approved',
-      text: 'ยืนยันตัวตน',
-      subtext: 'จำเป็นต้องอัปเดต',
-      color: 'red',
-      icon: BsExclamationTriangle,
-      pulse: true
-    }
-  }
+  // Memoize verification status to prevent recalculation
+  const verificationInfo = useMemo(() => 
+    getVerificationStatus(userProfile), 
+    [userProfile?.full_name, userProfile?.phone, userProfile?.status]
+  )
 
-  const verificationInfo = getVerificationStatus()
-
-  // Active page detection
-  const isActive = (path: string) => {
-    if (path === '/dashboard/trips') {
-      return pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips'
-    }
-    if (path === '/dashboard/admin/trips') {
+  // Memoize active route checks for better performance
+  const isTripsActive = useMemo(() => {
+    if (userProfile?.role === 'admin') {
       return pathname.includes('/dashboard/admin/trips') && pathname !== '/dashboard/admin/trips/create'
     }
-    if (path === '/dashboard/admin/bookings') {
-      return pathname.includes('/dashboard/admin/bookings')
+    return pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips'
+  }, [pathname, userProfile?.role])
+
+  const isReportsActive = useMemo(() => 
+    pathname === '/dashboard/reports', [pathname]
+  )
+
+  const isProfileActive = useMemo(() => 
+    pathname === '/dashboard/profile', [pathname]
+  )
+
+  const isDashboardActive = useMemo(() => {
+    if (userProfile?.role === 'admin') {
+      return pathname === '/dashboard/admin'
     }
-    return pathname === path
+    return pathname === '/dashboard'
+  }, [pathname, userProfile?.role])
+
+  // Memoize navigation items
+  const navigationItems = useMemo(() => {
+    const baseItems = [
+      {
+        icon: <BsColumnsGap className="text-lg" />,
+        label: 'Dashboard',
+        href: userProfile?.role === 'admin' ? '/dashboard/admin' : '/dashboard',
+        isActive: isDashboardActive
+      },
+      {
+        icon: <LuPlaneTakeoff className="text-lg" />,
+        label: userProfile?.role === 'admin' ? 'จัดการทริป' : 'ทริป',
+        href: userProfile?.role === 'admin' ? '/dashboard/admin/trips' : '/dashboard/trips',
+        isActive: isTripsActive
+      }
+    ]
+
+    // Add role-specific items
+    if (userProfile?.role === 'admin') {
+      baseItems.push(
+        {
+          icon: <TbUsers className="text-lg" />,
+          label: 'ผู้ขาย',
+          href: '/dashboard/admin/sellers',
+          isActive: pathname === '/dashboard/admin/sellers'
+        },
+        {
+          icon: <TbUsers className="text-lg" />,
+          label: 'การจอง',
+          href: '/dashboard/admin/bookings',
+          isActive: pathname === '/dashboard/admin/bookings'
+        },
+        {
+          icon: <TbUsers className="text-lg" />,
+          label: 'ลูกค้า',
+          href: '/dashboard/admin/customers',
+          isActive: pathname === '/dashboard/admin/customers'
+        }
+      )
+    } else {
+      baseItems.push({
+        icon: <TbUsers className="text-lg" />,
+        label: 'รายงาน',
+        href: '/dashboard/reports',
+        isActive: isReportsActive
+      })
+    }
+
+    return baseItems
+  }, [userProfile?.role, userProfile?.status, pathname, isDashboardActive, isTripsActive, isReportsActive])
+
+  if (!userProfile) {
+    return (
+      <div className={`hidden md:flex h-screen w-80 bg-white shadow-lg flex-col ${className || ''}`}>
+        <div className="p-6">
+          <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className={`${className} hidden md:flex flex-col justify-between bg-white border-r border-gray-200 min-h-screen w-64`}>
-      <div className="p-6 flex-1">
-        {/* Logo */}
-        <div className="mb-8 flex items-center flex-col">
-          <h1 className="text-3xl font-bold text-orange-600">
-            Logo
-          </h1>
-          <p className="text-lg text-gray-500">
-            {userProfile?.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
-          </p>
+    <div className={`hidden md:flex h-screen w-80 bg-white shadow-lg flex-col ${className || ''}`}>
+      {/* Header */}
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-lg">G</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-bold text-gray-900 truncate">Gography</h1>
+            <p className="text-sm text-gray-600 truncate">
+              {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
+            </p>
+          </div>
         </div>
-
-        {/* Navigation */}
-        <nav className="space-y-2">
-          {userProfile?.role === 'admin' ? (
-            // Admin Navigation
-            <>
-              <SidebarButton
-                icon={<BsColumnsGap />}
-                label="Dashboard"
-                href="/dashboard/admin"
-                isActive={isActive('/dashboard/admin')}
-              />
-
-              <SidebarButton
-                icon={<TbUsers />}
-                label="จัดการ Seller"
-                href="/dashboard/admin/sellers"
-                isActive={isActive('/dashboard/admin/sellers')}
-              />
-
-              <SidebarButton
-                icon={<LuPlaneTakeoff />}
-                label="จัดการ Trips"
-                href="/dashboard/admin/trips"
-                isActive={isActive('/dashboard/admin/trips')}
-              />
-
-              <SidebarButton
-                icon={<TbUsers />}
-                label="จัดการการจอง"
-                href="/dashboard/admin/bookings"
-                isActive={isActive('/dashboard/admin/bookings')}
-              />
-            </>
-          ) : (
-            // Seller Navigation
-            <>
-              <SidebarButton
-                icon={<LuPlaneTakeoff />}
-                label="ข้อมูล Trips"
-                href="/dashboard/trips"
-                isActive={isActive('/dashboard/trips')}
-              />
-
-              {userProfile?.status === 'approved' ? (
-                <SidebarButton
-                  icon={<TbUsers />}
-                  label="รายงานยอดขาย"
-                  href="/dashboard/reports"
-                  isActive={isActive('/dashboard/reports')}
-                />
-              ) : (
-                <div className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">
-                  <span className="text-lg"><TbUsers /></span>
-                  <span>รายงานยอดขาย (ต้องได้รับการอนุมัติ)</span>
-                </div>
-              )}
-
-                 <SidebarButton
-                icon={<BsColumnsGap />}
-                label="Dashboard"
-                href="/dashboard"
-                isActive={isActive('/dashboard')}
-              />
-
-
-            </>
-          )}
-        </nav>
       </div>
 
-      {/* Footer - User Info */}
-      {/* Profile Verification Button */}
-      {userProfile?.role !== 'admin' && (
-        <div className="px-6 mb-6">
-          <button
-            onClick={() => {
-              if (verificationInfo.status !== 'approved') {
-                // Desktop sidebar: always use modal
-                const event = new CustomEvent('openProfileModal')
-                window.dispatchEvent(event)
-              }
-            }}
-            disabled={verificationInfo.status === 'approved'}
-            className={`w-full flex items-center gap-3 px-4 py-4 rounded-xl text-sm font-medium transition-all duration-300 relative ${
-              verificationInfo.color === 'red'
-                ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100'
-                : verificationInfo.color === 'yellow'
-                ? 'bg-yellow-50 text-yellow-700 border-2 border-yellow-200 hover:bg-yellow-100'
-                : 'bg-green-50 text-green-700 border-2 border-green-200 cursor-default'
-            } ${verificationInfo.pulse ? 'animate-pulse' : ''}`}
-          >
-            {/* Status Dot */}
-            <div className="relative">
-              <verificationInfo.icon className="text-lg" />
-              {verificationInfo.status !== 'approved' && (
-                <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ${
-                  verificationInfo.color === 'red' ? 'bg-red-500' : 'bg-yellow-500'
-                } ${verificationInfo.pulse ? 'animate-ping' : ''}`}></div>
-              )}
-            </div>
-            
-            <div className="flex-1 text-left">
-              <div className="font-semibold">{verificationInfo.text}</div>
-              {verificationInfo.subtext && (
-                <div className="text-xs opacity-75">{verificationInfo.subtext}</div>
-              )}
-            </div>
-
-            {/* Arrow or Status Indicator */}
-            {verificationInfo.status === 'approved' ? (
-              <div className="text-green-600">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-            ) : verificationInfo.status === 'pending' ? (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            )}
-          </button>
-        </div>
-      )}
-
-      <div className="p-4 border-t border-gray-200">
-
-
-
-        {userProfile?.role !== 'admin' && (
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden bg-gray-100">
-              {userProfile?.avatar_url ? (
-                <img
-                  src={userProfile.avatar_url}
-                  alt={userProfile.full_name || 'User'}
-                  className="w-full h-full object-cover rounded-full"
-                  onError={(e) => {
-                    // Fallback to icon if image fails to load
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-              ) : null}
-              <FaRegUserCircle 
-                className={`w-8 h-auto text-gray-400 ${userProfile?.avatar_url ? 'hidden' : ''}`} 
+      {/* User Profile Section */}
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            {userProfile.avatar_url ? (
+              <Image
+                src={userProfile.avatar_url}
+                alt="Avatar"
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-full object-cover"
               />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">
-                {userProfile?.full_name || 'ไม่ระบุชื่อ'}
-              </p>
-              <p className="text-xs text-gray-500">
-                ID: {userProfile?.referral_code || 'USERF11F'}
+            ) : (
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                <FaRegUserCircle className="w-6 h-6 text-gray-500" />
+              </div>
+            )}
+            {verificationInfo.pulse && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-medium text-gray-900 truncate">
+              {userProfile.full_name || 'ยังไม่ได้ระบุชื่อ'}
+            </h3>
+            <div className="flex items-center space-x-2">
+              <verificationInfo.icon 
+                className={`w-3 h-3 ${
+                  verificationInfo.color === 'green' ? 'text-green-500' :
+                  verificationInfo.color === 'yellow' ? 'text-yellow-500' :
+                  verificationInfo.color === 'red' ? 'text-red-500' :
+                  'text-blue-500'
+                }`} 
+              />
+              <p className={`text-xs ${
+                verificationInfo.color === 'green' ? 'text-green-600' :
+                verificationInfo.color === 'yellow' ? 'text-yellow-600' :
+                verificationInfo.color === 'red' ? 'text-red-600' :
+                'text-blue-600'
+              }`}>
+                {verificationInfo.subtext || verificationInfo.text}
               </p>
             </div>
           </div>
-        )}
+        </div>
+      </div>
 
+      {/* Navigation */}
+      <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
+        {navigationItems.map((item, index) => (
+          <SidebarButton
+            key={`nav-${item.href}-${index}`}
+            icon={item.icon}
+            label={item.label}
+            href={item.href}
+            isActive={item.isActive}
+            prefetch={true}
+          />
+        ))}
+      </nav>
+
+      {/* Profile and Logout */}
+      <div className="p-6 border-t border-gray-100 space-y-2">
+        <SidebarButton
+          icon={verificationInfo.pulse ? (
+            <div className="relative">
+              <FaRegUserCircle className="text-lg" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+            </div>
+          ) : (
+            <FaRegUserCircle className="text-lg" />
+          )}
+          label={verificationInfo.text}
+          href="/dashboard/profile"
+          isActive={isProfileActive}
+          prefetch={true}
+        />
+        
         <button
           onClick={handleLogout}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-lg font-medium transition-all duration-75 text-red-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FiLogOut className="text-sm" />
-          {loading ? 'กำลังออกจากระบบ...' : 'ออกจากระบบ'}
+          <FiLogOut className="text-lg" />
+          <span className="text-left">
+            {loading ? 'กำลังออกจากระบบ...' : 'ออกจากระบบ'}
+          </span>
         </button>
       </div>
-
     </div>
   )
-}
+})
 
 export default Sidebar
