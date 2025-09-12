@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../../../../database.types'
 import BookingCard from './components/BookingCard'
@@ -9,6 +9,7 @@ import BookingFilters from './components/BookingFilters'
 import BookingStats from './components/BookingStats'
 import { toast } from 'sonner'
 import { showConfirmDialog } from '@/lib/confirm-dialog'
+import { useAdminBookings } from '@/hooks/useAdminBookings'
 
 interface BookingWithDetails extends Tables<'bookings'> {
   customers?: {
@@ -74,14 +75,27 @@ interface AdminBookingsClientProps {
 
 type BookingStatus = 'all' | 'pending' | 'inprogress' | 'approved' | 'rejected' | 'cancelled'
 
-export default function AdminBookingsClient({ 
+// Memoized component for better performance
+const AdminBookingsClient = memo(function AdminBookingsClient({ 
   initialBookings, 
   sellers, 
   trips 
 }: AdminBookingsClientProps) {
-  const [bookings, setBookings] = useState<BookingWithDetails[]>(initialBookings)
+  // Use the new optimized hook
+  const { 
+    bookings, 
+    loading, 
+    error, 
+    totalCount,
+    currentPage,
+    totalPages,
+    refreshBookings,
+    loadMore,
+    hasMore,
+    updateBookingInState
+  } = useAdminBookings(20) as any // Cast for now due to TypeScript complexity
+  
   const [filteredBookings, setFilteredBookings] = useState<BookingWithDetails[]>(initialBookings)
-  const [loading, setLoading] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<BookingStatus>('all')
@@ -91,203 +105,42 @@ export default function AdminBookingsClient({
 
   const supabase = createClient()
 
+  // Initialize with server-side data
   useEffect(() => {
-    filterBookings()
-  }, [bookings, searchTerm, statusFilter, paymentStatusFilter, sellerFilter, dateFilter])
-
-  const filterBookings = () => {
-    let filtered = [...bookings]
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(booking => 
-        booking.customers?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.customers?.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.trip_schedules?.trips?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.seller?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    if (initialBookings.length > 0 && bookings.length === 0) {
+      // Use initial data until client-side fetch completes
+      setFilteredBookings(initialBookings)
     }
+  }, [initialBookings, bookings])
 
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(booking => booking.status === statusFilter)
+  // Memoized filter function for better performance
+  const applyFilters = useCallback(() => {
+    refreshBookings({
+      search: searchTerm || undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      paymentStatus: paymentStatusFilter !== 'all' ? paymentStatusFilter : undefined,
+      sellerId: sellerFilter !== 'all' ? sellerFilter : undefined
+    })
+  }, [searchTerm, statusFilter, paymentStatusFilter, sellerFilter, refreshBookings])
+
+  // Use debounced search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      applyFilters()
+    }, 300) // 300ms debounce
+    
+    return () => clearTimeout(timeoutId)
+  }, [applyFilters])
+
+  // Set filtered bookings when bookings change
+  useEffect(() => {
+    if (bookings.length > 0) {
+      setFilteredBookings(bookings)
     }
+  }, [bookings])
 
-    // Payment Status filter
-    if (paymentStatusFilter !== 'all') {
-      filtered = filtered.filter(booking => booking.payment_status === paymentStatusFilter)
-    }
-
-    // Seller filter
-    if (sellerFilter !== 'all') {
-      if (sellerFilter === 'none') {
-        filtered = filtered.filter(booking => !booking.seller_id)
-      } else {
-        filtered = filtered.filter(booking => booking.seller_id === sellerFilter)
-      }
-    }
-
-    // Date filter
-    if (dateFilter !== 'all') {
-      const now = new Date()
-      filtered = filtered.filter(booking => {
-        if (!booking.created_at) return false
-        const bookingDate = new Date(booking.created_at)
-        
-        switch (dateFilter) {
-          case 'today':
-            return bookingDate.toDateString() === now.toDateString()
-          case 'week':
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            return bookingDate >= weekAgo
-          case 'month':
-            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-            return bookingDate >= monthAgo
-          default:
-            return true
-        }
-      })
-    }
-
-    setFilteredBookings(filtered)
-  }
-
-  const refreshBookings = async () => {
-    setLoading(true)
-    try {
-      const { data } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          customers (
-            full_name,
-            email,
-            phone,
-            id_card,
-            passport_number
-          ),
-          trip_schedules (
-            departure_date,
-            return_date,
-            registration_deadline,
-            available_seats,
-            trips (
-              title,
-              price_per_person,
-              commission_type,
-              commission_value,
-              countries (
-                name,
-                flag_emoji
-              )
-            )
-          ),
-          commission_payments (
-            id,
-            payment_type,
-            amount,
-            status,
-            paid_at
-          )
-        `)
-        .order('created_at', { ascending: false })
-      
-      // Manually fetch seller information for each booking
-      if (data) {
-        const bookingsWithSellers = await Promise.all(
-          data.map(async (booking) => {
-            if (booking.seller_id) {
-              const { data: seller } = await supabase
-                .from('user_profiles')
-                .select('id, full_name, email, referral_code, avatar_url')
-                .eq('id', booking.seller_id)
-                .single()
-              
-              return { ...booking, seller }
-            }
-            return { ...booking, seller: null }
-          })
-        )
-        
-        setBookings(bookingsWithSellers as BookingWithDetails[])
-      }
-    } catch (error) {
-      console.error('Error refreshing bookings:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateBookingInState = async (bookingId: string) => {
-    try {
-      // Fetch updated booking data
-      const { data: updatedBooking } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          customers (
-            full_name,
-            email,
-            phone,
-            id_card,
-            passport_number
-          ),
-          trip_schedules (
-            departure_date,
-            return_date,
-            registration_deadline,
-            available_seats,
-            trips (
-              title,
-              price_per_person,
-              commission_type,
-              commission_value,
-              countries (
-                name,
-                flag_emoji
-              )
-            )
-          ),
-          commission_payments (
-            id,
-            payment_type,
-            amount,
-            status,
-            paid_at
-          )
-        `)
-        .eq('id', bookingId)
-        .single()
-
-      if (updatedBooking) {
-        // Fetch seller info if exists
-        let seller = null
-        if (updatedBooking.seller_id) {
-          const { data: sellerData } = await supabase
-            .from('user_profiles')
-            .select('id, full_name, email, referral_code, avatar_url')
-            .eq('id', updatedBooking.seller_id)
-            .single()
-          seller = sellerData
-        }
-
-        const bookingWithSeller = { ...updatedBooking, seller }
-
-        // Update state
-        setBookings(prevBookings => 
-          prevBookings.map(booking => 
-            booking.id === bookingId ? bookingWithSeller as BookingWithDetails : booking
-          )
-        )
-      }
-    } catch (error) {
-      console.error('Error updating booking in state:', error)
-      // Fallback to full refresh if single update fails
-      await refreshBookings()
-    }
-  }
-
-  const updateBookingStatus = async (bookingId: string, status: string) => {
+  // Memoized update functions for better performance
+  const updateBookingStatus = useCallback(async (bookingId: string, status: string) => {
     try {
       const response = await fetch('/api/admin/bookings/update-status', {
         method: 'POST',
@@ -310,9 +163,9 @@ export default function AdminBookingsClient({
       console.error('Error updating booking status:', error)
       toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการจอง')
     }
-  }
+  }, [updateBookingInState])
 
-  const updatePaymentStatus = async (bookingId: string, paymentStatus: string) => {
+  const updatePaymentStatus = useCallback(async (bookingId: string, paymentStatus: string) => {
     try {
       const response = await fetch('/api/admin/bookings/update-payment-status', {
         method: 'POST',
@@ -336,14 +189,14 @@ export default function AdminBookingsClient({
       console.error('Error updating payment status:', error)
       toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน: ' + (error as Error).message)
     }
-  }
+  }, [updateBookingInState])
 
-  const handleBookingCreated = () => {
+  const handleBookingCreated = useCallback(() => {
     setShowCreateModal(false)
     refreshBookings()
-  }
+  }, [refreshBookings])
 
-  const fixCommissions = async () => {
+  const fixCommissions = useCallback(async () => {
     const confirmed = await showConfirmDialog({
       title: 'สร้าง commission payments สำหรับ booking ที่ยังไม่มี?',
       description: 'การดำเนินการนี้จะสร้าง commission payments ให้กับ booking ทั้งหมดที่มี seller แต่ยังไม่มี commission payments',
@@ -381,7 +234,30 @@ export default function AdminBookingsClient({
       console.error('Error fixing commissions:', error)
       toast.error('เกิดข้อผิดพลาดในการสร้าง commission payments')
     }
-  }
+  }, [refreshBookings])
+
+  // Memoized components for better performance
+  const memoizedStats = useMemo(() => (
+    <BookingStats bookings={filteredBookings} />
+  ), [filteredBookings])
+
+  const memoizedFilters = useMemo(() => (
+    <BookingFilters
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      statusFilter={statusFilter}
+      setStatusFilter={setStatusFilter}
+      paymentStatusFilter={paymentStatusFilter}
+      setPaymentStatusFilter={setPaymentStatusFilter}
+      sellerFilter={sellerFilter}
+      setSellerId={setSellerId}
+      dateFilter={dateFilter}
+      setDateFilter={setDateFilter}
+      sellers={sellers}
+      onRefresh={() => refreshBookings()}
+      loading={loading}
+    />
+  ), [searchTerm, statusFilter, paymentStatusFilter, sellerFilter, dateFilter, sellers, loading, refreshBookings])
 
   return (
     <div className="space-y-8">
@@ -418,31 +294,27 @@ export default function AdminBookingsClient({
       </div>
 
       {/* Stats */}
-      <BookingStats bookings={bookings} />
+      {memoizedStats}
 
       {/* Filters */}
-      <BookingFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        paymentStatusFilter={paymentStatusFilter}
-        setPaymentStatusFilter={setPaymentStatusFilter}
-        sellerFilter={sellerFilter}
-        setSellerId={setSellerId}
-        dateFilter={dateFilter}
-        setDateFilter={setDateFilter}
-        sellers={sellers}
-        onRefresh={refreshBookings}
-        loading={loading}
-      />
+      {memoizedFilters}
 
       {/* Bookings List */}
       <div className="bg-white rounded-lg border border-gray-200">
         {loading ? (
           <div className="p-12 text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-            <p className="mt-4 text-sm text-gray-600">กำลังโหลดข้อมูล...</p>
+            <p className="mt-2 text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center">
+            <p className="text-red-600">เกิดข้อผิดพลาด: {error}</p>
+            <button 
+              onClick={() => refreshBookings()}
+              className="mt-2 text-blue-600 hover:text-blue-800"
+            >
+              ลองใหม่
+            </button>
           </div>
         ) : filteredBookings.length === 0 ? (
           <div className="p-12 text-center">
@@ -483,4 +355,6 @@ export default function AdminBookingsClient({
       )}
     </div>
   )
-}
+})
+
+export default AdminBookingsClient
