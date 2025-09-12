@@ -72,7 +72,7 @@ export function useTripSchedules(tripId: string) {
             } catch (err) {
               console.log(`RPC failed for schedule ${schedule.id}, using fallback calculation`)
               
-              // Fallback calculation
+              // Fallback calculation - ถ้า RLS policy block การ query bookings ให้ใช้ original seats
               try {
                 const { data: bookings, error: bookingError } = await supabase
                   .from('bookings')
@@ -81,7 +81,13 @@ export function useTripSchedules(tripId: string) {
                   .in('status', ['approved', 'pending', 'inprogress'])
 
                 if (bookingError) {
-                  console.error('Booking query error:', bookingError)
+                  console.warn(`Booking query failed for schedule ${schedule.id}:`, {
+                    error: bookingError,
+                    message: bookingError.message || 'Unknown booking query error',
+                    code: bookingError.code || 'NO_CODE',
+                    details: bookingError.details || 'No additional details',
+                    hint: 'This is likely due to RLS policy restrictions - using original seat count'
+                  })
                   // If booking query fails, return original seats
                   return {
                     ...schedule,

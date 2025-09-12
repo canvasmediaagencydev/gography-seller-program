@@ -37,14 +37,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         // ถ้า realTimeSeats มีค่าและไม่เป็น null/undefined ให้ใช้ค่านั้น
         const finalSeats = (realTimeSeats !== null && realTimeSeats !== undefined) ? realTimeSeats : fallbackSeats
         
-        console.log('TripCard getCurrentScheduleSeats:', {
-            tripTitle: trip.title,
-            tripAvailableSeats: trip.available_seats,
-            selectedScheduleSeats: selectedSchedule.available_seats,
-            realTimeSeats: realTimeSeats,
-            fallbackSeats: fallbackSeats,
-            finalSeats: finalSeats
-        })
+
         
         return finalSeats
     }
