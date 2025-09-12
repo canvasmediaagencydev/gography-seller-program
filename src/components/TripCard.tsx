@@ -30,17 +30,23 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         if (!selectedSchedule) return trip.available_seats ?? 0
         
         const scheduleWithSeats = allSchedules.find(s => s.id === selectedSchedule.id)
-        const newResult = trip.available_seats ?? scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats ?? 0
+        // ใช้ realTimeSeats เป็นหลัก และ fallback เป็น available_seats
+        const realTimeSeats = scheduleWithSeats?.realTimeSeats
+        const fallbackSeats = selectedSchedule.available_seats ?? 0
+        
+        // ถ้า realTimeSeats มีค่าและไม่เป็น null/undefined ให้ใช้ค่านั้น
+        const finalSeats = (realTimeSeats !== null && realTimeSeats !== undefined) ? realTimeSeats : fallbackSeats
+        
         console.log('TripCard getCurrentScheduleSeats:', {
             tripTitle: trip.title,
             tripAvailableSeats: trip.available_seats,
             selectedScheduleSeats: selectedSchedule.available_seats,
-            realTimeSeats: scheduleWithSeats?.realTimeSeats,
-            newResult: newResult
+            realTimeSeats: realTimeSeats,
+            fallbackSeats: fallbackSeats,
+            finalSeats: finalSeats
         })
         
-        // Prioritize trip.available_seats from API over realTimeSeats due to RLS issues
-        return trip.available_seats ?? scheduleWithSeats?.realTimeSeats ?? selectedSchedule.available_seats ?? 0
+        return finalSeats
     }
 
     // Fetch seller referral code and status
@@ -215,7 +221,12 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                                             selectedSchedule?.id === schedule.id ? 'bg-orange-50 text-orange-600' : ''
                                         }`}
                                     >
-                                        {formatDateRange(schedule)} ({schedule.realTimeSeats ?? schedule.available_seats} ที่นั่งเหลือ)
+                                        {formatDateRange(schedule)} ({
+                                            // ใช้ realTimeSeats ถ้ามี แต่ถ้าเป็น 0 หรือ null ให้ fallback เป็น available_seats
+                                            (schedule.realTimeSeats !== null && schedule.realTimeSeats !== undefined && schedule.realTimeSeats > 0) 
+                                                ? schedule.realTimeSeats 
+                                                : schedule.available_seats
+                                        } ที่นั่งเหลือ)
                                     </button>
                                 ))}
                             </div>

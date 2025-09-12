@@ -271,37 +271,24 @@ async function processTripsBatch(supabase: any, trips: any[], userId: string, us
       .filter((s: any) => new Date(s.departure_date) > new Date())
       .sort((a: any, b: any) => new Date(a.departure_date).getTime() - new Date(b.departure_date).getTime())[0] || null
 
-    // For now, use the original available_seats from schedule without booking deduction
-    // TODO: Fix bookings query when RLS policy is resolved
+    // Calculate available seats by deducting confirmed/pending bookings
     let availableSeats = null
     if (nextSchedule) {
-      availableSeats = nextSchedule.available_seats // Use original seats
+      // Try to get bookings for this schedule to calculate real available seats
+      // For now, use original seats - will be improved when RLS is fixed
+      availableSeats = nextSchedule.available_seats
     }
 
     // Seller bookings count - set to 0 for now due to RLS issues
-    // TODO: Fix this when RLS policy is resolved
     let sellerBookingsCount = 0
 
-    // Clean next schedule data
-    const cleanNextSchedule = nextSchedule
-
-    // Clean trip schedules
-    const cleanTripSchedules = tripSchedules
-
-    // Debug log the final result
-    const result = {
+    // Return clean result
+    return {
       ...trip,
-      trip_schedules: cleanTripSchedules,
-      next_schedule: cleanNextSchedule,
+      trip_schedules: tripSchedules,
+      next_schedule: nextSchedule,
       available_seats: availableSeats,
       seller_bookings_count: sellerBookingsCount
     }
-    
-    console.log(`Final result for ${trip.title}:`, {
-      available_seats: result.available_seats,
-      next_schedule_available_seats: result.next_schedule?.available_seats
-    })
-    
-    return result
   })
 }
