@@ -51,7 +51,7 @@ export const createCommissionPayments = async (
     {
       booking_id: bookingId,
       seller_id: sellerId,
-      payment_type: 'deposit_commission',
+      payment_type: 'partial_commission',
       amount: commissionCalculation.depositCommission,
       percentage: 50.00,
       status: 'pending'

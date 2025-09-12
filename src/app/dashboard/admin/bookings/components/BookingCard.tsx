@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import PaymentModal from '@/components/admin/PaymentModal'
 import { 
   Edit, 
   Phone, 
@@ -18,7 +19,8 @@ import {
   XCircle,
   Mail,
   User,
-  MapPin
+  MapPin,
+  Trash2
 } from 'lucide-react'
 
 interface BookingWithDetails extends Tables<'bookings'> {
@@ -74,14 +76,19 @@ interface BookingCardProps {
   onStatusUpdate: (bookingId: string, status: string) => Promise<void>
   onPaymentStatusUpdate: (bookingId: string, paymentStatus: string) => Promise<void>
   onSellerUpdate?: (bookingId: string) => Promise<void>
+  onRefresh?: (bookingId: string) => Promise<void>
+  onDelete?: (bookingId: string) => Promise<void>
   sellers: Seller[]
 }
 
-export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUpdate, onSellerUpdate, sellers }: BookingCardProps) {
+export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUpdate, onSellerUpdate, onRefresh, onDelete, sellers }: BookingCardProps) {
   const [updating, setUpdating] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [editingSeller, setEditingSeller] = useState(false)
   const [selectedSellerId, setSelectedSellerId] = useState(booking.seller_id || '')
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [commissionAmount, setCommissionAmount] = useState(0)
+  const [paymentType, setPaymentType] = useState<'partial' | 'full'>('partial')
 
   // Update selectedSellerId when booking.seller_id changes
   useEffect(() => {
@@ -90,9 +97,6 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
 
   // Use commission payments from booking data instead of fetching separately
   const commissionPayments = booking.commission_payments || []
-  
-  // Debug: แสดงข้อมูล commission payments
-  console.log('Booking ID:', booking.id, 'Commission Payments:', commissionPayments)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('th-TH', {
@@ -111,6 +115,25 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  // Calculate commission amount
+  const calculateCommission = (paymentType: 'partial' | 'full') => {
+    if (!booking.trip_schedules?.trips) return 0
+    
+    const trip = booking.trip_schedules.trips
+    const totalAmount = booking.total_amount
+    let commissionRate = 0
+    
+    if (trip.commission_type === 'percentage') {
+      commissionRate = trip.commission_value / 100
+    } else {
+      // Fixed amount commission
+      return paymentType === 'partial' ? trip.commission_value * 0.5 : trip.commission_value * 0.5
+    }
+    
+    const totalCommission = totalAmount * commissionRate
+    return paymentType === 'partial' ? totalCommission * 0.5 : totalCommission * 0.5
   }
 
   const getStatusBadge = (status: string | null) => {
@@ -140,7 +163,7 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
       pending: { label: 'รอชำระ', variant: 'secondary' as const, icon: Clock },
       partial: { label: 'จ่ายมัดจำแล้ว', variant: 'default' as const, icon: DollarSign },
       completed: { label: 'จ่ายครบแล้ว', variant: 'default' as const, icon: CheckCircle },
-      refunded: { label: 'คืนเงิน', variant: 'destructive' as const, icon: XCircle }
+      refunded: { label: 'ยกเลิก ', variant: 'destructive' as const, icon: XCircle }
     }
 
     const config = statusConfig[paymentStatus as keyof typeof statusConfig] || statusConfig.pending
@@ -194,11 +217,22 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
   }
 
   const handlePaymentStatusChange = async (newPaymentStatus: string) => {
+    // Check if this update requires commission payment and seller exists
+    if ((newPaymentStatus === 'partial' || newPaymentStatus === 'completed') && booking.seller) {
+      const type = newPaymentStatus === 'partial' ? 'partial' : 'full'
+      const amount = calculateCommission(type)
+      
+      setPaymentType(type)
+      setCommissionAmount(amount)
+      setShowPaymentModal(true)
+      return
+    }
+
+    // Regular payment status update without commission
     setUpdating(true)
     try {
       await onPaymentStatusUpdate(booking.id, newPaymentStatus)
       toast.success('อัพเดทสถานะการชำระเงินสำเร็จ')
-      // No need to refresh commission payments as parent will refresh
     } catch (error) {
       console.error('Error updating payment status:', error)
       toast.error('เกิดข้อผิดพลาดในการอัพเดทสถานะการชำระเงิน')
@@ -247,7 +281,8 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
   const seller = booking.seller
 
   return (
-    <Card className="transition-colors hover:shadow-md">
+    <>
+      <Card className="transition-colors hover:shadow-md">
       <CardHeader className="pb-4">
         {/* Trip Title and Status */}
         <div className="flex items-center justify-between mb-4">
@@ -262,6 +297,17 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
           <div className="flex items-center gap-2">
             {getStatusBadge(booking.status)}
             {getPaymentStatusBadge(booking.payment_status)}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(booking.id)}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                title="ลบการจอง"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -408,9 +454,9 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
         {/* Commission Flow Info */}
         {seller && (
           <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-            <h4 className="text-sm font-medium text-yellow-900 mb-3 flex items-center gap-2">
-              <DollarSign className="w-4 h-4" />
-              Commission Flow
+                        <h4 className="font-medium text-gray-900 text-base flex items-center mb-3">
+              <DollarSign className="w-5 h-5 mr-2 text-green-600" />
+              💰 การจ่ายค่าคอมมิชชั่น
             </h4>
             {commissionPayments.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -418,9 +464,11 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                   <div key={payment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {payment.payment_type === 'direct' ? 'Commission มัดจำ (50%)' : 
-                         payment.payment_type === 'referral' ? 'Commission โบนัส (50%)' : 
-                         'Commission (' + payment.payment_type + ')'}
+                        {payment.payment_type === 'partial_commission' ? 'ค่าคอมมิชชั่นครึ่งแรก (50%)' : 
+                         payment.payment_type === 'final_commission' ? 'ค่าคอมมิชชั่นครึ่งหลัง (50%)' : 
+                         payment.payment_type === 'direct' ? 'ค่าคอมมิชชั่นโดยตรง' : 
+                         payment.payment_type === 'referral' ? 'ค่าคอมมิชชั่นแนะนำ' : 
+                         'ค่าคอมมิชชั่น (' + payment.payment_type + ')'}
                       </p>
                       <p className="text-sm text-gray-600 font-medium">฿{payment.amount.toLocaleString()}</p>
                       {payment.paid_at && (
@@ -435,9 +483,9 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
               </div>
             ) : (
               <div className="text-center py-4">
-                <p className="text-sm text-gray-500">ยังไม่มี Commission Payment</p>
+                <p className="text-sm text-gray-500">ยังไม่มีการจ่ายค่าคอมมิชชั่น</p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Commission จะถูกสร้างเมื่อลูกค้าชำระเงิน
+                  ค่าคอมมิชชั่นจะถูกสร้างเมื่อลูกค้าชำระเงิน
                 </p>
               </div>
             )}
@@ -465,7 +513,7 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                   <SelectItem value="pending" className="hover:bg-gray-50">รอชำระ</SelectItem>
                   <SelectItem value="partial" className="hover:bg-gray-50">จ่ายมัดจำแล้ว</SelectItem>
                   <SelectItem value="completed" className="hover:bg-gray-50">จ่ายครบแล้ว</SelectItem>
-                  <SelectItem value="refunded" className="hover:bg-gray-50">คืนเงิน</SelectItem>
+                  <SelectItem value="refunded" className="hover:bg-gray-50">ยกเลิก</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -500,5 +548,23 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
         </div>
       </CardContent>
     </Card>
+
+    {/* Payment Modal */}
+    <PaymentModal
+      isOpen={showPaymentModal}
+      onClose={() => setShowPaymentModal(false)}
+      seller={booking.seller!}
+      commissionAmount={commissionAmount}
+      bookingId={booking.id}
+      paymentType={paymentType}
+      onPaymentComplete={async () => {
+        // Call parent refresh function to reload data
+        if (onRefresh) {
+          await onRefresh(booking.id)
+        }
+        toast.success('บันทึกการจ่ายค่าคอมมิชชั่นเรียบร้อยแล้ว')
+      }}
+    />
+    </>
   )
 }

@@ -92,6 +92,12 @@ export default function SellerVerificationPage() {
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
   
+  // Bank account states
+  const [bankName, setBankName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [accountName, setAccountName] = useState('')
+  const [branch, setBranch] = useState('')
+  
   // File states
   const [idCardFile, setIdCardFile] = useState<File | null>(null)
   const [profileFile, setProfileFile] = useState<File | null>(null)
@@ -209,6 +215,11 @@ export default function SellerVerificationPage() {
         return
       }
 
+      if (!bankName || !accountNumber || !accountName) {
+        setError('กรุณากรอกข้อมูลธนาคารให้ครบถ้วน')
+        return
+      }
+
       if (!idCardFile) {
         setError('กรุณาอัปโหลดรูปบัตรประชาชน')
         return
@@ -253,6 +264,25 @@ export default function SellerVerificationPage() {
       // Update user profile
       setUploadProgress('กำลังบันทึกข้อมูล...')
       await updateSellerFiles(userProfile.id, updates)
+
+      // Save bank account information
+      setUploadProgress('กำลังบันทึกข้อมูลธนาคาร...')
+      const { error: bankError } = await supabase
+        .from('bank_accounts')
+        .upsert({
+          seller_id: userProfile.id,
+          bank_name: bankName,
+          account_number: accountNumber,
+          account_name: accountName,
+          branch: branch || null,
+          is_primary: true
+        }, {
+          onConflict: 'seller_id,is_primary'
+        })
+
+      if (bankError) {
+        throw new Error('ไม่สามารถบันทึกข้อมูลธนาคารได้: ' + bankError.message)
+      }
 
       // Notify other components about profile update
       const profileUpdateEvent = new CustomEvent('profileUpdated', {
@@ -715,6 +745,8 @@ export default function SellerVerificationPage() {
                   <select
                     id="bankName"
                     name="bankName"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
                     required
                     disabled={loading}
                     className="h-11 sm:h-12 text-base w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -744,6 +776,8 @@ export default function SellerVerificationPage() {
                     name="accountNumber"
                     type="text"
                     placeholder="xxx-x-xxxxx-x"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
                     required
                     disabled={loading}
                     className="h-11 sm:h-12 text-base"
@@ -760,6 +794,8 @@ export default function SellerVerificationPage() {
                     name="accountName"
                     type="text"
                     placeholder="ชื่อเจ้าของบัญชี"
+                    value={accountName}
+                    onChange={(e) => setAccountName(e.target.value)}
                     required
                     disabled={loading}
                     className="h-11 sm:h-12 text-base"
@@ -774,6 +810,8 @@ export default function SellerVerificationPage() {
                     name="branch"
                     type="text"
                     placeholder="สาขาที่เปิดบัญชี (ไม่บังคับ)"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
                     disabled={loading}
                     className="h-11 sm:h-12 text-base"
                   />

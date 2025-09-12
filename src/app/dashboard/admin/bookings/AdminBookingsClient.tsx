@@ -191,6 +191,43 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
     }
   }, [updateBookingInState])
 
+  // New function to update commission payments without full refresh
+  const updateCommissionInState = useCallback(async (bookingId: string) => {
+    await updateBookingInState(bookingId)
+  }, [updateBookingInState])
+
+  // Function to delete booking
+  const deleteBooking = useCallback(async (bookingId: string) => {
+    const confirmed = await showConfirmDialog({
+      title: 'ยืนยันการลบ',
+      description: 'คุณแน่ใจหรือไม่ที่จะลบการจองนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้',
+      confirmText: 'ลบ',
+      cancelText: 'ยกเลิก',
+      variant: 'destructive'
+    })
+
+    if (!confirmed) return
+
+    try {
+      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete booking')
+      }
+
+      // Refresh bookings to remove deleted item
+      await refreshBookings()
+      
+      toast.success('ลบการจองเรียบร้อยแล้ว')
+    } catch (error) {
+      console.error('Error deleting booking:', error)
+      toast.error('เกิดข้อผิดพลาดในการลบการจอง: ' + (error as Error).message)
+    }
+  }, [refreshBookings])
+
   const handleBookingCreated = useCallback(() => {
     setShowCreateModal(false)
     refreshBookings()
@@ -330,13 +367,15 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
           </div>
         ) : (
           <div className="p-6 space-y-4">
-            {bookings.map((booking) => (
+            {bookings.map((booking: BookingWithDetails) => (
               <div key={booking.id} className="bg-gray-50 rounded-lg border border-gray-200">
                 <BookingCard
                   booking={booking}
                   onStatusUpdate={updateBookingStatus}
                   onPaymentStatusUpdate={updatePaymentStatus}
                   onSellerUpdate={updateBookingInState}
+                  onRefresh={updateCommissionInState}
+                  onDelete={deleteBooking}
                   sellers={sellers}
                 />
               </div>
