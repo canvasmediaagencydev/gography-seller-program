@@ -57,30 +57,59 @@ export function useTripSchedules(tripId: string) {
         const schedulesWithSeats = await Promise.all(
           schedulesData.map(async (schedule) => {
             try {
-              const { data: seatsData } = await supabase
+              // Try RPC function first
+              const { data: seatsData, error: rpcError } = await supabase
                 .rpc('get_available_seats', { schedule_id: schedule.id })
               
-              
-              return {
-                ...schedule,
-                realTimeSeats: seatsData || 0
+              if (!rpcError && seatsData !== null && seatsData !== undefined) {
+                return {
+                  ...schedule,
+                  realTimeSeats: Math.max(0, seatsData)
+                }
               }
+              
+              throw new Error('RPC function failed or returned null')
             } catch (err) {
+              console.log(`RPC failed for schedule ${schedule.id}, using fallback calculation`)
               
               // Fallback calculation
-              const { data: bookings } = await supabase
-                .from('bookings')
-                .select('status')
-                .eq('trip_schedule_id', schedule.id)
-                .in('status', ['approved', 'pending', 'inprogress'])
+              try {
+                const { data: bookings, error: bookingError } = await supabase
+                  .from('bookings')
+                  .select('status')
+                  .eq('trip_schedule_id', schedule.id)
+                  .in('status', ['approved', 'pending', 'inprogress'])
 
-              const bookedSeats = bookings?.length || 0
-              const realTimeSeats = Math.max(0, schedule.available_seats - bookedSeats)
-              
-              
-              return {
-                ...schedule,
-                realTimeSeats
+                if (bookingError) {
+                  console.error('Booking query error:', bookingError)
+                  // If booking query fails, return original seats
+                  return {
+                    ...schedule,
+                    realTimeSeats: schedule.available_seats
+                  }
+                }
+
+                // Safely calculate booked seats
+                const bookedSeats = Array.isArray(bookings) ? bookings.length : 0
+                const realTimeSeats = Math.max(0, schedule.available_seats - bookedSeats)
+                
+                console.log(`Fallback calculation for schedule ${schedule.id}:`, {
+                  originalSeats: schedule.available_seats,
+                  bookedSeats,
+                  realTimeSeats
+                })
+                
+                return {
+                  ...schedule,
+                  realTimeSeats
+                }
+              } catch (fallbackErr) {
+                console.error('Fallback calculation failed:', fallbackErr)
+                // Last resort: return original seats
+                return {
+                  ...schedule,
+                  realTimeSeats: schedule.available_seats
+                }
               }
             }
           })

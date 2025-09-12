@@ -158,10 +158,66 @@ export default async function TripDetailPage({
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">ระยะเวลา</h3>
-                    <p className="text-lg font-medium text-gray-900">
-                      {typedTrip.duration_days} วัน {typedTrip.duration_nights} คืน
-                    </p>
+                    <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">ระยะเวลาและวันเดินทาง</h3>
+                    <div className="space-y-3">
+                      {typedSchedules && typedSchedules.length > 0 ? (
+                        typedSchedules.map((schedule, index) => {
+                          const departure = new Date(schedule.departure_date)
+                          const returnDate = new Date(schedule.return_date)
+                          
+                          // คำนวณจำนวนวัน: return_date - departure_date + 1
+                          const diffTime = returnDate.getTime() - departure.getTime()
+                          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
+                          const nights = Math.max(0, diffDays - 1)
+                          
+                          // Format dates
+                          const departureFormatted = departure.toLocaleDateString('th-TH', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })
+                          const returnFormatted = returnDate.toLocaleDateString('th-TH', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })
+                          const deadlineFormatted = new Date(schedule.registration_deadline).toLocaleDateString('th-TH', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })
+                          
+                          return (
+                            <div key={schedule.id} className="bg-gray-50 px-4 py-3 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium text-gray-600">รอบที่ {index + 1}</span>
+                                <span className="text-lg font-medium text-gray-900">
+                                  {diffDays} วัน {nights} คืน
+                                </span>
+                              </div>
+                              <div className="text-sm text-gray-700 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-red-600">📅</span>
+                                  <span>ปิดรับสมัคร: {deadlineFormatted}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-emerald-600">🛫</span>
+                                  <span>ออกเดินทาง: {departureFormatted}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-orange-600">🛬</span>
+                                  <span>วันกลับ: {returnFormatted}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <p className="text-lg font-medium text-gray-400">
+                          ยังไม่มีกำหนดการ
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -175,12 +231,22 @@ export default async function TripDetailPage({
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">จำนวนที่นั่ง</h3>
-                    <p className="text-lg font-medium text-gray-900">
-                      {typedTrip.trip_schedules && typedTrip.trip_schedules.length > 0 
-                        ? `${Math.max(...typedTrip.trip_schedules.map(s => s.available_seats))} คน (จากกำหนดการ)`
-                        : '0 คน'
-                      }
-                    </p>
+                    <div className="space-y-2">
+                      {typedSchedules && typedSchedules.length > 0 ? (
+                        typedSchedules.map((schedule, index) => (
+                          <div key={schedule.id} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg">
+                            <span className="text-sm text-gray-600">รอบที่ {index + 1}</span>
+                            <span className="text-lg font-medium text-gray-900">
+                              {schedule.available_seats} ที่นั่ง
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-lg font-medium text-gray-400">
+                          ยังไม่มีกำหนดการ
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div>
