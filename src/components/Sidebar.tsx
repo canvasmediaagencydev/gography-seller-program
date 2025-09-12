@@ -10,6 +10,7 @@ import { BsShieldCheck, BsExclamationTriangle, BsClock, BsCheckCircle } from "re
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
+import SidebarButtonDisabled from '@/components/ui/SidebarButtonDisabled'
 import Image from 'next/image'
 
 interface UserProfile {
@@ -20,6 +21,15 @@ interface UserProfile {
   status: string | null
   referral_code: string | null
   avatar_url: string | null
+}
+
+interface NavigationItem {
+  icon: React.ReactElement
+  label: string
+  href: string
+  isActive: boolean
+  isDisabled?: boolean
+  disabledText?: string
 }
 
 interface SidebarProps {
@@ -80,18 +90,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    // Only fetch if we don't have initial profile
-    if (!initialProfile) {
-      fetchUserProfile()
-    }
-  }, [initialProfile])
-
   const fetchUserProfile = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Force fresh data by adding cache-busting timestamp
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('id, full_name, phone, role, status, referral_code, avatar_url')
@@ -99,12 +103,50 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
         .single()
 
       if (profile) {
+        console.log('Profile data refreshed:', profile)
         setUserProfile(profile)
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
     }
   }, [supabase])
+
+  useEffect(() => {
+    // Only fetch if we don't have initial profile
+    if (!initialProfile) {
+      fetchUserProfile()
+    }
+  }, [initialProfile, fetchUserProfile])
+
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      console.log('Profile updated, refreshing sidebar data...')
+      fetchUserProfile()
+    }
+
+    // Listen for custom profile update events
+    window.addEventListener('profileUpdated', handleProfileUpdate)
+    
+    // Also listen for focus events to refresh data
+    window.addEventListener('focus', handleProfileUpdate)
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate)
+      window.removeEventListener('focus', handleProfileUpdate)
+    }
+  }, [fetchUserProfile])
+
+  // Auto-refresh profile data every 30 seconds for sellers
+  useEffect(() => {
+    if (userProfile?.role === 'seller') {
+      const interval = setInterval(() => {
+        fetchUserProfile()
+      }, 30000) // 30 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [userProfile?.role, fetchUserProfile])
 
   const handleLogout = useCallback(async () => {
     setLoading(true)
@@ -143,8 +185,8 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   }, [pathname, userProfile?.role])
 
   // Memoize navigation items
-  const navigationItems = useMemo(() => {
-    const baseItems = [
+  const navigationItems: NavigationItem[] = useMemo(() => {
+    const baseItems: NavigationItem[] = [
       {
         icon: <BsColumnsGap className="text-lg" />,
         label: 'Dashboard',
@@ -182,12 +224,25 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
         }
       )
     } else {
-      baseItems.push({
-        icon: <TbUsers className="text-lg" />,
-        label: 'รายงาน',
-        href: '/dashboard/reports',
-        isActive: isReportsActive
-      })
+      // For sellers, show reports or disabled reports based on verification status
+      if (userProfile?.status === 'approved') {
+        baseItems.push({
+          icon: <TbUsers className="text-lg" />,
+          label: 'รายงาน',
+          href: '/dashboard/reports',
+          isActive: isReportsActive,
+          isDisabled: false
+        })
+      } else {
+        baseItems.push({
+          icon: <TbUsers className="text-lg" />,
+          label: 'รายงาน',
+          href: '/dashboard/reports',
+          isActive: false,
+          isDisabled: true,
+          disabledText: 'ยืนยันตัวเพื่อใช้งาน'
+        })
+      }
     }
 
     return baseItems
@@ -208,11 +263,11 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-lg">G</span>
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-lg">P</span>
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-gray-900 truncate">Gography</h1>
+            <h1 className="text-xl font-bold text-gray-900 truncate">Paydee</h1>
             <p className="text-sm text-gray-600 truncate">
               {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
             </p>
@@ -237,32 +292,47 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
                 <FaRegUserCircle className="w-6 h-6 text-gray-500" />
               </div>
             )}
-            {verificationInfo.pulse && (
+            {/* Show verification indicator only for sellers */}
+            {userProfile.role !== 'admin' && verificationInfo.pulse && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
             )}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-medium text-gray-900 truncate">
-              {userProfile.full_name || 'ยังไม่ได้ระบุชื่อ'}
+              {userProfile.role === 'admin' 
+                ? (userProfile.full_name || 'Admin User')
+                : (userProfile.full_name || 'ยังไม่ได้ระบุชื่อ')
+              }
             </h3>
-            <div className="flex items-center space-x-2">
-              <verificationInfo.icon 
-                className={`w-3 h-3 ${
-                  verificationInfo.color === 'green' ? 'text-green-500' :
-                  verificationInfo.color === 'yellow' ? 'text-yellow-500' :
-                  verificationInfo.color === 'red' ? 'text-red-500' :
-                  'text-blue-500'
-                }`} 
-              />
-              <p className={`text-xs ${
-                verificationInfo.color === 'green' ? 'text-green-600' :
-                verificationInfo.color === 'yellow' ? 'text-yellow-600' :
-                verificationInfo.color === 'red' ? 'text-red-600' :
-                'text-blue-600'
-              }`}>
-                {verificationInfo.subtext || verificationInfo.text}
-              </p>
-            </div>
+            {/* Show verification status only for sellers */}
+            {userProfile.role !== 'admin' && (
+              <div className="flex flex-col space-y-1">
+                <div className="flex items-center space-x-2">
+                  <verificationInfo.icon 
+                    className={`w-3 h-3 ${
+                      verificationInfo.color === 'green' ? 'text-green-500' :
+                      verificationInfo.color === 'yellow' ? 'text-yellow-500' :
+                      verificationInfo.color === 'red' ? 'text-red-500' :
+                      'text-blue-500'
+                    }`} 
+                  />
+                  <p className={`text-xs ${
+                    verificationInfo.color === 'green' ? 'text-green-600' :
+                    verificationInfo.color === 'yellow' ? 'text-yellow-600' :
+                    verificationInfo.color === 'red' ? 'text-red-600' :
+                    'text-blue-600'
+                  }`}>
+                    {verificationInfo.subtext || verificationInfo.text}
+                  </p>
+                </div>
+                {/* Show ID when seller is approved */}
+                {userProfile.status === 'approved' && (
+                  <p className="text-xs text-gray-500">
+                    ID: {userProfile.id.slice(-5)}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -270,33 +340,45 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       {/* Navigation */}
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
         {navigationItems.map((item, index) => (
-          <SidebarButton
-            key={`nav-${item.href}-${index}`}
-            icon={item.icon}
-            label={item.label}
-            href={item.href}
-            isActive={item.isActive}
-            prefetch={true}
-          />
+          item.isDisabled ? (
+            <SidebarButtonDisabled
+              key={`nav-disabled-${item.href}-${index}`}
+              icon={item.icon}
+              label={item.label}
+              disabledText={item.disabledText || 'ยืนยันตัวเพื่อใช้งาน'}
+            />
+          ) : (
+            <SidebarButton
+              key={`nav-${item.href}-${index}`}
+              icon={item.icon}
+              label={item.label}
+              href={item.href}
+              isActive={item.isActive}
+              prefetch={true}
+            />
+          )
         ))}
       </nav>
 
       {/* Profile and Logout */}
       <div className="p-6 border-t border-gray-100 space-y-2">
-        <SidebarButton
-          icon={verificationInfo.pulse ? (
-            <div className="relative">
+        {/* Profile button - only show for sellers */}
+        {userProfile.role !== 'admin' && (
+          <SidebarButton
+            icon={verificationInfo.pulse ? (
+              <div className="relative">
+                <FaRegUserCircle className="text-lg" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+              </div>
+            ) : (
               <FaRegUserCircle className="text-lg" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
-            </div>
-          ) : (
-            <FaRegUserCircle className="text-lg" />
-          )}
-          label={verificationInfo.text}
-          href="/dashboard/profile"
-          isActive={isProfileActive}
-          prefetch={true}
-        />
+            )}
+            label={verificationInfo.text}
+            href="/dashboard/profile"
+            isActive={isProfileActive}
+            prefetch={true}
+          />
+        )}
         
         <button
           onClick={handleLogout}

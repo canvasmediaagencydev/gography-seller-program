@@ -129,10 +129,10 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b rounded-2xl border-gray-200">
         <div className="flex items-center justify-between p-4">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/dashboard/trips')}
             className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
           >
             <ArrowLeftIcon className="w-6 h-6" />
@@ -170,7 +170,7 @@ export default function ProfilePage() {
                 {userProfile?.full_name || 'ไม่ระบุชื่อ'}
               </h2>
               <p className="text-sm text-gray-500 mb-1">
-                ID: {userProfile?.referral_code || 'ไม่มี'}
+                ID: {userProfile?.id ? userProfile.id.slice(-5) : 'ไม่มี'}
               </p>
               <p className="text-xs text-gray-400">
                 สมัครเมื่อ: {userProfile?.created_at ? formatDate(userProfile.created_at) : 'ไม่ทราบ'}
@@ -265,7 +265,7 @@ export default function ProfilePage() {
         )}
 
         {/* Account Actions */}
-        <div className="bg-white rounded-xl border border-gray-200">
+        <div className="bg-white rounded-xl border border-gray-200 block md:hidden">
           <div className="p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">การตั้งค่า</h3>
             

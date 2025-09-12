@@ -254,6 +254,12 @@ export default function SellerVerificationPage() {
       setUploadProgress('กำลังบันทึกข้อมูล...')
       await updateSellerFiles(userProfile.id, updates)
 
+      // Notify other components about profile update
+      const profileUpdateEvent = new CustomEvent('profileUpdated', {
+        detail: { userId: userProfile.id, updates }
+      })
+      window.dispatchEvent(profileUpdateEvent)
+
       // Success - redirect back to profile
       router.push('/dashboard/profile')
       router.refresh()
@@ -277,9 +283,9 @@ export default function SellerVerificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 rounded-2xl">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white rounded-2xl border-b border-gray-200">
         <div className="flex items-center justify-between p-4">
           <Button
             variant="ghost"
@@ -682,6 +688,95 @@ export default function SellerVerificationPage() {
                   <p className="text-sm text-slate-600 bg-white rounded-lg px-4 py-2 border border-slate-200">
                     รองรับไฟล์ PDF • ขนาดไม่เกิน 10MB ต่อไฟล์
                   </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bank Account Information */}
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-orange-100 text-orange-700 font-bold text-xs sm:text-sm">
+                  4
+                </Badge>
+                ข้อมูลบัญชีธนาคาร
+              </CardTitle>
+              <CardDescription className="text-sm">
+                กรอกข้อมูลบัญชีธนาคารสำหรับรับเงินค่าคอมมิชชั่น
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <label htmlFor="bankName" className="block text-sm font-semibold text-slate-700">
+                    ชื่อธนาคาร <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="bankName"
+                    name="bankName"
+                    required
+                    disabled={loading}
+                    className="h-11 sm:h-12 text-base w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">เลือกธนาคาร</option>
+                    <option value="กสิกรไทย">ธนาคารกสิกรไทย</option>
+                    <option value="กรุงเทพ">ธนาคารกรุงเทพ</option>
+                    <option value="กรุงไทย">ธนาคารกรุงไทย</option>
+                    <option value="ไทยพาณิชย์">ธนาคารไทยพาณิชย์</option>
+                    <option value="กรุงศรีอยุธยา">ธนาคารกรุงศรีอยุธยา</option>
+                    <option value="ทหารไทยธนชาต">ธนาคารทหารไทยธนชาต</option>
+                    <option value="ออมสิน">ธนาคารออมสิน</option>
+                    <option value="อาคารสงเคราะห์">ธนาคารอาคารสงเคราะห์</option>
+                    <option value="เกียรตินาคินภัทร">ธนาคารเกียรตินาคินภัทร</option>
+                    <option value="ซีไอเอ็มบีไทย">ธนาคารซีไอเอ็มบีไทย</option>
+                    <option value="ยูโอบี">ธนาคารยูโอบี</option>
+                    <option value="แลนด์ แอนด์ เฮ้าส์">ธนาคารแลนด์ แอนด์ เฮ้าส์</option>
+                    <option value="ไอซีบีซี">ธนาคารไอซีบีซี (ไทย)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="accountNumber" className="block text-sm font-semibold text-slate-700">
+                    เลขที่บัญชี <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="accountNumber"
+                    name="accountNumber"
+                    type="text"
+                    placeholder="xxx-x-xxxxx-x"
+                    required
+                    disabled={loading}
+                    className="h-11 sm:h-12 text-base"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <label htmlFor="accountName" className="block text-sm font-semibold text-slate-700">
+                    ชื่อบัญชี <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="accountName"
+                    name="accountName"
+                    type="text"
+                    placeholder="ชื่อเจ้าของบัญชี"
+                    required
+                    disabled={loading}
+                    className="h-11 sm:h-12 text-base"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="branch" className="block text-sm font-semibold text-slate-700">
+                    สาขา
+                  </label>
+                  <Input
+                    id="branch"
+                    name="branch"
+                    type="text"
+                    placeholder="สาขาที่เปิดบัญชี (ไม่บังคับ)"
+                    disabled={loading}
+                    className="h-11 sm:h-12 text-base"
+                  />
                 </div>
               </div>
             </CardContent>

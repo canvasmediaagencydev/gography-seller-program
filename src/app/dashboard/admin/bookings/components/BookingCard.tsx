@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tables } from '../../../../../../database.types'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -73,17 +73,26 @@ interface BookingCardProps {
   booking: BookingWithDetails
   onStatusUpdate: (bookingId: string, status: string) => Promise<void>
   onPaymentStatusUpdate: (bookingId: string, paymentStatus: string) => Promise<void>
+  onSellerUpdate?: (bookingId: string) => Promise<void>
   sellers: Seller[]
 }
 
-export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUpdate, sellers }: BookingCardProps) {
+export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUpdate, onSellerUpdate, sellers }: BookingCardProps) {
   const [updating, setUpdating] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [editingSeller, setEditingSeller] = useState(false)
   const [selectedSellerId, setSelectedSellerId] = useState(booking.seller_id || '')
 
+  // Update selectedSellerId when booking.seller_id changes
+  useEffect(() => {
+    setSelectedSellerId(booking.seller_id || '')
+  }, [booking.seller_id])
+
   // Use commission payments from booking data instead of fetching separately
   const commissionPayments = booking.commission_payments || []
+  
+  // Debug: แสดงข้อมูล commission payments
+  console.log('Booking ID:', booking.id, 'Commission Payments:', commissionPayments)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('th-TH', {
@@ -129,9 +138,9 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
   const getPaymentStatusBadge = (paymentStatus: string | null) => {
     const statusConfig = {
       pending: { label: 'รอชำระ', variant: 'secondary' as const, icon: Clock },
-      deposit_paid: { label: 'จ่ายมัดจำแล้ว', variant: 'default' as const, icon: DollarSign },
-      fully_paid: { label: 'จ่ายครบแล้ว', variant: 'default' as const, icon: CheckCircle },
-      cancelled: { label: 'ยกเลิกชำระ', variant: 'destructive' as const, icon: XCircle }
+      partial: { label: 'จ่ายมัดจำแล้ว', variant: 'default' as const, icon: DollarSign },
+      completed: { label: 'จ่ายครบแล้ว', variant: 'default' as const, icon: CheckCircle },
+      refunded: { label: 'คืนเงิน', variant: 'destructive' as const, icon: XCircle }
     }
 
     const config = statusConfig[paymentStatus as keyof typeof statusConfig] || statusConfig.pending
@@ -141,8 +150,9 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
       <Badge variant={config.variant} className={cn(
         'gap-1.5',
         paymentStatus === 'pending' && 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50/80',
-        paymentStatus === 'deposit_paid' && 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50/80',
-        paymentStatus === 'fully_paid' && 'bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80'
+        paymentStatus === 'partial' && 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50/80',
+        paymentStatus === 'completed' && 'bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80',
+        paymentStatus === 'refunded' && 'bg-red-50 text-red-700 border-red-200 hover:bg-red-50/80'
       )}>
         <IconComponent className="w-3 h-3" />
         {config.label}
@@ -210,14 +220,22 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
         }),
       })
 
+      const responseData = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to update seller')
+        throw new Error(responseData.error || 'Failed to update seller')
       }
 
       setEditingSeller(false)
       toast.success('อัพเดท Seller สำเร็จ')
-      // Trigger a refresh of the bookings list
-      window.location.reload()
+      
+      // Use callback to update state instead of full page reload
+      if (onSellerUpdate) {
+        await onSellerUpdate(booking.id)
+      } else {
+        // Fallback to page reload if callback not provided
+        window.location.reload()
+      }
     } catch (error) {
       console.error('Error updating seller:', error)
       toast.error('เกิดข้อผิดพลาดในการอัพเดท Seller')
@@ -226,92 +244,185 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
 
   const trip = booking.trip_schedules?.trips
   const customer = booking.customers
+  const seller = booking.seller
 
   return (
     <Card className="transition-colors hover:shadow-md">
       <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {/* Trip and Customer Info */}
-            <div className="flex items-start gap-6 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {trip?.title || 'ไม่พบข้อมูลทริป'}
-                    </h3>
-                    {trip?.countries?.flag_emoji && (
-                      <span className="text-base">{trip.countries.flag_emoji}</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(booking.status)}
-                    {getPaymentStatusBadge(booking.payment_status)}
-                  </div>
-                </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <p className="text-md font-medium text-gray-900">{customer?.full_name || 'ไม่พบข้อมูล'}</p>
-                      <p className="text-md text-gray-500">{customer?.email || 'ไม่ระบุ'}</p>
-                    </div>
-                  </div>
-                  {customer?.phone && (
-                    <p className="text-md text-gray-600 flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      {customer.phone}
-                    </p>
-                  )}
-                </div>
+        {/* Trip Title and Status */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-medium text-gray-900">
+              {trip?.title || 'ไม่พบข้อมูลทริป'}
+            </h3>
+            {trip?.countries?.flag_emoji && (
+              <span className="text-base">{trip.countries.flag_emoji}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {getStatusBadge(booking.status)}
+            {getPaymentStatusBadge(booking.payment_status)}
+          </div>
+        </div>
 
-                <div className="space-y-1">
-                  {booking.trip_schedules && (
-                    <>
-                      <p className="text-md text-gray-600 flex items-center gap-2">
-                        <PlaneTakeoff className="w-4 h-4" />
-                        <span className="font-medium">วันเดินทาง:</span> 
-                        {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                      <p className="text-md text-gray-600 flex items-center gap-2">
-                        <PlaneLanding className="w-4 h-4" />
-                        <span className="font-medium">วันกลับ:</span> 
-                        {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                    </>
-                  )}
-                  <p className="text-md text-gray-500">
-                    จองเมื่อ: {booking.created_at ? new Date(booking.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-right min-w-0">
-              <p className="text-xl font-semibold text-gray-900">฿{booking.total_amount.toLocaleString()}</p>
-              <p className="text-md text-gray-600 mt-1">คอมมิชชั่น: ฿{booking.commission_amount.toLocaleString()}</p>
-              {booking.deposit_amount && (
-                <p className="text-sm text-blue-600 mt-1">มัดจำ: ฿{booking.deposit_amount.toLocaleString()}</p>
-              )}
-              {booking.remaining_amount && (
-                <p className="text-sm text-orange-600 mt-1">คงเหลือ: ฿{booking.remaining_amount.toLocaleString()}</p>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Customer Info */}
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <h4 className="text-sm font-medium text-blue-900 mb-3 flex items-center gap-2">
+              <User className="w-4 h-4" />
+              ลูกค้า
+            </h4>
+            <div>
+              <p className="font-medium text-gray-900">{customer?.full_name || 'ไม่พบข้อมูล'}</p>
+              <p className="text-sm text-gray-600">{customer?.email || 'ไม่ระบุ'}</p>
+              {customer?.phone && (
+                <p className="text-sm text-gray-600 flex items-center gap-2 mt-2">
+                  <Phone className="w-4 h-4" />
+                  {customer.phone}
+                </p>
               )}
             </div>
           </div>
 
-          {/* Commission Flow Info */}
-          {booking.seller && commissionPayments.length > 0 && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-md font-medium text-gray-900 mb-3">Commission Flow</h4>
+          {/* Trip Schedule */}
+          <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+            <h4 className="text-sm font-medium text-green-900 mb-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              กำหนดการ
+            </h4>
+            {booking.trip_schedules && (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-700 flex items-center gap-2">
+                  <PlaneTakeoff className="w-4 h-4 text-green-600" />
+                  <span className="font-medium">วันเดินทาง:</span> 
+                  {new Date(booking.trip_schedules.departure_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+                <p className="text-sm text-gray-700 flex items-center gap-2">
+                  <PlaneLanding className="w-4 h-4 text-green-600" />
+                  <span className="font-medium">วันกลับ:</span> 
+                  {new Date(booking.trip_schedules.return_date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  จองเมื่อ: {booking.created_at ? new Date(booking.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Price Info */}
+          <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
+            <h4 className="text-sm font-medium text-orange-900 mb-3 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              ยอดเงิน
+            </h4>
+            <div className="space-y-1">
+              <p className="text-xl font-semibold text-gray-900">฿{booking.total_amount.toLocaleString()}</p>
+              <p className="text-sm text-gray-600">คอมมิชชั่น: ฿{booking.commission_amount.toLocaleString()}</p>
+              {booking.deposit_amount && (
+                <p className="text-sm text-blue-600">มัดจำ: ฿{booking.deposit_amount.toLocaleString()}</p>
+              )}
+              {booking.remaining_amount && (
+                <p className="text-sm text-orange-600">คงเหลือ: ฿{booking.remaining_amount.toLocaleString()}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Seller Section */}
+        <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {seller?.avatar_url ? (
+                <img 
+                  src={seller.avatar_url} 
+                  alt={seller.full_name || 'Seller'}
+                  className="h-8 w-8 rounded-full object-cover border-2 border-white shadow-sm"
+                />
+              ) : (
+                <div className="h-8 w-8 bg-purple-200 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                  <User className="h-4 w-4 text-purple-600" />
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-medium text-purple-900 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Seller
+                </p>
+                {seller ? (
+                  <p className="text-sm text-gray-900 font-medium">
+                    {seller.id.slice(-5)} - {seller.full_name || seller.email}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">ไม่มี Seller</p>
+                )}
+              </div>
+            </div>
+            <Button
+              onClick={() => setEditingSeller(!editingSeller)}
+              variant="ghost"
+              size="sm"
+              className="text-purple-600 hover:text-purple-700 hover:bg-purple-100"
+            >
+              <Edit className="w-4 h-4 mr-1" />
+              แก้ไข
+            </Button>
+          </div>
+
+          {/* Edit Seller */}
+          {editingSeller && (
+            <div className="mt-4 pt-4 border-t border-purple-200">
+              <h4 className="text-sm font-medium text-purple-900 mb-3">แก้ไข Seller</h4>
+              <div className="flex items-center gap-3">
+                <Select value={selectedSellerId || ""} onValueChange={(value) => setSelectedSellerId(value)}>
+                  <SelectTrigger className="flex-1 bg-white border-gray-300">
+                    <SelectValue placeholder="เลือก Seller" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg rounded-lg">
+                    {sellers.map((seller) => (
+                      <SelectItem key={seller.id} value={seller.id} className="hover:bg-gray-50">
+                        {seller.id.slice(-5)} - {seller.full_name || seller.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleSellerUpdate} size="sm" className="bg-purple-600 hover:bg-purple-700">
+                  บันทึก
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingSeller(false)
+                    setSelectedSellerId(booking.seller_id || '')
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                >
+                  ยกเลิก
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Commission Flow Info */}
+        {seller && (
+          <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+            <h4 className="text-sm font-medium text-yellow-900 mb-3 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Commission Flow
+            </h4>
+            {commissionPayments.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {commissionPayments.map((payment, index) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white rounded border">
+                {commissionPayments.map((payment) => (
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {payment.payment_type === 'deposit_commission' ? 'Commission มัดจำ (50%)' : 'Commission ยอดสุดท้าย (50%)'}
+                        {payment.payment_type === 'direct' ? 'Commission มัดจำ (50%)' : 
+                         payment.payment_type === 'referral' ? 'Commission โบนัส (50%)' : 
+                         'Commission (' + payment.payment_type + ')'}
                       </p>
-                      <p className="text-sm text-gray-600">฿{payment.amount.toLocaleString()}</p>
+                      <p className="text-sm text-gray-600 font-medium">฿{payment.amount.toLocaleString()}</p>
                       {payment.paid_at && (
                         <p className="text-xs text-gray-500">จ่ายเมื่อ: {new Date(payment.paid_at).toLocaleDateString('th-TH')}</p>
                       )}
@@ -322,134 +433,68 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Seller Info */}
-          <div className="flex items-center justify-between mb-4 py-3 px-4 bg-white rounded-lg">
-            <div className="flex items-center gap-3">
-              {booking.seller?.avatar_url ? (
-                <img 
-                  src={booking.seller.avatar_url} 
-                  alt={booking.seller.full_name || 'Seller'}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                  <svg className="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-              )}
-              <div>
-                <p className="text-md font-medium text-gray-700">Seller</p>
-                {booking.seller ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-md text-gray-900">{booking.seller.full_name || booking.seller.email}</span>
-                    <span className="text-md text-gray-500 bg-gray-200 px-2 py-0.5 rounded">{booking.seller.referral_code}</span>
-                  </div>
-                ) : (
-                  <span className="text-md text-gray-500">ไม่มี Seller</span>
-                )}
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-sm text-gray-500">ยังไม่มี Commission Payment</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Commission จะถูกสร้างเมื่อลูกค้าชำระเงิน
+                </p>
               </div>
-            </div>
-            <Button
-              onClick={() => setEditingSeller(!editingSeller)}
-              variant="ghost"
-              size="sm"
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <Edit className="w-4 h-4 mr-1" />
-              แก้ไข
-            </Button>
+            )}
           </div>
-  {/* Edit Seller */}
-      {editingSeller && (
-        <div className="mt-6">
-          <Separator className="mb-4" />
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="text-md font-medium text-gray-900 mb-3">แก้ไข Seller</h4>
-            <div className="flex items-center gap-3">
-              <Select value={selectedSellerId} onValueChange={setSelectedSellerId}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="เลือก Seller" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">ไม่มี Seller</SelectItem>
-                  {sellers.map((seller) => (
-                    <SelectItem key={seller.id} value={seller.id}>
-                      {seller.full_name || seller.email} ({seller.referral_code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={handleSellerUpdate}>
-                บันทึก
-              </Button>
-              <Button
-                onClick={() => {
-                  setEditingSeller(false)
-                  setSelectedSellerId(booking.seller_id || '')
-                }}
-                variant="outline"
-              >
-                ยกเลิก
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-          </div>
-        </div>
+        )}
       </CardHeader>
 
       <CardContent className="pt-0">
         {/* Actions */}
-        <div className="flex flex-col gap-4">
-          {/* Payment Status Control */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-muted-foreground font-medium">สถานะการชำระ:</p>
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 mt-4">
+          <h4 className="text-sm font-medium text-gray-900 mb-4">การจัดการสถานะ</h4>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Payment Status Control */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">สถานะการชำระ:</p>
               <Select 
                 value={booking.payment_status || 'pending'}
                 onValueChange={handlePaymentStatusChange}
                 disabled={updating}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full bg-white border-gray-300">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">รอชำระ</SelectItem>
-                  <SelectItem value="deposit_paid">จ่ายมัดจำแล้ว</SelectItem>
-                  <SelectItem value="fully_paid">จ่ายครบแล้ว</SelectItem>
-                  <SelectItem value="cancelled">ยกเลิกชำระ</SelectItem>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg rounded-lg z-50">
+                  <SelectItem value="pending" className="hover:bg-gray-50">รอชำระ</SelectItem>
+                  <SelectItem value="partial" className="hover:bg-gray-50">จ่ายมัดจำแล้ว</SelectItem>
+                  <SelectItem value="completed" className="hover:bg-gray-50">จ่ายครบแล้ว</SelectItem>
+                  <SelectItem value="refunded" className="hover:bg-gray-50">คืนเงิน</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Booking Status Control */}
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-muted-foreground font-medium">สถานะการจอง:</p>
-              <Select 
-                value={booking.status || 'pending'}
-                onValueChange={handleStatusChange}
-                disabled={updating}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">รออนุมัติ</SelectItem>
-                  <SelectItem value="inprogress">กำลังดำเนินการ</SelectItem>
-                  <SelectItem value="approved">อนุมัติแล้ว</SelectItem>
-                  <SelectItem value="rejected">ปฏิเสธ</SelectItem>
-                  <SelectItem value="cancelled">ยกเลิก</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">สถานะการจอง:</p>
+              <div className="flex items-center gap-2">
+                <Select 
+                  value={booking.status || 'pending'}
+                  onValueChange={handleStatusChange}
+                  disabled={updating}
+                >
+                  <SelectTrigger className="flex-1 bg-white border-gray-300">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg rounded-lg z-50">
+                    <SelectItem value="pending" className="hover:bg-gray-50">รออนุมัติ</SelectItem>
+                    <SelectItem value="inprogress" className="hover:bg-gray-50">กำลังดำเนินการ</SelectItem>
+                    <SelectItem value="approved" className="hover:bg-gray-50">อนุมัติแล้ว</SelectItem>
+                    <SelectItem value="rejected" className="hover:bg-gray-50">ปฏิเสธ</SelectItem>
+                    <SelectItem value="cancelled" className="hover:bg-gray-50">ยกเลิก</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              {updating && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-              )}
+                {updating && (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -316,7 +316,7 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
               ลองใหม่
             </button>
           </div>
-        ) : filteredBookings.length === 0 ? (
+        ) : bookings.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
               <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,12 +330,13 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
           </div>
         ) : (
           <div className="p-6 space-y-4">
-            {filteredBookings.map((booking) => (
+            {bookings.map((booking) => (
               <div key={booking.id} className="bg-gray-50 rounded-lg border border-gray-200">
                 <BookingCard
                   booking={booking}
                   onStatusUpdate={updateBookingStatus}
                   onPaymentStatusUpdate={updatePaymentStatus}
+                  onSellerUpdate={updateBookingInState}
                   sellers={sellers}
                 />
               </div>

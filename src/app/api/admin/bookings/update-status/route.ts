@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -46,8 +47,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update booking status
-    const { data, error } = await supabase
+    // Update booking status using admin client
+    const adminSupabase = createAdminClient()
+    const { data, error } = await adminSupabase
       .from('bookings')
       .update({ 
         status,

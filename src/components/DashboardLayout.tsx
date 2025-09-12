@@ -23,6 +23,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children, initialProfile }: DashboardLayoutProps) {
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [currentProfile, setCurrentProfile] = useState(initialProfile)
   
   // Enable background sync for sellers to detect admin updates
   useBackgroundSync({ 
@@ -37,14 +38,27 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
       setShowProfileModal(true)
     }
 
+    const handleProfileUpdate = () => {
+      console.log('DashboardLayout: Profile updated, refreshing layout...')
+      // Force a page refresh to get the latest data from server
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000) // Wait 1 second for database to update
+    }
+
     window.addEventListener('openProfileModal', handleOpenProfileModal)
-    return () => window.removeEventListener('openProfileModal', handleOpenProfileModal)
+    window.addEventListener('profileUpdated', handleProfileUpdate)
+    
+    return () => {
+      window.removeEventListener('openProfileModal', handleOpenProfileModal)
+      window.removeEventListener('profileUpdated', handleProfileUpdate)
+    }
   }, [])
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Desktop Sidebar */}
-      <Sidebar initialProfile={initialProfile} />
+      <Sidebar initialProfile={currentProfile} />
 
       {/* Main Content */}
       <main className="flex-1 w-full md:py-6 md:px-6 lg:px-8 overflow-y-auto mobile-content-padding">
@@ -52,7 +66,7 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav userProfile={initialProfile} />
+      <MobileBottomNav userProfile={currentProfile} />
 
       {/* Profile Completion Modal - Desktop Only */}
       <div className="hidden md:block">
@@ -63,7 +77,7 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
             // Force page refresh to update profile data
             window.location.reload()
           }}
-          userId={initialProfile.id}
+          userId={currentProfile.id}
         />
       </div>
     </div>
