@@ -13,7 +13,7 @@ export default async function AdminBookingsPage() {
 
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('*')
+    .select('role')
     .eq('id', user.id)
     .single()
 
@@ -21,24 +21,28 @@ export default async function AdminBookingsPage() {
     redirect('/dashboard')
   }
 
-  // Fetch initial data for the client component
+  // Use server-side API call instead of fetch
+  // We'll use the same optimized logic but directly here for initial load
   const { data: bookings } = await supabase
     .from('bookings')
     .select(`
       *,
-      customers (
+      customers!inner (
+        id,
         full_name,
         email,
         phone,
         id_card,
         passport_number
       ),
-      trip_schedules (
+      trip_schedules!inner (
+        id,
         departure_date,
         return_date,
         registration_deadline,
         available_seats,
-        trips (
+        trips!inner (
+          id,
           title,
           price_per_person,
           commission_type,
@@ -48,38 +52,61 @@ export default async function AdminBookingsPage() {
             flag_emoji
           )
         )
-      ),
-      commission_payments (
-        id,
-        payment_type,
-        amount,
-        status,
-        paid_at
       )
     `)
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(20) // Reduced initial load
 
-  // Manually fetch seller information for each booking
-  let bookingsWithSellers: any[] = []
-  if (bookings) {
-    bookingsWithSellers = await Promise.all(
-      bookings.map(async (booking) => {
-        if (booking.seller_id) {
-          const { data: seller } = await supabase
-            .from('user_profiles')
-            .select('id, full_name, email, referral_code, avatar_url')
-            .eq('id', booking.seller_id)
-            .single()
-          
-          return { ...booking, seller }
-        }
-        return { ...booking, seller: null }
-      })
-    )
+  // Get sellers in one optimized query
+  const sellerIds = [...new Set(
+    bookings?.filter(b => b.seller_id).map(b => b.seller_id).filter(Boolean) || []
+  )] as string[]
+
+  let sellersMap = new Map()
+  if (sellerIds.length > 0) {
+    const { data: sellersData } = await supabase
+      .from('user_profiles')
+      .select('id, full_name, email, referral_code, avatar_url')
+      .in('id', sellerIds)
+
+    sellersData?.forEach(seller => {
+      sellersMap.set(seller.id, seller)
+    })
   }
 
-  // Fetch sellers for the create booking form
+  // Get commission payments in one query
+  const bookingIds = bookings?.map(b => b.id) || []
+  let commissionsMap = new Map()
+  if (bookingIds.length > 0) {
+    const { data: commissions } = await supabase
+      .from('commission_payments')
+      .select('booking_id, id, payment_type, amount, status, paid_at')
+      .in('booking_id', bookingIds)
+
+    commissions?.forEach(commission => {
+      if (!commissionsMap.has(commission.booking_id)) {
+        commissionsMap.set(commission.booking_id, [])
+      }
+      commissionsMap.get(commission.booking_id).push(commission)
+    })
+  }
+
+  // Combine data efficiently
+  const initialBookings = bookings?.map(booking => ({
+    ...booking,
+    seller: booking.seller_id ? sellersMap.get(booking.seller_id) || null : null,
+    commission_payments: commissionsMap.get(booking.id) || [],
+    // Fix type compatibility
+    trip_schedules: {
+      ...booking.trip_schedules,
+      trips: {
+        ...booking.trip_schedules?.trips,
+        countries: booking.trip_schedules?.trips?.countries || undefined
+      }
+    }
+  })) || []
+
+  // Fetch sellers for the create booking form (lightweight query)
   const { data: sellers } = await supabase
     .from('user_profiles')
     .select('id, full_name, email, referral_code, avatar_url')
@@ -87,7 +114,7 @@ export default async function AdminBookingsPage() {
     .eq('status', 'approved')
     .order('full_name')
 
-  // Fetch active trips with schedules for the create booking form
+  // Fetch active trips with schedules for the create booking form (lightweight query)
   const { data: trips } = await supabase
     .from('trips')
     .select(`
@@ -116,7 +143,7 @@ export default async function AdminBookingsPage() {
 
   return (
     <AdminBookingsClient 
-      initialBookings={bookingsWithSellers || []}
+      initialBookings={initialBookings}
       sellers={sellers || []}
       trips={transformedTrips}
     />
