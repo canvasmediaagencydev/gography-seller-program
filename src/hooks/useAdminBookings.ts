@@ -13,6 +13,7 @@ export interface UseAdminBookingsResult {
   refreshBookings: (filters?: BookingFilters) => Promise<void>
   loadMore: () => Promise<void>
   hasMore: boolean
+  updateBookingInState: (bookingId: string) => Promise<void>
 }
 
 export interface BookingFilters {
@@ -143,7 +144,6 @@ export function useAdminBookings(pageSize: number = 20): UseAdminBookingsResult 
     refreshBookings,
     loadMore,
     hasMore,
-    // Export the update function for use in components
     updateBookingInState
-  } as UseAdminBookingsResult & { updateBookingInState: (bookingId: string) => Promise<void> }
+  }
 }
