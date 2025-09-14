@@ -13,7 +13,7 @@ export function useTripFilters(trips: TripWithRelations[], userRole: string | nu
             case 'all':
                 return trips
             case 'sold':
-                // Only count inprogress and approved bookings as "sold"
+                // If seller has any bookings (any status), count as "sold"
                 return trips.filter(trip => trip.seller_bookings_count && trip.seller_bookings_count > 0)
             case 'not_sold':
                 return trips.filter(trip => !trip.seller_bookings_count || trip.seller_bookings_count === 0)
@@ -26,7 +26,7 @@ export function useTripFilters(trips: TripWithRelations[], userRole: string | nu
 
     const tripCounts = useMemo(() => ({
         all: trips.length,
-        // Only count inprogress and approved bookings as "sold"
+        // If seller has any bookings (any status), count as "sold"
         sold: trips.filter(trip => trip.seller_bookings_count && trip.seller_bookings_count > 0).length,
         not_sold: trips.filter(trip => !trip.seller_bookings_count || trip.seller_bookings_count === 0).length,
         full: trips.filter(trip => trip.available_seats === 0).length
