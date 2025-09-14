@@ -267,7 +267,7 @@ async function processTripsBatch(supabase: any, trips: any[], userId: string, us
   if (userRole === 'seller') {
     try {
       // Get schedule IDs for our trips
-      const scheduleIds = schedulesWithBookings?.map(s => s.id) || []
+      const scheduleIds = schedulesWithBookings?.map((s: any) => s.id) || []
 
       // Get bookings for this seller on these trip schedules
       const { data: sellerBookings } = await supabase
