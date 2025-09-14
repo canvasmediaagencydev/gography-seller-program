@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { handleAuthError, getRedirectPath, getUserRole, type UserRole } from '@/lib/auth'
 import { toast } from 'sonner'
+
+// Pre-initialize Supabase client outside component for better performance
+const supabase = createClient()
 
 interface UseAuthFormReturn {
   loading: boolean
@@ -21,7 +24,28 @@ export function useAuthForm(): UseAuthFormReturn {
   const [isRedirecting, setIsRedirecting] = useState(false)
   
   const router = useRouter()
-  const supabase = createClient()
+
+  // Preload Google Auth resources when hook initializes
+  useEffect(() => {
+    // Prefetch Google OAuth endpoints to warm up connections
+    const prefetchEndpoints = [
+      'https://accounts.google.com/oauth/v2/auth',
+      'https://oauth2.googleapis.com/token'
+    ]
+
+    prefetchEndpoints.forEach(url => {
+      // Use low-priority fetch to warm up DNS/SSL without blocking
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        window.requestIdleCallback(() => {
+          fetch(url, { 
+            method: 'HEAD',
+            mode: 'no-cors',
+            priority: 'low'
+          }).catch(() => {}) // Ignore errors, this is just for warming up
+        })
+      }
+    })
+  }, [])
 
   const handleEmailAuth = async (
     email: string, 
@@ -109,7 +133,15 @@ export function useAuthForm(): UseAuthFormReturn {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl
+          redirectTo: redirectUrl,
+          // Add scopes for faster auth
+          scopes: 'openid profile email',
+          // Request faster authentication flow
+          queryParams: {
+            access_type: 'online', // Faster than offline
+            prompt: 'select_account', // Skip if already logged in
+            include_granted_scopes: 'true'
+          }
         }
       })
 

@@ -9,6 +9,10 @@ export interface AuthRedirectPaths {
   seller: string
 }
 
+// In-memory cache for user roles to avoid repeated DB queries
+const userRoleCache = new Map<string, { role: UserRole; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
 export const AUTH_REDIRECTS: AuthRedirectPaths = {
   admin: '/dashboard/admin/sellers',
   seller: '/dashboard/trips'
@@ -29,9 +33,18 @@ export function getRoleFromParams(searchParams: URLSearchParams): UserRole {
 }
 
 /**
- * Fetch user profile and return role
+ * Fetch user profile and return role (with caching)
  */
 export async function getUserRole(user: User): Promise<UserRole> {
+  // Check cache first
+  const cachedData = userRoleCache.get(user.id)
+  const now = Date.now()
+  
+  if (cachedData && (now - cachedData.timestamp) < CACHE_DURATION) {
+    return cachedData.role
+  }
+  
+  // Fetch from database
   const supabase = createClient()
   const { data: profile } = await supabase
     .from('user_profiles')
@@ -39,7 +52,12 @@ export async function getUserRole(user: User): Promise<UserRole> {
     .eq('id', user.id)
     .single()
   
-  return profile?.role === 'admin' ? 'admin' : 'seller'
+  const role: UserRole = profile?.role === 'admin' ? 'admin' : 'seller'
+  
+  // Cache the result
+  userRoleCache.set(user.id, { role, timestamp: now })
+  
+  return role
 }
 
 /**
@@ -52,6 +70,17 @@ export function createOAuthRedirectURL(role: UserRole, currentDomain: string): s
     : window.location.origin
     
   return `${baseUrl}/auth/callback?next=${encodeURIComponent(redirectPath)}&role=${role}`
+}
+
+/**
+ * Clear user role cache (call on logout)
+ */
+export function clearUserRoleCache(userId?: string): void {
+  if (userId) {
+    userRoleCache.delete(userId)
+  } else {
+    userRoleCache.clear()
+  }
 }
 
 /**
