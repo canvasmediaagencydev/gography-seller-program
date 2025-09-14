@@ -381,7 +381,7 @@ export default function ReportsPage() {
             </div>
             <div className="flex items-center gap-3">
               <div className="text-sm">
-                <span className="px-3 py-1 bg-white rounded-full text-gray-700 border border-gray-200">
+                <span className="px-3 py-1 bg-white rounded-full text-gray-700 border border-gray-200 md:block hidden">
                   {Math.min(bookings?.length || 0, 10)} / {bookings?.length || 0} รายการ
                 </span>
               </div>
