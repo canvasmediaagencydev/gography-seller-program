@@ -56,7 +56,7 @@ export default async function AdminBookingsPage() {
       )
     `)
     .order('created_at', { ascending: false })
-    .limit(20) // Reduced initial load
+    .limit(50) // Increased initial load for better UX
 
   // Create admin client for all admin operations
   const adminSupabase = createAdminClient()
