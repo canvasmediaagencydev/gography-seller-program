@@ -262,6 +262,39 @@ async function processTripsBatch(supabase: any, trips: any[], userId: string, us
     .eq('is_active', true)
     .order('departure_date', { ascending: true })
 
+  // Get seller bookings count for seller role
+  let sellerBookingsCounts: { [key: string]: number } = {}
+  if (userRole === 'seller') {
+    try {
+      // Get schedule IDs for our trips
+      const scheduleIds = schedulesWithBookings?.map(s => s.id) || []
+
+      // Get bookings for this seller on these trip schedules
+      const { data: sellerBookings } = await supabase
+        .from('bookings')
+        .select(`
+          id,
+          status, 
+          seller_id,
+          trip_schedule_id,
+          trip_schedules!inner (
+            id,
+            trip_id
+          )
+        `)
+        .in('trip_schedule_id', scheduleIds)
+        .eq('seller_id', userId)
+
+      // Count bookings per trip
+      sellerBookings?.forEach((booking: any) => {
+        const tripId = booking.trip_schedules.trip_id
+        sellerBookingsCounts[tripId] = (sellerBookingsCounts[tripId] || 0) + 1
+      })
+    } catch (error) {
+      console.log('Could not fetch seller bookings, using fallback value 0')
+    }
+  }
+
   // Process each trip with the pre-loaded data
   return trips.map(trip => {
     const tripSchedules = schedulesWithBookings?.filter((s: any) => s.trip_id === trip.id) || []
@@ -279,8 +312,8 @@ async function processTripsBatch(supabase: any, trips: any[], userId: string, us
       availableSeats = nextSchedule.available_seats
     }
 
-    // Seller bookings count - set to 0 for now due to RLS issues
-    let sellerBookingsCount = 0
+    // Get seller bookings count from our calculated data
+    const sellerBookingsCount = sellerBookingsCounts[trip.id] || 0
 
     // Return clean result
     return {
