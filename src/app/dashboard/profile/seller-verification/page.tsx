@@ -387,9 +387,10 @@ export default function SellerVerificationPage() {
 
       // Add slight delay before redirect for better UX
       setTimeout(() => {
-        router.push('/dashboard/profile')
-        router.refresh()
-      }, 1500)
+        router.replace('/dashboard/profile')
+        // Force a hard refresh to ensure profile data is updated
+        window.location.href = '/dashboard/profile'
+      }, 2000)
 
     } catch (err: any) {
       console.error('Verification submission error:', err)
@@ -461,33 +462,6 @@ export default function SellerVerificationPage() {
           </Card>
         )}
 
-        {uploadProgress && (
-          <Card className="border-secondary-blue bg-blue-50 shadow-sm mb-4">
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <FiLoader className="animate-spin h-5 w-5 text-primary-blue flex-shrink-0" />
-                  <div className="text-primary-blue text-sm font-medium">{uploadProgress}</div>
-                  <div className="text-primary-blue text-sm font-bold ml-auto">{progressPercent}%</div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div
-                    className="bg-primary-blue h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-
-                {progressPercent > 0 && (
-                  <div className="text-xs text-primary-blue/75">
-                    กำลังดำเนินการ... กรุณารอสักครู่
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <form id="verification-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Basic Info */}
@@ -937,6 +911,37 @@ export default function SellerVerificationPage() {
             </CardContent>
           </Card>
         </form>
+
+        {/* Progress Bar - Above Submit Button */}
+        {uploadProgress && (
+          <div className="mt-6 -mx-4 px-4">
+            <Card className="border-secondary-blue bg-blue-50 shadow-sm">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <FiLoader className="animate-spin h-5 w-5 text-primary-blue flex-shrink-0" />
+                    <div className="text-primary-blue text-sm font-medium">{uploadProgress}</div>
+                    <div className="text-primary-blue text-sm font-bold ml-auto">{progressPercent}%</div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-blue-200 rounded-full h-2">
+                    <div
+                      className="bg-primary-blue h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+
+                  {progressPercent > 0 && (
+                    <div className="text-xs text-primary-blue/75">
+                      กำลังดำเนินการ... กรุณารอสักครู่
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="bg-gray-50 pt-4 pb-20 md:pb-6 mt-6 -mx-4 px-4 border-t border-gray-200">
