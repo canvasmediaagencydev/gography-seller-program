@@ -79,7 +79,7 @@ export default function AuthLayout({ children, title, subtitle, error, errorId }
           <div className="relative z-10 flex flex-col justify-center items-center h-full px-12 text-center">
             {/* Logo */}
             <div className="mb-8">
-              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 inline-block">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 inline-block">
                 <Image
                   src="/images/paydeeLOGO.svg"
                   alt="PayDee"
