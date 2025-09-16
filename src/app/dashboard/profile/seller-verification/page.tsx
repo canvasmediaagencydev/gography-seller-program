@@ -312,9 +312,9 @@ export default function SellerVerificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 rounded-2xl">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white rounded-2xl border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200">
         <div className="flex items-center justify-between p-4">
           <Button
             variant="ghost"
@@ -333,7 +333,7 @@ export default function SellerVerificationPage() {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 max-w-4xl mx-auto">
         {/* Info Card */}
         <Card className="mb-6 overflow-hidden border border-gray-200 shadow-sm">
           <div className="bg-blue-500 text-white p-4 sm:p-6">
@@ -520,10 +520,10 @@ export default function SellerVerificationPage() {
           </Card>
 
           {/* Profile Image Upload */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-lg">
-                <Badge className="w-8 h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-green-100 text-green-700 font-bold text-sm">
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <Badge className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-green-100 text-green-700 font-bold text-xs sm:text-sm">
                   3
                 </Badge>
                 รูปโปรไฟล์ 
@@ -531,7 +531,7 @@ export default function SellerVerificationPage() {
                   ไม่บังคับ
                 </Badge>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 อัปโหลดรูปโปรไฟล์เพื่อแสดงในหน้า Seller ของคุณ
               </CardDescription>
             </CardHeader>
@@ -613,10 +613,10 @@ export default function SellerVerificationPage() {
           </Card>
 
           {/* Documents Upload */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-lg">
-                <Badge className="w-8 h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-purple-100 text-purple-700 font-bold text-sm">
+          <Card className="border border-gray-200 shadow-sm">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="flex items-center text-base sm:text-lg">
+                <Badge className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-purple-100 text-purple-700 font-bold text-xs sm:text-sm">
                   4
                 </Badge>
                 เอกสารเพิ่มเติม 
@@ -624,7 +624,7 @@ export default function SellerVerificationPage() {
                   ไม่บังคับ
                 </Badge>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 เช่น ประวัติการทำงาน ใบประกาศนียบัตร ใบรับรองต่างๆ เพื่อเพิ่มความน่าเชื่อถือ
               </CardDescription>
             </CardHeader>
@@ -727,7 +727,7 @@ export default function SellerVerificationPage() {
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center text-base sm:text-lg">
                 <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-primary-yellow-light text-primary-yellow font-bold text-xs sm:text-sm">
-                  4
+                  5
                 </Badge>
                 ข้อมูลบัญชีธนาคาร
               </CardTitle>
@@ -821,24 +821,24 @@ export default function SellerVerificationPage() {
         </form>
 
         {/* Submit Button */}
-        <div className="mt-6 mb-10">
+        <div className=" bg-gray-50 pt-4 pb-20 md:pb-6 mt-6 -mx-4 px-4 border-t border-gray-200">
           <Button
-          onClick={handleSubmit}
-          disabled={loading}
-          size="lg"
-          className="w-full h-12 sm:h-14 text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg transition-all duration-200 relative overflow-hidden"
-        >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5" />
-              กำลังส่งข้อมูล...
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <FiShield className="w-5 h-5 mr-2" />
-              ส่งข้อมูลเพื่อยืนยันตัวตน
-            </div>
-          )}
+            onClick={handleSubmit}
+            disabled={loading}
+            size="lg"
+            className="w-full h-12 sm:h-14 text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg transition-all duration-200 relative overflow-hidden"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                กำลังส่งข้อมูล...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <FiShield className="w-5 h-5 mr-2" />
+                ส่งข้อมูลเพื่อยืนยันตัวตน
+              </div>
+            )}
           </Button>
         </div>
       </div>
