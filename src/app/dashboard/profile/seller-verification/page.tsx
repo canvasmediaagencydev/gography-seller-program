@@ -401,7 +401,7 @@ export default function SellerVerificationPage() {
         router.replace('/dashboard/profile')
         // Force a hard refresh to ensure profile data is updated
         window.location.href = '/dashboard/profile'
-      }, 2000)
+      }, 1000)
 
     } catch (err: any) {
       console.error('Verification submission error:', err)
@@ -948,7 +948,7 @@ export default function SellerVerificationPage() {
         {/* Professional Progress Bar */}
         {uploadProgress && (
           <div className="mt-8 -mx-4 px-4">
-            <Card className="border-secondary-blue bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg">
+            <Card className="bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
