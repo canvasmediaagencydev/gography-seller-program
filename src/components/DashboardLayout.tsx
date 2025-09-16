@@ -56,12 +56,12 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
   }, [])
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Desktop Sidebar */}
       <Sidebar initialProfile={currentProfile} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:py-6 md:px-6 lg:px-8 overflow-y-auto mobile-content-padding">
+      <main className="flex-1 w-full md:py-6  md:px-6 lg:px-8 overflow-y-hidden md:overflow-y-auto">
         {children}
       </main>
 

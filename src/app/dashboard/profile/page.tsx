@@ -61,10 +61,10 @@ export default function ProfilePage() {
   // Get verification status info
   const getVerificationStatus = () => {
     if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: BsShieldCheck }
-    
+
     // Check if basic info is filled
     const hasBasicInfo = userProfile.full_name && userProfile.phone
-    
+
     if (!hasBasicInfo) {
       return {
         status: 'not_started',
@@ -75,7 +75,7 @@ export default function ProfilePage() {
         needsAction: true
       }
     }
-    
+
     if (userProfile.status === 'pending') {
       return {
         status: 'pending',
@@ -86,7 +86,7 @@ export default function ProfilePage() {
         needsAction: false
       }
     }
-    
+
     if (userProfile.status === 'approved') {
       return {
         status: 'approved',
@@ -97,7 +97,7 @@ export default function ProfilePage() {
         needsAction: false
       }
     }
-    
+
     return {
       status: 'not_approved',
       text: 'ยืนยันตัวตน',
@@ -111,7 +111,7 @@ export default function ProfilePage() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('th-TH', {
       year: 'numeric',
-      month: 'long', 
+      month: 'long',
       day: 'numeric'
     })
   }
@@ -127,7 +127,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-white border-b rounded-2xl border-gray-200">
         <div className="flex items-center justify-between p-4">
@@ -164,7 +164,7 @@ export default function ProfilePage() {
               ) : null}
               <UserCircleIcon className={`w-full h-full text-gray-400 ${userProfile?.avatar_url ? 'hidden' : ''}`} />
             </div>
-            
+
             <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-900">
                 {userProfile?.full_name || 'ไม่ระบุชื่อ'}
@@ -179,46 +179,45 @@ export default function ProfilePage() {
           </div>
 
           {/* Verification Status */}
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 ${
-            verificationInfo.color === 'red'
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 ${verificationInfo.color === 'red'
               ? 'bg-red-50 text-red-700 border-red-200'
               : verificationInfo.color === 'yellow'
               ? 'bg-yellow-50 text-primary-yellow border-secondary-yellow'
               : 'bg-green-50 text-green-700 border-green-200'
-          }`}>
+            }`}>
             <div className="relative">
               <verificationInfo.icon className="text-lg" />
               {verificationInfo.needsAction && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
-              )}
-            </div>
-            
-            <div className="flex-1">
-              <div className="font-semibold">{verificationInfo.text}</div>
-              {verificationInfo.subtext && (
-                <div className="text-xs opacity-75">{verificationInfo.subtext}</div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
               )}
             </div>
 
-            {/* Status Indicator */}
-            {verificationInfo.status === 'approved' ? (
-              <div className="text-green-600">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            )}
-          </div>
+            <div className="flex-1">
+              <div className="font-semibold">{verificationInfo.text}</div>
+              {verificationInfo.subtext && (
+              <div className="text-xs opacity-75">{verificationInfo.subtext}</div>
+              )}
+            </div>
+            </div>
         </div>
+
+        {/* Action Button */}
+        {verificationInfo.needsAction && (
+          <div className="mb-4">
+            <button
+              onClick={() => router.push('/dashboard/profile/seller-verification')}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
+            >
+              <BsExclamationTriangle className="w-5 h-5" />
+              <span>ยืนยันตัวตนเพื่อเริ่มขาย</span>
+            </button>
+          </div>
+        )}
 
         {/* Profile Information */}
         <div className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">ข้อมูลส่วนตัว</h3>
-          
+
           <div className="space-y-4">
             {/* Full Name */}
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -251,24 +250,13 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Action Button */}
-        {verificationInfo.needsAction && (
-          <div className="mb-4">
-            <button
-              onClick={() => router.push('/dashboard/profile/seller-verification')}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
-            >
-              <BsExclamationTriangle className="w-5 h-5" />
-              <span>ยืนยันตัวตนเพื่อเริ่มขาย</span>
-            </button>
-          </div>
-        )}
+
 
         {/* Account Actions */}
         <div className="bg-white rounded-xl border border-gray-200 block md:hidden">
           <div className="p-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">การตั้งค่า</h3>
-            
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors border border-red-200"
