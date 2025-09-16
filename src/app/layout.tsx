@@ -14,13 +14,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="th">
       <head>
+        {/* Mobile viewport optimization */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#176daf" />
+
         {/* Google Fonts preconnect */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100..900&display=swap" rel="stylesheet" />
-        
+
         {/* Google Auth optimization - preconnect and prefetch */}
         <link rel="preconnect" href="https://accounts.google.com" />
         <link rel="preconnect" href="https://apis.google.com" />
@@ -29,7 +36,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://apis.google.com" />
         <link rel="dns-prefetch" href="https://oauth2.googleapis.com" />
       </head>
-      <body className="font-noto-thai">
+      <body className="font-noto-thai overflow-x-hidden">
         {children}
         <Toaster />
       </body>

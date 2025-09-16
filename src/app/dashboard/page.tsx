@@ -81,32 +81,34 @@ function ComingSoonCard({ title, description, mockValue, icon, color }: ComingSo
 
 export default function SellerDashboard() {
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] md:min-h-[calc(100vh-6rem)]">
-      <div className="text-center max-w-md mx-auto p-8">
-        {/* Fun Icon */}
-        <div className="text-8xl mb-6 animate-bounce">
-          🚧
-        </div>
-        
-        {/* Main Message */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          อยู่ระหว่างพัฒนา
-        </h1>
-        
-        <p className="text-lg text-gray-600 mb-8">
-          Dashboard กำลังสร้าง... <br />
-          รอหน่อยนะ จะเสร็จเร็วๆ นี้! 😊
-        </p>
+    <div className="w-full px-4 py-6 md:px-0 md:py-0">
+      <div className="flex items-center justify-center min-h-[calc(100vh-12rem)] md:min-h-[calc(100vh-6rem)]">
+        <div className="text-center max-w-md mx-auto p-4 md:p-8">
+          {/* Fun Icon */}
+          <div className="text-6xl md:text-8xl mb-6 animate-bounce">
+            🚧
+          </div>
 
-        {/* Simple Progress */}
-        <div className="bg-white rounded-full p-2 shadow-lg mb-6">
-          <div className="h-3 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-        </div>
+          {/* Main Message */}
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+            อยู่ระหว่างพัฒนา
+          </h1>
 
-        {/* Small note */}
-        <p className="text-sm text-gray-500 mt-6">
-          ระหว่างนี้ลองดู <span className="font-semibold text-primary-blue">ข้อมูล Trips</span> กันก่อนได้นะ!
-        </p>
+          <p className="text-base md:text-lg text-gray-600 mb-8">
+            Dashboard กำลังสร้าง... <br />
+            รอหน่อยนะ จะเสร็จเร็วๆ นี้! 😊
+          </p>
+
+          {/* Simple Progress */}
+          <div className="bg-white rounded-full p-2 shadow-lg mb-6">
+            <div className="h-3 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+          </div>
+
+          {/* Small note */}
+          <p className="text-sm text-gray-500 mt-6">
+            ระหว่างนี้ลองดู <span className="font-semibold text-primary-blue">ข้อมูล Trips</span> กันก่อนได้นะ!
+          </p>
+        </div>
       </div>
     </div>
   )

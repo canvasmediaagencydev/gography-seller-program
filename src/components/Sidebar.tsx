@@ -73,13 +73,26 @@ const getVerificationStatus = (userProfile: UserProfile | null) => {
       icon: BsCheckCircle
     }
   }
-  
+
+  if (userProfile.status === 'rejected') {
+    return {
+      status: 'rejected',
+      text: 'ถูกปฏิเสธ',
+      subtext: 'ส่งข้อมูลใหม่',
+      color: 'red',
+      icon: BsExclamationTriangle,
+      pulse: true
+    }
+  }
+
+  // Default case for any other status (null, undefined, or unknown values)
   return {
-    status: 'error',
-    text: 'ปัญหาการยืนยัน',
-    subtext: 'ติดต่อแอดมิน',
+    status: 'needs_verification',
+    text: 'ยืนยันตัวตน',
+    subtext: 'ต้องดำเนินการ',
     color: 'red',
-    icon: BsExclamationTriangle
+    icon: BsExclamationTriangle,
+    pulse: true
   }
 }
 
@@ -259,7 +272,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   }
 
   return (
-    <div className={`hidden md:flex h-screen w-80 bg-white shadow-lg flex-col ${className || ''}`}>
+    <div className={`hidden md:flex fixed left-0 top-0 h-screen w-80 bg-white shadow-lg flex-col z-20 ${className || ''}`}>
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center space-x-3">
