@@ -201,15 +201,16 @@ export default function ProfilePage() {
             </div>
         </div>
 
-        {/* Action Button */}
+        {/* Professional Action Button */}
         {verificationInfo.needsAction && (
-          <div className="mb-4">
+          <div className="mb-6">
             <button
               onClick={() => router.push('/dashboard/profile/seller-verification')}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-primary-blue to-secondary-blue text-white py-4 px-6 rounded-xl font-bold shadow-xl hover:from-primary-blue/90 hover:to-secondary-blue/90 hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 relative overflow-hidden group"
             >
-              <BsExclamationTriangle className="w-5 h-5" />
-              <span>ยืนยันตัวตนเพื่อเริ่มขาย</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <BsExclamationTriangle className="w-5 h-5 relative z-10" />
+              <span className="relative z-10">ยืนยันตัวตนเพื่อเริ่มขาย</span>
             </button>
           </div>
         )}
@@ -257,7 +258,7 @@ export default function ProfilePage() {
 
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors border border-red-200"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:shadow-sm transition-all duration-200 border border-red-200"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

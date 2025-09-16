@@ -12,15 +12,15 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 
-import { 
+import {
   FiAlertTriangle,
-  FiCheck, 
+  FiCheck,
   FiClipboard,
-  FiFileText, 
+  FiFileText,
   FiLoader,
   FiPlus,
   FiShield,
-  FiUser, 
+  FiUser,
   FiX
 } from 'react-icons/fi'
 
@@ -34,24 +34,22 @@ interface UserProfile {
   avatar_url: string | null
 }
 
-// Constants
+// Constants - Professional business styling with brand colors
 const UPLOAD_AREA_CLASSES = {
-  base: "border-2 border-dashed rounded-2xl bg-slate-50/50 p-8 hover:border-opacity-75 transition-all duration-300 group",
-  red: "border-red-200 hover:bg-red-50/30 hover:border-red-300",
-  green: "border-green-200 hover:bg-green-50/30 hover:border-green-300",
-  purple: "border-secondary-blue hover:bg-primary-blue-light hover:border-primary-blue"
+  base: "border-2 border-dashed rounded-2xl bg-white p-8 hover:border-opacity-75 transition-all duration-300 group",
+  primary: "border-gray-300 hover:bg-blue-50/50 hover:border-secondary-blue",
+  success: "border-gray-300 hover:bg-green-50/50 hover:border-green-300"
 }
 
 const ICON_CONTAINER_CLASSES = {
   base: "mx-auto flex items-center justify-center group-hover:scale-105 transition-transform duration-200",
-  red: "w-24 h-24 bg-gradient-to-br from-red-100 to-red-200 rounded-3xl",
-  green: "w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full",
-  purple: "w-20 h-20 bg-gradient-to-br from-primary-blue-light to-secondary-blue rounded-full"
+  primary: "w-20 h-20 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl",
+  success: "w-16 h-16 bg-gradient-to-br from-green-50 to-green-100 rounded-xl"
 }
 
 const SUCCESS_CARD_CLASSES = "bg-green-50 border-green-200"
 
-// Reusable Components
+// Professional Reusable Components
 interface FileSuccessDisplayProps {
   fileName: string
   description: string
@@ -91,13 +89,13 @@ export default function SellerVerificationPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
-  
+
   // Bank account states
   const [bankName, setBankName] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
   const [branch, setBranch] = useState('')
-  
+
   // File states
   const [idCardFile, setIdCardFile] = useState<File | null>(null)
   const [profileFile, setProfileFile] = useState<File | null>(null)
@@ -110,12 +108,12 @@ export default function SellerVerificationPage() {
   const [uploadProgress, setUploadProgress] = useState('')
   const [progressPercent, setProgressPercent] = useState(0)
   const [error, setError] = useState('')
-  
+
   // File input refs
   const idCardInputRef = useRef<HTMLInputElement>(null)
   const profileInputRef = useRef<HTMLInputElement>(null)
   const documentsInputRef = useRef<HTMLInputElement>(null)
-  
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -404,10 +402,10 @@ export default function SellerVerificationPage() {
 
   if (!userProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <FiLoader className="w-12 h-12 text-primary-blue animate-spin" />
-          <p className="text-slate-600 text-sm">กำลังโหลด...</p>
+          <p className="text-gray-600 text-sm font-medium">กำลังโหลด...</p>
         </div>
       </div>
     )
@@ -415,44 +413,44 @@ export default function SellerVerificationPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="flex items-center justify-between p-4">
+      {/* Professional Header */}
+      <div className="bg-white border-b border-gray-200 shadow-sm md:bg-gray-50 md:shadow-none md:border-0">
+        <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.push('/dashboard/profile')}
-            className="-ml-2"
+            className="hover:bg-gray-100 transition-colors"
           >
-            <ArrowLeftIcon className="w-6 h-6" />
+            <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
           </Button>
           <div className="flex-1 text-center">
-            <h1 className="text-lg font-semibold text-gray-900">ยืนยันตัวตน</h1>
-            <p className="text-sm text-primary-blue">เพื่อเริ่มต้นขายทริป</p>
+            <h1 className="text-xl font-bold text-gray-900">การยืนยันตัวตน</h1>
+            <p className="text-sm text-secondary-blue font-medium">เพื่อความปลอดภัยและความน่าเชื่อถือ</p>
           </div>
-          <div className="w-8" />
+          <div className="w-10" />
         </div>
       </div>
 
       {/* Content */}
       <div className="p-4 max-w-4xl mx-auto">
-        {/* Info Card */}
-        <Card className="mb-6 overflow-hidden border border-gray-200 shadow-sm">
-          <div className="bg-blue-500 text-white p-4 sm:p-6">
-            <div className="flex items-start space-x-3 sm:space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
-                <FiShield className="w-6 h-6 sm:w-7 sm:h-7" />
+        {/* Professional Info Card */}
+        <Card className="mb-8 overflow-hidden border border-gray-200 shadow-lg">
+          <div style={{background: "linear-gradient(to right, #176daf, #5c9ad2)"}} className="text-white p-6">
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0 w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <FiShield className="w-8 h-8" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">ยืนยันตัวตนเพื่ความปลอดภัย</h3>
-                <p className="text-blue-100 text-sm leading-relaxed">เราต้องการข้อมูลเพื่อตรวจสอบประวัติและสร้างความเชื่อมั่นให้กับลูกค้า</p>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2">การยืนยันตัวตน</h3>
+                <p className="text-blue-100 text-sm leading-relaxed">เพื่อความปลอดภัยของลูกค้าและสร้างความน่าเชื่อถือให้กับธุรกิจของคุณ</p>
               </div>
             </div>
           </div>
         </Card>
 
         {error && (
-          <Card className="border-red-200 bg-red-50 shadow-sm">
+          <Card className="border-red-200 bg-red-50 shadow-sm mb-6">
             <CardContent className="p-4">
               <div className="flex items-start space-x-3">
                 <FiAlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
@@ -462,25 +460,24 @@ export default function SellerVerificationPage() {
           </Card>
         )}
 
-
-        <form id="verification-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-          {/* Basic Info */}
+        <form id="verification-form" onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Info - Professional styling */}
           <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-blue-100 text-primary-blue font-bold text-xs sm:text-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <div style={{background: "linear-gradient(to bottom right, #176daf, #5c9ad2)"}} className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-4 font-bold text-sm">
                   1
-                </Badge>
+                </div>
                 ข้อมูลส่วนตัว
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm text-gray-600">
                 กรอกข้อมูลส่วนตัวของคุณให้ถูกต้องตามบัตรประชาชน
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6">
+            <CardContent className="space-y-6">
               <div className="space-y-2">
-                <label htmlFor="fullName" className="block text-sm font-semibold text-slate-700">
-                  ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
+                  ชื่อ-นามสกุล <span className="text-primary-blue">*</span>
                 </label>
                 <Input
                   id="fullName"
@@ -488,7 +485,7 @@ export default function SellerVerificationPage() {
                   type="text"
                   required
                   disabled={loading}
-                  className="h-11 sm:h-12 text-base"
+                  className="h-12 text-base border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-blue-100"
                   placeholder="กรอกชื่อ-นามสกุลตามบัตรประชาชน"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -496,8 +493,8 @@ export default function SellerVerificationPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-semibold text-slate-700">
-                  เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700">
+                  เบอร์โทรศัพท์ <span className="text-primary-blue">*</span>
                 </label>
                 <Input
                   id="phone"
@@ -505,7 +502,7 @@ export default function SellerVerificationPage() {
                   type="tel"
                   required
                   disabled={loading}
-                  className="h-11 sm:h-12 text-base"
+                  className="h-12 text-base border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-blue-100"
                   placeholder="เบอร์โทรศัพท์สำหรับติดต่อ"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -514,35 +511,35 @@ export default function SellerVerificationPage() {
             </CardContent>
           </Card>
 
-          {/* ID Card Upload */}
+          {/* ID Card Upload - Professional styling */}
           <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge variant="destructive" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-red-100 text-red-700 font-bold text-xs sm:text-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <div style={{background: "linear-gradient(to bottom right, #176daf, #5c9ad2)"}} className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-4 font-bold text-sm">
                   2
-                </Badge>
-                บัตรประชาชน <span className="text-red-500">*</span>
+                </div>
+                บัตรประชาชน <span className="text-primary-blue font-semibold">*</span>
               </CardTitle>
-              <Card className="bg-amber-50 border-amber-200">
+              <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
-                    <FiAlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <FiShield className="w-5 h-5 text-primary-blue mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm text-amber-800 font-medium mb-1">เพื่อความปลอดภัยของลูกค้า</p>
-                      <p className="text-xs text-amber-700">เราจะใช้ข้อมูลนี้ในการตรวจสอบประวัติอาชญากรรม</p>
+                      <p className="text-sm text-primary-blue font-medium mb-1">การตรวจสอบความปลอดภัย</p>
+                      <p className="text-xs text-secondary-blue">เพื่อสร้างความเชื่อมั่นและความปลอดภัยให้กับลูกค้า</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </CardHeader>
             <CardContent>
-              <div className={`${UPLOAD_AREA_CLASSES.base} ${UPLOAD_AREA_CLASSES.red}`}>
+              <div className={`${UPLOAD_AREA_CLASSES.base} ${UPLOAD_AREA_CLASSES.primary}`}>
                 {idCardFile ? (
                   <div className="space-y-6">
-                    <div className="mx-auto w-full max-w-md h-64 border-2 border-slate-200 rounded-2xl overflow-hidden bg-white shadow-md">
-                      <img 
-                        src={idCardPreview || ''} 
-                        alt="ID Card Preview" 
+                    <div className="mx-auto w-full max-w-md h-64 border-2 border-gray-200 rounded-2xl overflow-hidden bg-white shadow-md">
+                      <img
+                        src={idCardPreview || ''}
+                        alt="ID Card Preview"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -555,8 +552,8 @@ export default function SellerVerificationPage() {
                   </div>
                 ) : (
                   <div className="space-y-6 text-center">
-                    <div className={`${ICON_CONTAINER_CLASSES.base} ${ICON_CONTAINER_CLASSES.red}`}>
-                      <FiFileText className="w-12 h-12 text-red-600" />
+                    <div className={`${ICON_CONTAINER_CLASSES.base} ${ICON_CONTAINER_CLASSES.primary}`}>
+                      <FiFileText className="w-10 h-10 text-primary-blue" />
                     </div>
                     <div>
                       <label htmlFor="idCardFile" className="cursor-pointer">
@@ -564,11 +561,11 @@ export default function SellerVerificationPage() {
                           type="button"
                           variant="outline"
                           size="lg"
-                          className="h-14 px-8 border-2 border-red-200 text-red-700 bg-white hover:bg-red-50 hover:border-red-300 shadow-sm"
+                          className="h-12 px-6 border-2 border-gray-200 text-primary-blue bg-white hover:bg-blue-50 hover:border-secondary-blue shadow-sm font-semibold"
                           asChild
                         >
                           <span>
-                            <FiPlus className="w-5 h-5 mr-3" />
+                            <FiPlus className="w-5 h-5 mr-2" />
                             เลือกไฟล์บัตรประชาชน
                           </span>
                         </Button>
@@ -584,9 +581,9 @@ export default function SellerVerificationPage() {
                         />
                       </label>
                     </div>
-                    <div className="bg-white rounded-xl p-4 border border-slate-200">
-                      <p className="text-sm font-medium text-slate-700 mb-3">คำแนะนำการถ่ายภาพ:</p>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                    <div className="bg-white rounded-xl p-4 border border-gray-200">
+                      <p className="text-sm font-medium text-gray-700 mb-3">คำแนะนำการถ่ายภาพ:</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                         <div className="flex items-center space-x-2">
                           <div className="w-1.5 h-1.5 bg-primary-blue rounded-full"></div>
                           <span>วางบนพื้นเรียบ</span>
@@ -611,30 +608,30 @@ export default function SellerVerificationPage() {
             </CardContent>
           </Card>
 
-          {/* Profile Image Upload */}
+          {/* Profile Image Upload - Professional styling */}
           <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-green-100 text-green-700 font-bold text-xs sm:text-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <div style={{background: "linear-gradient(to bottom right, #5c9ad2, #176daf)"}} className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-4 font-bold text-sm">
                   3
-                </Badge>
-                รูปโปรไฟล์ 
-                <Badge variant="outline" className="ml-2 text-green-600 border-green-200">
+                </div>
+                รูปโปรไฟล์
+                <Badge variant="outline" className="ml-3 text-blue-600 border-blue-200 bg-blue-50">
                   ไม่บังคับ
                 </Badge>
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm text-gray-600">
                 อัปโหลดรูปโปรไฟล์เพื่อแสดงในหน้า Seller ของคุณ
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className={`${UPLOAD_AREA_CLASSES.base} ${UPLOAD_AREA_CLASSES.green}`}>
+              <div className={`${UPLOAD_AREA_CLASSES.base} ${UPLOAD_AREA_CLASSES.success}`}>
                 {profileFile ? (
                   <div className="space-y-6">
-                    <div className="mx-auto w-40 h-40 border-2 border-slate-200 rounded-full overflow-hidden bg-white shadow-md">
-                      <img 
-                        src={profilePreview || ''} 
-                        alt="Profile Preview" 
+                    <div className="mx-auto w-40 h-40 border-2 border-gray-200 rounded-full overflow-hidden bg-white shadow-md">
+                      <img
+                        src={profilePreview || ''}
+                        alt="Profile Preview"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -666,8 +663,8 @@ export default function SellerVerificationPage() {
                   </div>
                 ) : (
                   <div className="space-y-6 text-center">
-                    <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                      <FiUser className="w-10 h-10 text-green-600" />
+                    <div className={`${ICON_CONTAINER_CLASSES.base} ${ICON_CONTAINER_CLASSES.success}`}>
+                      <FiUser className="w-8 h-8 text-green-600" />
                     </div>
                     <div>
                       <label htmlFor="profileFile" className="cursor-pointer">
@@ -675,7 +672,7 @@ export default function SellerVerificationPage() {
                           type="button"
                           variant="outline"
                           size="lg"
-                          className="h-12 px-6 border-2 border-green-200 text-green-700 bg-white hover:bg-green-50 hover:border-green-300 shadow-sm"
+                          className="h-12 px-6 border-2 border-gray-200 text-green-600 bg-white hover:bg-green-50 hover:border-green-300 shadow-sm font-medium"
                           asChild
                         >
                           <span>
@@ -695,7 +692,7 @@ export default function SellerVerificationPage() {
                         />
                       </label>
                     </div>
-                    <p className="text-sm text-slate-600 bg-white rounded-lg px-4 py-2 border border-slate-200">
+                    <p className="text-sm text-gray-600 bg-white rounded-lg px-4 py-2 border border-gray-200">
                       ใช้สำหรับแสดงในโปรไฟล์ Seller ของคุณ
                     </p>
                   </div>
@@ -704,32 +701,32 @@ export default function SellerVerificationPage() {
             </CardContent>
           </Card>
 
-          {/* Documents Upload */}
+          {/* Documents Upload - Professional styling */}
           <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-purple-100 text-purple-700 font-bold text-xs sm:text-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <div style={{background: "linear-gradient(to bottom right, #9ca3af, #6b7280)"}} className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-4 font-bold text-sm">
                   4
-                </Badge>
-                เอกสารเพิ่มเติม 
-                <Badge variant="outline" className="ml-2 text-purple-600 border-purple-200">
+                </div>
+                เอกสารเพิ่มเติม
+                <Badge variant="outline" className="ml-3 text-gray-600 border-gray-300 bg-white">
                   ไม่บังคับ
                 </Badge>
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm text-gray-600">
                 เช่น ประวัติการทำงาน ใบประกาศนียบัตร ใบรับรองต่างๆ เพื่อเพิ่มความน่าเชื่อถือ
               </CardDescription>
             </CardHeader>
             <CardContent>
               {documentFiles.length > 0 && (
-                <Card className="bg-purple-50 border-purple-200 mb-6">
+                <Card className="bg-white border-gray-200 mb-6 shadow-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                          <FiClipboard className="w-4 h-4 text-purple-600" />
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                          <FiClipboard className="w-4 h-4 text-gray-600" />
                         </div>
-                        <p className="text-sm font-semibold text-slate-700">
+                        <p className="text-sm font-semibold text-gray-700">
                           เอกสารที่เลือก ({documentFiles.length} ไฟล์)
                         </p>
                       </div>
@@ -746,14 +743,14 @@ export default function SellerVerificationPage() {
                     </div>
                     <div className="space-y-3">
                       {documentFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-sm transition-shadow">
+                        <div key={index} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:shadow-sm transition-shadow">
                           <div className="flex items-center space-x-3 min-w-0 flex-1">
-                            <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                              <FiFileText className="h-6 w-6 text-purple-600" />
+                            <div className="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                              <FiFileText className="h-6 w-6 text-gray-600" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-slate-900 truncate">{file.name}</p>
-                              <p className="text-xs text-slate-500">{(file.size / (1024 * 1024)).toFixed(1)} MB • PDF</p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                              <p className="text-xs text-gray-500">{(file.size / (1024 * 1024)).toFixed(1)} MB • PDF</p>
                             </div>
                           </div>
                           <Button
@@ -774,10 +771,10 @@ export default function SellerVerificationPage() {
                 </Card>
               )}
 
-              <div className="border-2 border-dashed border-purple-200 rounded-2xl bg-slate-50/50 p-8 hover:border-purple-300 hover:bg-purple-50/30 transition-all duration-300 group">
+              <div className="border-2 border-dashed border-gray-300 rounded-2xl bg-white p-8 hover:border-gray-400 hover:bg-gray-50/50 transition-all duration-300 group">
                 <div className="space-y-6 text-center">
-                  <div className="mx-auto w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                    <FiFileText className="w-10 h-10 text-purple-600" />
+                  <div className="mx-auto w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                    <FiFileText className="w-10 h-10 text-gray-600" />
                   </div>
                   <div>
                     <label htmlFor="documentsFile" className="cursor-pointer">
@@ -785,7 +782,7 @@ export default function SellerVerificationPage() {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="h-12 px-6 border-2 border-purple-200 text-purple-700 bg-white hover:bg-purple-50 hover:border-purple-300 shadow-sm"
+                        className="h-12 px-6 border-2 border-gray-200 text-gray-600 bg-white hover:bg-gray-50 hover:border-gray-300 shadow-sm font-medium"
                         asChild
                       >
                         <span>
@@ -806,7 +803,7 @@ export default function SellerVerificationPage() {
                       />
                     </label>
                   </div>
-                  <p className="text-sm text-slate-600 bg-white rounded-lg px-4 py-2 border border-slate-200">
+                  <p className="text-sm text-gray-600 bg-white rounded-lg px-4 py-2 border border-gray-200">
                     รองรับไฟล์ PDF • ขนาดไม่เกิน 10MB ต่อไฟล์
                   </p>
                 </div>
@@ -814,24 +811,24 @@ export default function SellerVerificationPage() {
             </CardContent>
           </Card>
 
-          {/* Bank Account Information */}
+          {/* Bank Account Information - Professional styling */}
           <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-primary-yellow-light text-primary-yellow font-bold text-xs sm:text-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-lg">
+                <div style={{background: "linear-gradient(to bottom right, #fe9813, #febf12)"}} className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-4 font-bold text-sm">
                   5
-                </Badge>
+                </div>
                 ข้อมูลบัญชีธนาคาร
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm text-gray-600">
                 กรอกข้อมูลบัญชีธนาคารสำหรับรับเงินค่าคอมมิชชั่น
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="bankName" className="block text-sm font-semibold text-slate-700">
-                    ชื่อธนาคาร <span className="text-red-500">*</span>
+                  <label htmlFor="bankName" className="block text-sm font-semibold text-gray-700">
+                    ชื่อธนาคาร <span className="text-primary-blue">*</span>
                   </label>
                   <select
                     id="bankName"
@@ -840,7 +837,7 @@ export default function SellerVerificationPage() {
                     onChange={(e) => setBankName(e.target.value)}
                     required
                     disabled={loading}
-                    className="h-11 sm:h-12 text-base w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="h-12 text-base w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-primary-blue"
                   >
                     <option value="">เลือกธนาคาร</option>
                     <option value="กสิกรไทย">ธนาคารกสิกรไทย</option>
@@ -859,8 +856,8 @@ export default function SellerVerificationPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="accountNumber" className="block text-sm font-semibold text-slate-700">
-                    เลขที่บัญชี <span className="text-red-500">*</span>
+                  <label htmlFor="accountNumber" className="block text-sm font-semibold text-gray-700">
+                    เลขที่บัญชี <span className="text-primary-blue">*</span>
                   </label>
                   <Input
                     id="accountNumber"
@@ -871,14 +868,14 @@ export default function SellerVerificationPage() {
                     onChange={(e) => setAccountNumber(e.target.value)}
                     required
                     disabled={loading}
-                    className="h-11 sm:h-12 text-base"
+                    className="h-12 text-base border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="accountName" className="block text-sm font-semibold text-slate-700">
-                    ชื่อบัญชี <span className="text-red-500">*</span>
+                  <label htmlFor="accountName" className="block text-sm font-semibold text-gray-700">
+                    ชื่อบัญชี <span className="text-primary-blue">*</span>
                   </label>
                   <Input
                     id="accountName"
@@ -889,11 +886,11 @@ export default function SellerVerificationPage() {
                     onChange={(e) => setAccountName(e.target.value)}
                     required
                     disabled={loading}
-                    className="h-11 sm:h-12 text-base"
+                    className="h-12 text-base border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="branch" className="block text-sm font-semibold text-slate-700">
+                  <label htmlFor="branch" className="block text-sm font-semibold text-gray-700">
                     สาขา
                   </label>
                   <Input
@@ -904,7 +901,7 @@ export default function SellerVerificationPage() {
                     value={branch}
                     onChange={(e) => setBranch(e.target.value)}
                     disabled={loading}
-                    className="h-11 sm:h-12 text-base"
+                    className="h-12 text-base border-gray-200 focus:border-primary-blue focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
               </div>
@@ -912,28 +909,30 @@ export default function SellerVerificationPage() {
           </Card>
         </form>
 
-        {/* Progress Bar - Above Submit Button */}
+        {/* Professional Progress Bar */}
         {uploadProgress && (
-          <div className="mt-6 -mx-4 px-4">
-            <Card className="border-secondary-blue bg-blue-50 shadow-sm">
-              <CardContent className="p-4">
-                <div className="space-y-3">
+          <div className="mt-8 -mx-4 px-4">
+            <Card className="border-secondary-blue bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg">
+              <CardContent className="p-6">
+                <div className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <FiLoader className="animate-spin h-5 w-5 text-primary-blue flex-shrink-0" />
-                    <div className="text-primary-blue text-sm font-medium">{uploadProgress}</div>
-                    <div className="text-primary-blue text-sm font-bold ml-auto">{progressPercent}%</div>
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                      <FiLoader className="animate-spin h-4 w-4 text-primary-blue" />
+                    </div>
+                    <div className="text-sm text-primary-blue font-semibold">{uploadProgress}</div>
+                    <div className="text-sm text-primary-blue font-bold ml-auto bg-white px-3 py-1 rounded-full shadow-sm">{progressPercent}%</div>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="w-full bg-blue-200 rounded-full h-2">
+                  {/* Professional Progress Bar */}
+                  <div className="w-full bg-white/60 rounded-full h-3 overflow-hidden shadow-inner">
                     <div
-                      className="bg-primary-blue h-2 rounded-full transition-all duration-300 ease-out"
-                      style={{ width: `${progressPercent}%` }}
+                      style={{background: "linear-gradient(to right, #176daf, #5c9ad2)", width: `${progressPercent}%`}}
+                      className="h-3 rounded-full transition-all duration-500 ease-out shadow-sm"
                     />
                   </div>
 
                   {progressPercent > 0 && (
-                    <div className="text-xs text-primary-blue/75">
+                    <div className="text-xs text-center font-medium text-primary-blue/80">
                       กำลังดำเนินการ... กรุณารอสักครู่
                     </div>
                   )}
@@ -943,24 +942,25 @@ export default function SellerVerificationPage() {
           </div>
         )}
 
-        {/* Submit Button */}
-        <div className="bg-gray-50 pt-4 pb-20 md:pb-6 mt-6 -mx-4 px-4 border-t border-gray-200">
+        {/* Professional Submit Button */}
+        <div className="bg-white pt-8 pb-20 md:pb-8 mt-8 -mx-4 px-4 border-t border-gray-200">
           <Button
             type="submit"
             form="verification-form"
             disabled={loading}
             size="lg"
-            className="w-full h-12 sm:h-14 text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg transition-all duration-200 relative overflow-hidden"
+            style={{background: "linear-gradient(to right, #176daf, #5c9ad2)"}} className="w-full h-14 text-base font-bold text-white hover:opacity-90 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden group"
           >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             {loading ? (
-              <div className="flex items-center justify-center">
-                <FiLoader className="animate-spin -ml-1 mr-3 h-5 w-5" />
-                กำลังส่งข้อมูล...
+              <div className="flex items-center justify-center relative z-10">
+                <div className="w-6 h-6 mr-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>กำลังส่งข้อมูล...</span>
               </div>
             ) : (
-              <div className="flex items-center justify-center">
-                <FiShield className="w-5 h-5 mr-2" />
-                ส่งข้อมูลเพื่อยืนยันตัวตน
+              <div className="flex items-center justify-center relative z-10">
+                <FiShield className="w-5 h-5 mr-3" />
+                <span>ส่งข้อมูลเพื่อยืนยันตัวตน</span>
               </div>
             )}
           </Button>
