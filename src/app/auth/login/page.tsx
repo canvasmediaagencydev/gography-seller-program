@@ -46,7 +46,7 @@ function LoginForm() {
       subtitle={
         <>
           ยังไม่มีบัญชี?{' '}
-          <Link href="/auth/register" className="font-medium text-primary-blue hover:text-secondary-blue">
+          <Link href="/auth/register" className="font-medium text-primary-yellow hover:text-secondary-blue">
             สมัครสมาชิก
           </Link>
         </>
