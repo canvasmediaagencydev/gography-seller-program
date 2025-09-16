@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { UserCircleIcon, PhoneIcon, IdentificationIcon } from '@heroicons/react/24/outline'
+import { UserCircleIcon, PhoneIcon, IdentificationIcon, BanknotesIcon } from '@heroicons/react/24/outline'
 import { IoChevronBackSharp } from "react-icons/io5"
 import { BsShieldCheck, BsExclamationTriangle, BsClock, BsCheckCircle } from "react-icons/bs"
 import Image from 'next/image'
@@ -21,8 +21,21 @@ interface UserProfile {
   created_at: string | null
 }
 
+interface BankAccount {
+  id: string
+  seller_id: string
+  bank_name: string
+  account_number: string
+  account_name: string
+  branch: string | null
+  is_primary: boolean
+  created_at: string | null
+  updated_at?: string | null
+}
+
 export default function ProfilePage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [bankAccount, setBankAccount] = useState<BankAccount | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -47,6 +60,18 @@ export default function ProfilePage() {
 
       if (profile) {
         setUserProfile(profile)
+
+        // Fetch bank account information
+        const { data: bank } = await supabase
+          .from('bank_accounts')
+          .select('*')
+          .eq('seller_id', user.id)
+          .eq('is_primary', true)
+          .single()
+
+        if (bank) {
+          setBankAccount(bank)
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -116,6 +141,13 @@ export default function ProfilePage() {
       month: 'long',
       day: 'numeric'
     })
+  }
+
+  const maskAccountNumber = (accountNumber: string) => {
+    if (accountNumber.length <= 4) return accountNumber
+    const visibleDigits = 2
+    const masked = '*'.repeat(accountNumber.length - visibleDigits * 2)
+    return accountNumber.slice(0, visibleDigits) + masked + accountNumber.slice(-visibleDigits)
   }
 
   const verificationInfo = getVerificationStatus()
@@ -277,6 +309,71 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Bank Account Information */}
+        <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-5">ข้อมูลบัญชีธนาคาร</h3>
+
+          {bankAccount ? (
+            <div className="space-y-4">
+              {/* Bank Name */}
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <BanknotesIcon className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-700 mb-1">ธนาคาร</p>
+                  <p className="text-gray-900 font-medium">ธนาคาร{bankAccount.bank_name}</p>
+                </div>
+              </div>
+
+              {/* Account Number */}
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <span className="text-primary-blue font-bold text-sm">#</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-700 mb-1">เลขที่บัญชี</p>
+                  <p className="text-gray-900 font-medium font-mono">{maskAccountNumber(bankAccount.account_number)}</p>
+                </div>
+              </div>
+
+              {/* Account Name */}
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <UserCircleIcon className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-700 mb-1">ชื่อบัญชี</p>
+                  <p className="text-gray-900 font-medium">{bankAccount.account_name}</p>
+                </div>
+              </div>
+
+              {/* Branch (if available) */}
+              {bankAccount.branch && (
+                <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <span className="text-purple-600 font-bold text-sm">🏪</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">สาขา</p>
+                    <p className="text-gray-900 font-medium">{bankAccount.branch}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center space-x-4 p-6 bg-yellow-50 rounded-xl border border-yellow-200">
+              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <BanknotesIcon className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-yellow-800 mb-1">ยังไม่มีข้อมูลบัญชีธนาคาร</p>
+                <p className="text-xs text-yellow-700">กรุณายืนยันตัวตนเพื่อเพิ่มข้อมูลบัญชีธนาคาร</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Account Actions */}
