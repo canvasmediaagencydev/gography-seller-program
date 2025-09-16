@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 import { 
   FiAlertTriangle,
@@ -101,12 +102,13 @@ export default function SellerVerificationPage() {
   const [idCardFile, setIdCardFile] = useState<File | null>(null)
   const [profileFile, setProfileFile] = useState<File | null>(null)
   const [documentFiles, setDocumentFiles] = useState<File[]>([])
-  
+
   // Preview URLs
   const [idCardPreview, setIdCardPreview] = useState<string | null>(null)
   const [profilePreview, setProfilePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
+  const [progressPercent, setProgressPercent] = useState(0)
   const [error, setError] = useState('')
   
   // File input refs
@@ -146,14 +148,58 @@ export default function SellerVerificationPage() {
   }
 
   // Helper functions
-  const handleFileChange = (
+  const compressImage = async (file: File, maxWidth = 1024, quality = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+
+      img.onload = () => {
+        // Calculate new dimensions
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height)
+        canvas.width = img.width * ratio
+        canvas.height = img.height * ratio
+
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now()
+            })
+            resolve(compressedFile)
+          } else {
+            resolve(file) // Fallback to original
+          }
+        }, file.type, quality)
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleFileChange = async (
     file: File,
     setFile: (file: File) => void,
     setPreview: (url: string) => void
   ) => {
-    setFile(file)
     setError('')
-    const previewUrl = URL.createObjectURL(file)
+
+    // Compress image if it's an image file
+    let processedFile = file
+    if (file.type.startsWith('image/')) {
+      toast.loading('กำลังประมวลผลรูปภาพ...', { id: 'compress' })
+      processedFile = await compressImage(file)
+      toast.dismiss('compress')
+
+      const reduction = ((file.size - processedFile.size) / file.size * 100).toFixed(1)
+      toast.success(`ลดขนาดไฟล์ได้ ${reduction}% (${(processedFile.size / 1024 / 1024).toFixed(1)}MB)`)
+    }
+
+    setFile(processedFile)
+    const previewUrl = URL.createObjectURL(processedFile)
     setPreview(previewUrl)
   }
 
@@ -170,14 +216,14 @@ export default function SellerVerificationPage() {
   }
 
   // Handle file selection
-  const handleIdCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleIdCardChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) handleFileChange(file, setIdCardFile, setIdCardPreview)
+    if (file) await handleFileChange(file, setIdCardFile, setIdCardPreview)
   }
 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) handleFileChange(file, setProfileFile, setProfilePreview)
+    if (file) await handleFileChange(file, setProfileFile, setProfilePreview)
   }
 
   const handleDocumentsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,23 +250,23 @@ export default function SellerVerificationPage() {
 
     try {
       if (!userProfile) {
-        setError('ไม่พบข้อมูลผู้ใช้')
+        toast.error('ไม่พบข้อมูลผู้ใช้')
         return
       }
 
       // Validate required fields
       if (!fullName || !phone) {
-        setError('กรุณากรอกชื่อ-นามสกุล และเบอร์โทรศัพท์')
+        toast.error('กรุณากรอกชื่อ-นามสกุล และเบอร์โทรศัพท์')
         return
       }
 
       if (!bankName || !accountNumber || !accountName) {
-        setError('กรุณากรอกข้อมูลธนาคารให้ครบถ้วน')
+        toast.error('กรุณากรอกข้อมูลธนาคารให้ครบถ้วน')
         return
       }
 
       if (!idCardFile) {
-        setError('กรุณาอัปโหลดรูปบัตรประชาชน')
+        toast.error('กรุณาอัปโหลดรูปบัตรประชาชน')
         return
       }
 
@@ -229,33 +275,65 @@ export default function SellerVerificationPage() {
         phone: phone,
       }
 
-      // Upload ID card (required)
-      setUploadProgress('กำลังอัปโหลดบัตรประชาชน...')
-      const idCardResult = await uploadSellerFile(idCardFile, userProfile.id, 'id-card')
-      updates.id_card_url = idCardResult.url
-      updates.id_card_uploaded_at = new Date().toISOString()
+      // Prepare upload tasks for parallel execution
+      const uploadTasks: Promise<any>[] = []
+      const totalTasks = 1 + (profileFile ? 1 : 0) + documentFiles.length
+      let completedTasks = 0
 
-      // Upload profile image (optional)
-      if (profileFile) {
-        setUploadProgress('กำลังอัปโหลดรูปโปรไฟล์...')
-        const profileResult = await uploadSellerFile(profileFile, userProfile.id, 'profile')
-        updates.avatar_url = profileResult.url
-        updates.avatar_uploaded_at = new Date().toISOString()
+      const updateProgress = (increment = 1) => {
+        completedTasks += increment
+        const percent = Math.round((completedTasks / totalTasks) * 100)
+        setProgressPercent(percent)
       }
 
-      // Upload documents (optional)
+      // Upload ID card (required) - parallel task
+      setUploadProgress('กำลังอัปโหลดไฟล์...')
+      setProgressPercent(0)
+
+      uploadTasks.push(
+        uploadSellerFile(idCardFile, userProfile.id, 'id-card').then(result => {
+          updates.id_card_url = result.url
+          updates.id_card_uploaded_at = new Date().toISOString()
+          updateProgress()
+          return { type: 'id-card', result }
+        })
+      )
+
+      // Upload profile image (optional) - parallel task
+      if (profileFile) {
+        uploadTasks.push(
+          uploadSellerFile(profileFile, userProfile.id, 'profile').then(result => {
+            updates.avatar_url = result.url
+            updates.avatar_uploaded_at = new Date().toISOString()
+            updateProgress()
+            return { type: 'profile', result }
+          })
+        )
+      }
+
+      // Upload documents (optional) - parallel tasks
       const documentUrls: string[] = []
       if (documentFiles.length > 0) {
-        setUploadProgress('กำลังอัปโหลดเอกสาร...')
-        for (let i = 0; i < documentFiles.length; i++) {
-          const docResult = await uploadSellerFile(
-            documentFiles[i], 
-            userProfile.id, 
-            'documents',
-            `document-${i + 1}-${Date.now()}.pdf`
+        documentFiles.forEach((file, index) => {
+          uploadTasks.push(
+            uploadSellerFile(
+              file,
+              userProfile.id,
+              'documents',
+              `document-${index + 1}-${Date.now()}.pdf`
+            ).then(result => {
+              documentUrls.push(result.url)
+              updateProgress()
+              return { type: 'document', result, index }
+            })
           )
-          documentUrls.push(docResult.url)
-        }
+        })
+      }
+
+      // Execute all uploads in parallel
+      await Promise.all(uploadTasks)
+
+      if (documentUrls.length > 0) {
         updates.documents_urls = documentUrls
         updates.document_uploaded_at = new Date().toISOString()
       }
@@ -280,23 +358,46 @@ export default function SellerVerificationPage() {
         })
 
       if (bankError) {
-        throw new Error('ไม่สามารถบันทึกข้อมูลธนาคารได้: ' + bankError.message)
+        toast.error('ไม่สามารถบันทึกข้อมูลธนาคารได้: ' + bankError.message)
+        return
+      }
+
+      // Update status to pending for approval
+      setUploadProgress('กำลังอัปเดตสถานะ...')
+      const { error: statusError } = await supabase
+        .from('user_profiles')
+        .update({
+          status: 'pending',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userProfile.id)
+
+      if (statusError) {
+        console.error('Error updating status:', statusError)
       }
 
       // Notify other components about profile update
       const profileUpdateEvent = new CustomEvent('profileUpdated', {
-        detail: { userId: userProfile.id, updates }
+        detail: { userId: userProfile.id, updates: { ...updates, status: 'pending' } }
       })
       window.dispatchEvent(profileUpdateEvent)
 
-      // Success - redirect back to profile
-      router.push('/dashboard/profile')
-      router.refresh()
+      // Success - show toast and redirect
+      toast.success('ส่งข้อมูลเรียบร้อย! รอการอนุมัติจากทีมงาน')
+
+      // Add slight delay before redirect for better UX
+      setTimeout(() => {
+        router.push('/dashboard/profile')
+        router.refresh()
+      }, 1500)
+
     } catch (err: any) {
-      setError(err.message || 'เกิดข้อผิดพลาดที่ไม่คาดคิด')
+      console.error('Verification submission error:', err)
+      toast.error(err.message || 'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง')
     } finally {
       setLoading(false)
       setUploadProgress('')
+      setProgressPercent(0)
     }
   }
 
@@ -312,9 +413,9 @@ export default function SellerVerificationPage() {
   }
 
   return (
-    <div className="w-full bg-gray-50 pb-20 md:pb-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 md:static sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200">
         <div className="flex items-center justify-between p-4">
           <Button
             variant="ghost"
@@ -361,17 +462,34 @@ export default function SellerVerificationPage() {
         )}
 
         {uploadProgress && (
-          <Card className="border-secondary-blue bg-blue-50 shadow-sm">
+          <Card className="border-secondary-blue bg-blue-50 shadow-sm mb-4">
             <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <FiLoader className="animate-spin h-5 w-5 text-primary-blue flex-shrink-0" />
-                <div className="text-primary-blue text-sm font-medium">{uploadProgress}</div>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <FiLoader className="animate-spin h-5 w-5 text-primary-blue flex-shrink-0" />
+                  <div className="text-primary-blue text-sm font-medium">{uploadProgress}</div>
+                  <div className="text-primary-blue text-sm font-bold ml-auto">{progressPercent}%</div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-blue-200 rounded-full h-2">
+                  <div
+                    className="bg-primary-blue h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+
+                {progressPercent > 0 && (
+                  <div className="text-xs text-primary-blue/75">
+                    กำลังดำเนินการ... กรุณารอสักครู่
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <form id="verification-form" onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Basic Info */}
           <Card className="border border-gray-200 shadow-sm">
             <CardHeader className="pb-3 sm:pb-4">
@@ -821,9 +939,10 @@ export default function SellerVerificationPage() {
         </form>
 
         {/* Submit Button */}
-        <div className="bg-gray-50 pt-4 pb-4 mt-6 -mx-4 px-4 border-t border-gray-200">
+        <div className="bg-gray-50 pt-4 pb-20 md:pb-6 mt-6 -mx-4 px-4 border-t border-gray-200">
           <Button
-            onClick={handleSubmit}
+            type="submit"
+            form="verification-form"
             disabled={loading}
             size="lg"
             className="w-full h-12 sm:h-14 text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg transition-all duration-200 relative overflow-hidden"
