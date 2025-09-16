@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { IoChevronBackSharp } from "react-icons/io5";
 
 import {
   FiAlertTriangle,
@@ -422,7 +423,7 @@ export default function SellerVerificationPage() {
             onClick={() => router.push('/dashboard/profile')}
             className="hover:bg-gray-100 transition-colors"
           >
-            <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
+            <IoChevronBackSharp className="w-6 h-6 text-gray-600" />
           </Button>
           <div className="flex-1 text-center">
             <h1 className="text-xl font-bold text-gray-900">การยืนยันตัวตน</h1>

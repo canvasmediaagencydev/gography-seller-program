@@ -3,7 +3,9 @@
 import { createClient } from '@/lib/supabase/client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeftIcon, UserCircleIcon, PhoneIcon, IdentificationIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
+import { UserCircleIcon, PhoneIcon, IdentificationIcon } from '@heroicons/react/24/outline'
+import { IoChevronBackSharp } from "react-icons/io5"
 import { BsShieldCheck, BsExclamationTriangle, BsClock, BsCheckCircle } from "react-icons/bs"
 import Image from 'next/image'
 
@@ -129,142 +131,174 @@ export default function ProfilePage() {
   return (
     <div className="w-full bg-gray-50 pb-20 md:pb-6">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="flex items-center justify-between p-4">
-          <button
+      <div className="bg-white border-b border-gray-200 shadow-sm md:bg-gray-50 md:shadow-none md:border-0">
+        <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => router.push('/dashboard/trips')}
-            className="p-2 -ml-2 hover:bg-gray-100 rounded-full"
+            className="hover:bg-gray-100 transition-colors"
           >
-            <ArrowLeftIcon className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">โปรไฟล์</h1>
-          <div className="w-8" /> {/* Spacer */}
+            <IoChevronBackSharp className="w-8 h-8 text-gray-600" />
+          </Button>
+          <div className="flex-1 text-center">
+            <h1 className="text-xl font-bold text-gray-900">โปรไฟล์</h1>
+            <p className="text-sm text-gray-500 font-medium">ข้อมูลส่วนตัวและการยืนยันตัวตน</p>
+          </div>
+          <div className="w-10" />
         </div>
       </div>
 
       {/* Profile Content */}
-      <div className="p-4">
+      <div className="p-4 max-w-4xl mx-auto">
         {/* Profile Header */}
-        <div className="bg-white rounded-xl p-6 mb-4 border border-gray-200">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
-              {userProfile?.avatar_url ? (
-                <Image
-                  src={userProfile.avatar_url}
-                  alt={userProfile.full_name || 'User'}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.nextElementSibling?.classList.remove('hidden');
-                  }}
-                />
-              ) : null}
-              <UserCircleIcon className={`w-full h-full text-gray-400 ${userProfile?.avatar_url ? 'hidden' : ''}`} />
+        <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200 shadow-sm">
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 border-3 border-white shadow-lg">
+                {userProfile?.avatar_url ? (
+                  <Image
+                    src={userProfile.avatar_url}
+                    alt={userProfile.full_name || 'User'}
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <UserCircleIcon className={`w-full h-full text-gray-400 ${userProfile?.avatar_url ? 'hidden' : ''}`} />
+              </div>
             </div>
 
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">
                 {userProfile?.full_name || 'ไม่ระบุชื่อ'}
               </h2>
-              <p className="text-sm text-gray-500 mb-1">
-                ID: {userProfile?.id ? userProfile.id.slice(-5) : 'ไม่มี'}
-              </p>
-              <p className="text-xs text-gray-400">
-                สมัครเมื่อ: {userProfile?.created_at ? formatDate(userProfile.created_at) : 'ไม่ทราบ'}
-              </p>
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-md font-mono">
+                  ID: {userProfile?.id ? userProfile.id.slice(-5) : 'ไม่มี'}
+                </span>
+                <span className="text-sm text-gray-600">
+                  สมัครเมื่อ: {userProfile?.created_at ? formatDate(userProfile.created_at) : 'ไม่ทราบ'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Verification Status */}
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 ${verificationInfo.color === 'red'
-              ? 'bg-red-50 text-red-700 border-red-200'
-              : verificationInfo.color === 'yellow'
-              ? 'bg-yellow-50 text-primary-yellow border-secondary-yellow'
-              : 'bg-green-50 text-green-700 border-green-200'
-            }`}>
+          {/* Verification Status Card */}
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 shadow-sm ${verificationInfo.color === 'red'
+            ? 'bg-red-50 text-red-700 border-red-200'
+            : verificationInfo.color === 'yellow'
+            ? 'bg-yellow-50 text-primary-yellow border-secondary-yellow'
+            : 'bg-green-50 text-green-700 border-green-200'
+          }`}>
             <div className="relative">
               <verificationInfo.icon className="text-lg" />
               {verificationInfo.needsAction && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
+                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping"></div>
               )}
             </div>
-
             <div className="flex-1">
               <div className="font-semibold">{verificationInfo.text}</div>
               {verificationInfo.subtext && (
-              <div className="text-xs opacity-75">{verificationInfo.subtext}</div>
+                <div className="text-xs opacity-75">{verificationInfo.subtext}</div>
               )}
             </div>
-            </div>
+          </div>
         </div>
 
         {/* Professional Action Button */}
         {verificationInfo.needsAction && (
           <div className="mb-6">
-            <button
+            <Button
               onClick={() => router.push('/dashboard/profile/seller-verification')}
-              className="w-full bg-gradient-to-r from-primary-blue to-secondary-blue text-white py-4 px-6 rounded-xl font-bold shadow-xl hover:from-primary-blue/90 hover:to-secondary-blue/90 hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 relative overflow-hidden group"
+              style={{background: "linear-gradient(to right, #176daf, #5c9ad2)"}}
+              className="w-full text-white py-4 px-6 rounded-xl font-bold shadow-xl hover:opacity-90 hover:shadow-2xl transition-all duration-300 flex items-center justify-center space-x-3 relative overflow-hidden group h-14"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <BsExclamationTriangle className="w-5 h-5 relative z-10" />
               <span className="relative z-10">ยืนยันตัวตนเพื่อเริ่มขาย</span>
-            </button>
+            </Button>
           </div>
         )}
 
         {/* Profile Information */}
-        <div className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">ข้อมูลส่วนตัว</h3>
+        <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-5">ข้อมูลส่วนตัว</h3>
 
           <div className="space-y-4">
             {/* Full Name */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <UserCircleIcon className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <UserCircleIcon className="w-5 h-5 text-primary-blue" />
+              </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-700">ชื่อ-นามสกุล</p>
-                <p className="text-gray-900">{userProfile?.full_name || 'ยังไม่กรอก'}</p>
+                <p className="text-sm font-semibold text-gray-700 mb-1">ชื่อ-นามสกุล</p>
+                <p className="text-gray-900 font-medium">{userProfile?.full_name || 'ยังไม่กรอก'}</p>
               </div>
             </div>
 
             {/* Phone */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <PhoneIcon className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <PhoneIcon className="w-5 h-5 text-green-600" />
+              </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-700">เบอร์โทรศัพท์</p>
-                <p className="text-gray-900">{userProfile?.phone || 'ยังไม่กรอก'}</p>
+                <p className="text-sm font-semibold text-gray-700 mb-1">เบอร์โทรศัพท์</p>
+                <p className="text-gray-900 font-medium">{userProfile?.phone || 'ยังไม่กรอก'}</p>
               </div>
             </div>
 
             {/* ID Card Status */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <IdentificationIcon className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                userProfile?.id_card_url ? 'bg-green-100' : 'bg-gray-100'
+              }`}>
+                <IdentificationIcon className={`w-5 h-5 ${
+                  userProfile?.id_card_url ? 'text-green-600' : 'text-gray-400'
+                }`} />
+              </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-700">บัตรประชาชน</p>
-                <p className="text-gray-900">
-                  {userProfile?.id_card_url ? 'อัปโหลดแล้ว' : 'ยังไม่อัปโหลด'}
-                </p>
+                <p className="text-sm font-semibold text-gray-700 mb-1">บัตรประชาชน</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-gray-900 font-medium">
+                    {userProfile?.id_card_url ? 'อัปโหลดแล้ว' : 'ยังไม่อัปโหลด'}
+                  </p>
+                  {userProfile?.id_card_url && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      ✓ เสร็จสิ้น
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Account Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 block md:hidden">
-          <div className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">การตั้งค่า</h3>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm block md:hidden">
+          <div className="p-8">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">การตั้งค่า</h3>
+              <p className="text-gray-600">จัดการบัญชีและการเข้าสู่ระบบ</p>
+            </div>
 
-            <button
+            <Button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-semibold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:shadow-sm transition-all duration-200 border border-red-200"
+              variant="outline"
+              className="w-full flex items-center justify-center gap-4 px-6 py-4 text-base font-bold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 hover:shadow-lg transition-all duration-200 border-2 border-red-200 hover:border-red-300 h-16"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+              <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
               ออกจากระบบ
-            </button>
+            </Button>
           </div>
         </div>
       </div>
