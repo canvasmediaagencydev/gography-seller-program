@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 /* CSS variables for shadcn/ui components */
 :root {
@@ -44,60 +45,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Font Utilities - Updated with Google Fonts best practices */
+/* Custom Font Utilities */
 .font-noto-thai {
-  font-family: "Noto Sans Thai", sans-serif;
+  font-family: "Noto Sans Thai", sans-serif !important;
   font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.noto-sans-thai-thin {
-  font-family: "Noto Sans Thai", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 100;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.noto-sans-thai-light {
-  font-family: "Noto Sans Thai", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 300;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.noto-sans-thai-regular {
-  font-family: "Noto Sans Thai", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.noto-sans-thai-medium {
-  font-family: "Noto Sans Thai", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 500;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.noto-sans-thai-semibold {
-  font-family: "Noto Sans Thai", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 600;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
-
-.noto-sans-thai-bold {
-  font-family: "Noto Sans Thai", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 700;
-  font-style: normal;
   font-variation-settings: "wdth" 100;
 }
 
@@ -109,11 +60,51 @@ body {
 .bg-primary-yellow { background-color: #fe9813 !important; }
 .bg-secondary-yellow { background-color: #febf12 !important; }
 
+/* Light background variants */
+.bg-primary-blue-light { background-color: #e3f2fd; }
+.bg-secondary-blue-light { background-color: #f0f8ff; }
+.bg-primary-yellow-light { background-color: #fff8e1; }
+.bg-secondary-yellow-light { background-color: #fffde7; }
+
 /* Text Colors */
 .text-primary-blue { color: #176daf !important; }
 .text-secondary-blue { color: #5c9ad2 !important; }
 .text-primary-yellow { color: #fe9813; }
 .text-secondary-yellow { color: #febf12; }
+
+/* Border Colors */
+.border-primary-blue { border-color: #176daf; }
+.border-secondary-blue { border-color: #5c9ad2; }
+.border-primary-yellow { border-color: #fe9813; }
+.border-secondary-yellow { border-color: #febf12; }
+
+/* Hover States */
+.hover\:bg-primary-blue:hover { background-color: #145a92; }
+.hover\:bg-secondary-blue:hover { background-color: #4a8bc2; }
+.hover\:bg-primary-yellow:hover { background-color: #e8870f; }
+.hover\:bg-secondary-yellow:hover { background-color: #e5ab0e; }
+
+.hover\:text-primary-blue:hover { color: #176daf; }
+.hover\:text-secondary-blue:hover { color: #5c9ad2; }
+.hover\:text-primary-yellow:hover { color: #fe9813; }
+.hover\:text-secondary-yellow:hover { color: #febf12; }
+
+/* Focus States */
+.focus\:ring-primary-blue:focus { --tw-ring-color: #176daf; }
+.focus\:ring-secondary-blue:focus { --tw-ring-color: #5c9ad2; }
+.focus\:ring-primary-yellow:focus { --tw-ring-color: #fe9813; }
+.focus\:ring-secondary-yellow:focus { --tw-ring-color: #febf12; }
+
+.focus\:border-primary-blue:focus { border-color: #176daf; }
+.focus\:border-secondary-blue:focus { border-color: #5c9ad2; }
+.focus\:border-primary-yellow:focus { border-color: #fe9813; }
+.focus\:border-secondary-yellow:focus { border-color: #febf12; }
+
+/* Gradient Utilities */
+.from-primary-blue { --tw-gradient-from: #176daf; }
+.to-secondary-blue { --tw-gradient-to: #5c9ad2; }
+.from-primary-yellow { --tw-gradient-from: #fe9813; }
+.to-secondary-yellow { --tw-gradient-to: #febf12; }
 
 /* Custom utilities */
 .line-clamp-2 {
@@ -200,6 +191,27 @@ body {
   color: rgb(156 163 175);
 }
 
+/* Enhanced Auth Layout Styles */
+.auth-gradient-bg {
+  background: linear-gradient(135deg, #176daf 0%, #5c9ad2 50%, #176daf 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glassmorphism Effect */
+.glass-effect {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 /* Enhanced Divider */
 .auth-divider {
   position: relative;
@@ -233,6 +245,17 @@ body {
   animation: shake 0.3s ease-in-out;
 }
 
+/* Success Animation */
+@keyframes checkmark {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.checkmark {
+  stroke-dasharray: 100;
+  animation: checkmark 0.5s ease-in-out;
+}
+
 /* Mobile safe area for bottom navigation */
 .safe-area-inset-bottom {
   padding-bottom: env(safe-area-inset-bottom);
@@ -244,20 +267,24 @@ body {
     padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   }
 
+  /* Specific padding for pages with pagination or long content */
   .mobile-page-content {
     padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
     min-height: calc(100vh - 8rem);
   }
 
+  /* Smooth scrolling for mobile */
   html {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Prevent horizontal scroll on mobile */
   body {
     overflow-x: hidden;
   }
 
+  /* Mobile Auth Adjustments */
   .modern-input {
     padding: 0.75rem 1rem;
     font-size: 1rem;

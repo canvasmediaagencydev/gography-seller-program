@@ -29,7 +29,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://apis.google.com" />
         <link rel="dns-prefetch" href="https://oauth2.googleapis.com" />
       </head>
-      <body>
+      <body className="font-noto-thai">
         {children}
         <Toaster />
       </body>
