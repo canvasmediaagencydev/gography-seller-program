@@ -38,7 +38,7 @@ const SidebarButton = memo(function SidebarButton({ icon, label, href, isActive,
       disabled={isActive || isPending}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-full text-lg font-medium transition-all duration-75 cursor-pointer ${
         isActive
-          ? 'bg-gray-800 text-white shadow-sm'
+          ? 'bg-primary-blue text-white shadow-sm'
           : isPending
           ? 'bg-blue-50 text-primary-blue scale-95 animate-pulse'
           : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 active:scale-95'
