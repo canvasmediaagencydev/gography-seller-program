@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Performance optimizations
+  // Disable automatic scroll restoration
   experimental: {
     optimizePackageImports: ['react-icons'],
+    scrollRestoration: false,
   },
   
   // Image optimization

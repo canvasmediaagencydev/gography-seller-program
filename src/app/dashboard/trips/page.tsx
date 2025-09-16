@@ -91,8 +91,6 @@ export default function TripsPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
     fetchTrips(page, activeTab, selectedCountries, true) // Grid update only
-    // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleCountriesChange = (countries: string[]) => {

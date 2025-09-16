@@ -278,9 +278,8 @@ body {
     min-height: calc(-webkit-fill-available - 6rem);
   }
 
-  /* Smooth scrolling */
+  /* Touch scrolling */
   html {
-    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
 
