@@ -217,7 +217,7 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 mobile-nav">
-      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-4'} h-16 safe-area-inset-bottom`}>
+      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-4'} h-16`}>
         {navItems.map((item, index) => (
           <NavButton
             key={`nav-${index}-${item.href}`}

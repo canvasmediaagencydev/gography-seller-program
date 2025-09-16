@@ -61,7 +61,7 @@ export default function DashboardLayout({ children, initialProfile }: DashboardL
       <Sidebar initialProfile={currentProfile} />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:py-6  md:px-6 lg:px-8 overflow-y-hidden md:overflow-y-auto">
+      <main className="flex-1 w-full md:py-6  md:px-6 lg:px-8">
         {children}
       </main>
 
