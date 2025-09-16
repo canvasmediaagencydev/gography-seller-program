@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import DashboardLayout from '@/components/DashboardLayout'
+import ResponsiveDashboardLayout from '@/components/ResponsiveDashboardLayout'
 
 export default async function DashboardLayoutPage({
   children,
@@ -26,8 +26,8 @@ export default async function DashboardLayoutPage({
   }
 
   return (
-    <DashboardLayout initialProfile={profile}>
+    <ResponsiveDashboardLayout initialProfile={profile}>
       {children}
-    </DashboardLayout>
+    </ResponsiveDashboardLayout>
   )
 }

@@ -31,14 +31,26 @@ interface NavItem {
 // Get verification status info (memoized function outside component)
 const getVerificationStatus = (userProfile: UserProfile | null) => {
   if (!userProfile) return { status: 'unknown', needsAction: false }
-  
+
   const hasBasicInfo = userProfile.full_name && userProfile.phone
-  
-  if (!hasBasicInfo || userProfile.status !== 'approved') {
+
+  // If no basic info, needs verification
+  if (!hasBasicInfo) {
     return { status: 'needs_verification', needsAction: true }
   }
-  
-  return { status: 'approved', needsAction: false }
+
+  // If approved, no action needed
+  if (userProfile.status === 'approved') {
+    return { status: 'approved', needsAction: false }
+  }
+
+  // If pending, no immediate action needed
+  if (userProfile.status === 'pending') {
+    return { status: 'pending', needsAction: false }
+  }
+
+  // If rejected or any other status, needs action
+  return { status: 'needs_verification', needsAction: true }
 }
 
 // Memoized navigation button component
@@ -204,13 +216,13 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
   }, [pathname, userProfile?.status, userProfile?.role, verificationInfo.needsAction])
 
   return (
-    <div className={`md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-inset-bottom`}>
-      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-4'} h-16`}>
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 mobile-nav">
+      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-4'} h-16 safe-area-inset-bottom`}>
         {navItems.map((item, index) => (
-          <NavButton 
+          <NavButton
             key={`nav-${index}-${item.href}`}
-            item={item} 
-            index={index} 
+            item={item}
+            index={index}
             onNavigate={handleNavigate}
           />
         ))}
