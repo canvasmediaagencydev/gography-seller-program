@@ -23,7 +23,7 @@ export default function SeatIndicator({
     const percentage = total > 0 ? (seats / total) * 100 : (seats > 0 ? 50 : 0)
     
     if (percentage > 50) return 'bg-green-500'
-    if (percentage > 20) return 'bg-yellow-500'
+    if (percentage > 20) return 'bg-primary-yellow'
     if (percentage > 0) return 'bg-red-500'
     return 'bg-gray-500'
   }

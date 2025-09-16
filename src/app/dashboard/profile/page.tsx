@@ -121,7 +121,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     )
   }
@@ -183,7 +183,7 @@ export default function ProfilePage() {
             verificationInfo.color === 'red'
               ? 'bg-red-50 text-red-700 border-red-200'
               : verificationInfo.color === 'yellow'
-              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+              ? 'bg-yellow-50 text-primary-yellow border-secondary-yellow'
               : 'bg-green-50 text-green-700 border-green-200'
           }`}>
             <div className="relative">

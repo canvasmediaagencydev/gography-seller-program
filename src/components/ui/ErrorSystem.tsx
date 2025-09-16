@@ -29,7 +29,7 @@ export default function ErrorSystem({
     return (
       <button
         onClick={action.onClick}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+        className="mt-4 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-primary-blue transition-colors duration-200"
       >
         {action.label}
       </button>

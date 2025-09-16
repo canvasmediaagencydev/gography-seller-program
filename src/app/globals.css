@@ -8,23 +8,23 @@
   --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
+  --primary: 207 65% 39%;
   --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
+  --secondary: 208 43% 59%;
+  --secondary-foreground: 0 0% 98%;
   --muted: 240 4.8% 95.9%;
   --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
+  --accent: 37 97% 54%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
-  --ring: 240 10% 3.9%;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
+  --ring: 207 65% 39%;
+  --chart-1: 37 97% 54%;
+  --chart-2: 207 65% 39%;
+  --chart-3: 208 43% 59%;
+  --chart-4: 38 95% 56%;
   --chart-5: 27 87% 67%;
   --radius: 0.5rem;
 }
@@ -55,6 +55,60 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select, label 
   font-optical-sizing: auto;
   font-variation-settings: "wdth" 100;
 }
+
+/* Custom Color Utilities - Complete Color System */
+
+/* Background Colors */
+.bg-primary-blue { background-color: #176daf; }
+.bg-secondary-blue { background-color: #5c9ad2; }
+.bg-primary-yellow { background-color: #fe9813; }
+.bg-secondary-yellow { background-color: #febf12; }
+
+/* Light background variants */
+.bg-primary-blue-light { background-color: #e3f2fd; }
+.bg-secondary-blue-light { background-color: #f0f8ff; }
+.bg-primary-yellow-light { background-color: #fff8e1; }
+.bg-secondary-yellow-light { background-color: #fffde7; }
+
+/* Text Colors */
+.text-primary-blue { color: #176daf; }
+.text-secondary-blue { color: #5c9ad2; }
+.text-primary-yellow { color: #fe9813; }
+.text-secondary-yellow { color: #febf12; }
+
+/* Border Colors */
+.border-primary-blue { border-color: #176daf; }
+.border-secondary-blue { border-color: #5c9ad2; }
+.border-primary-yellow { border-color: #fe9813; }
+.border-secondary-yellow { border-color: #febf12; }
+
+/* Hover States */
+.hover\:bg-primary-blue:hover { background-color: #145a92; }
+.hover\:bg-secondary-blue:hover { background-color: #4a8bc2; }
+.hover\:bg-primary-yellow:hover { background-color: #e8870f; }
+.hover\:bg-secondary-yellow:hover { background-color: #e5ab0e; }
+
+.hover\:text-primary-blue:hover { color: #176daf; }
+.hover\:text-secondary-blue:hover { color: #5c9ad2; }
+.hover\:text-primary-yellow:hover { color: #fe9813; }
+.hover\:text-secondary-yellow:hover { color: #febf12; }
+
+/* Focus States */
+.focus\:ring-primary-blue:focus { --tw-ring-color: #176daf; }
+.focus\:ring-secondary-blue:focus { --tw-ring-color: #5c9ad2; }
+.focus\:ring-primary-yellow:focus { --tw-ring-color: #fe9813; }
+.focus\:ring-secondary-yellow:focus { --tw-ring-color: #febf12; }
+
+.focus\:border-primary-blue:focus { border-color: #176daf; }
+.focus\:border-secondary-blue:focus { border-color: #5c9ad2; }
+.focus\:border-primary-yellow:focus { border-color: #fe9813; }
+.focus\:border-secondary-yellow:focus { border-color: #febf12; }
+
+/* Gradient Utilities */
+.from-primary-blue { --tw-gradient-from: #176daf; }
+.to-secondary-blue { --tw-gradient-to: #5c9ad2; }
+.from-primary-yellow { --tw-gradient-from: #fe9813; }
+.to-secondary-yellow { --tw-gradient-to: #febf12; }
 
 /* Custom utilities */
 .line-clamp-2 {

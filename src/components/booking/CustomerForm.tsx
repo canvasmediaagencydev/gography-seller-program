@@ -44,7 +44,7 @@ export default function CustomerForm({
                         required={isMainCustomer}
                         value={customer.full_name}
                         onChange={(e) => onUpdate(index, 'full_name', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />
                 </div>
                 <div>
@@ -56,7 +56,7 @@ export default function CustomerForm({
                         required={isMainCustomer}
                         value={customer.email}
                         onChange={(e) => onUpdate(index, 'email', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />
                 </div>
                 <div>
@@ -68,7 +68,7 @@ export default function CustomerForm({
                         required={isMainCustomer}
                         value={customer.phone}
                         onChange={(e) => onUpdate(index, 'phone', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />
                 </div>
                 <div>
@@ -79,7 +79,7 @@ export default function CustomerForm({
                         type="date"
                         value={customer.date_of_birth}
                         onChange={(e) => onUpdate(index, 'date_of_birth', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />
                 </div>
                 <div>
@@ -90,7 +90,7 @@ export default function CustomerForm({
                         type="text"
                         value={customer.id_card}
                         onChange={(e) => onUpdate(index, 'id_card', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />
                 </div>
                 <div>
@@ -101,7 +101,7 @@ export default function CustomerForm({
                         type="text"
                         value={customer.passport_number}
                         onChange={(e) => onUpdate(index, 'passport_number', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue"
                     />
                 </div>
             </div>

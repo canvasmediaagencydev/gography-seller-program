@@ -75,10 +75,10 @@ const NavButton = memo(function NavButton({
         onClick={handleClick}
         className={`flex flex-col items-center justify-center transition-colors ${
           item.active
-            ? 'text-orange-600'
+            ? 'text-primary-blue'
             : item.needsAction 
             ? 'text-red-600 hover:text-red-700' 
-            : 'text-gray-600 hover:text-orange-600'
+            : 'text-gray-600 hover:text-primary-blue'
         }`}
       >
         {item.icon}
@@ -95,8 +95,8 @@ const NavButton = memo(function NavButton({
       onClick={handleClick}
       className={`flex flex-col items-center justify-center transition-colors ${
         item.active
-          ? 'text-orange-600'
-          : 'text-gray-600 hover:text-orange-600'
+          ? 'text-primary-blue'
+          : 'text-gray-600 hover:text-primary-blue'
       }`}
     >
       {item.icon}

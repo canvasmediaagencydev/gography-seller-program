@@ -263,15 +263,25 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-lg">P</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl font-bold text-gray-900 truncate">Paydee</h1>
-            <p className="text-sm text-gray-600 truncate">
-              {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
-            </p>
-          </div>
+          {/* logo img svg */}
+          <a
+            href={userProfile.role === 'admin' ? '/dashboard/admin' : '/dashboard'}
+            className="flex items-center gap-3 group"
+          >
+            <Image
+              src="/images/paydeeLOGO.svg"
+              alt="Paydee"
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 object-contain"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-xl text-gray-600 truncate">
+                {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
+              </p>
+            </div>
+          </a>
         </div>
       </div>
 
@@ -311,16 +321,16 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
                   <verificationInfo.icon 
                     className={`w-3 h-3 ${
                       verificationInfo.color === 'green' ? 'text-green-500' :
-                      verificationInfo.color === 'yellow' ? 'text-yellow-500' :
+                      verificationInfo.color === 'yellow' ? 'text-primary-yellow' :
                       verificationInfo.color === 'red' ? 'text-red-500' :
-                      'text-blue-500'
+                      'text-primary-blue'
                     }`} 
                   />
                   <p className={`text-xs ${
                     verificationInfo.color === 'green' ? 'text-green-600' :
-                    verificationInfo.color === 'yellow' ? 'text-yellow-600' :
+                    verificationInfo.color === 'yellow' ? 'text-primary-yellow' :
                     verificationInfo.color === 'red' ? 'text-red-600' :
-                    'text-blue-600'
+                    'text-primary-blue'
                   }`}>
                     {verificationInfo.subtext || verificationInfo.text}
                   </p>

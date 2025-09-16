@@ -5,8 +5,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 const statusBadgeVariants = cva("", {
   variants: {
     variant: {
-      pending: "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50/80",
-      inprogress: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50/80", 
+      pending: "bg-yellow-50 text-primary-yellow border-secondary-yellow hover:bg-yellow-50/80",
+      inprogress: "bg-blue-50 text-primary-blue border-secondary-blue hover:bg-blue-50/80",
       approved: "bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80",
       rejected: "bg-red-50 text-red-700 border-red-200 hover:bg-red-50/80",
       cancelled: "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-50/80",

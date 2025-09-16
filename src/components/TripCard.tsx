@@ -218,7 +218,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                                                 setIsDropdownOpen(false)
                                             }}
                                             className={`w-full p-3 text-left text-sm hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
-                                                selectedSchedule?.id === schedule.id ? 'bg-orange-50 text-orange-600' : ''
+                                                selectedSchedule?.id === schedule.id ? 'bg-primary-yellow-light text-primary-yellow' : ''
                                             }`}
                                         >
                                             <div className="flex justify-between items-center">
@@ -247,7 +247,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 {/* Commission */}
                 <div className="flex items-center justify-between mb-4 mt-2">
                     <div>
-                        <span className="text-orange-600 text-2xl font-bold">
+                        <span className="text-primary-yellow text-2xl font-bold">
                             คอมมิชชั่น {formatPrice(getCommissionAmount())}
                         </span>
                     </div>
@@ -270,7 +270,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                                 }
                             }}
                             disabled={sellerStatus !== 'approved' || !trip.file_link}
-                            className="w-full bg-gray-800 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-primary-blue text-white px-4 py-3 rounded-lg hover:bg-primary-blue transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <BsInfoCircle className="text-lg" />
                             <span>ดูข้อมูลทริป</span>

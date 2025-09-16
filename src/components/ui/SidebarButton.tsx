@@ -40,7 +40,7 @@ const SidebarButton = memo(function SidebarButton({ icon, label, href, isActive,
         isActive
           ? 'bg-gray-800 text-white shadow-sm'
           : isPending
-          ? 'bg-blue-50 text-blue-700 scale-95 animate-pulse'
+          ? 'bg-blue-50 text-primary-blue scale-95 animate-pulse'
           : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 active:scale-95'
       } disabled:cursor-default`}
     >
@@ -48,7 +48,7 @@ const SidebarButton = memo(function SidebarButton({ icon, label, href, isActive,
       <span className="text-left">{label}</span>
       {isPending && (
         <div className="ml-auto">
-          <div className="w-4 h-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+          <div className="w-4 h-4 border-2 border-secondary-blue border-t-primary-blue rounded-full animate-spin"></div>
         </div>
       )}
     </button>

@@ -27,7 +27,7 @@ export default function StatusSelector({
         value={currentStatus || 'pending'}
         onChange={(e) => onStatusChange(bookingId, e.target.value)}
         disabled={isLoading}
-        className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors disabled:opacity-50 cursor-pointer"
+        className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary-blue focus:border-primary-blue transition-colors disabled:opacity-50 cursor-pointer"
       >
         {STATUS_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
@@ -37,7 +37,7 @@ export default function StatusSelector({
       </select>
       
       {isLoading && (
-        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-4 h-4 border-2 border-primary-blue border-t-transparent rounded-full animate-spin"></div>
       )}
     </div>
   )

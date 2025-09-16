@@ -15,7 +15,7 @@ export function Tab({ id, label, mobileLabel, isActive, onClick }: TabProps) {
             onClick={() => onClick(id)}
             className={`whitespace-nowrap py-2 px-2 md:px-4 font-medium text-sm md:text-md transition-colors rounded-full flex-1 md:flex-initial ${
                 isActive
-                    ? 'text-white bg-orange-600'
+                    ? 'text-white bg-primary-blue'
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             }`}
         >
