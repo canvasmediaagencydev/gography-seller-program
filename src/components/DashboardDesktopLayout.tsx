@@ -59,7 +59,7 @@ export default function DashboardDesktopLayout({ children, initialProfile }: Das
       <Sidebar initialProfile={currentProfile} />
 
       {/* Main Content - Desktop optimized */}
-      <main className="flex-1 w-full py-6 px-6 lg:px-8 overflow-y-auto ml-80">
+      <main className="flex-1 w-full py-6 px-6 lg:px-8 ml-80">
         {children}
       </main>
 
