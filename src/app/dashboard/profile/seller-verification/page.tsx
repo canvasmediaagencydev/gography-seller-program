@@ -194,7 +194,6 @@ export default function SellerVerificationPage() {
       toast.dismiss('compress')
 
       const reduction = ((file.size - processedFile.size) / file.size * 100).toFixed(1)
-      toast.success(`ลดขนาดไฟล์ได้ ${reduction}% (${(processedFile.size / 1024 / 1024).toFixed(1)}MB)`)
     }
 
     setFile(processedFile)
@@ -261,6 +260,19 @@ export default function SellerVerificationPage() {
 
       if (!bankName || !accountNumber || !accountName) {
         toast.error('กรุณากรอกข้อมูลธนาคารให้ครบถ้วน')
+        return
+      }
+
+      // Validate account number (at least 9 digits)
+      const accountNumberDigits = accountNumber.replace(/\D/g, '')
+      if (accountNumberDigits.length < 9) {
+        toast.error('กรอกเลขที่บัญชีให้ถูกต้อง')
+        return
+      }
+
+      // Validate account name (at least 4 characters)
+      if (accountName.trim().length < 4) {
+        toast.error('กรอกชื่อบัญชีให้ถูกต้อง')
         return
       }
 
@@ -519,7 +531,7 @@ export default function SellerVerificationPage() {
                 <div style={{background: "linear-gradient(to bottom right, #176daf, #5c9ad2)"}} className="w-10 h-10 rounded-full text-white flex items-center justify-center mr-4 font-bold text-sm">
                   2
                 </div>
-                บัตรประชาชน <span className="text-primary-blue font-semibold">*</span>
+                บัตรประชาชน <span className="text-primary-blue font-semibold ml-1">*</span>
               </CardTitle>
               <Card className="bg-blue-50 border-blue-200">
                 <CardContent className="p-4">
@@ -527,7 +539,7 @@ export default function SellerVerificationPage() {
                     <FiShield className="w-5 h-5 text-primary-blue mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-sm text-primary-blue font-medium mb-1">การตรวจสอบความปลอดภัย</p>
-                      <p className="text-xs text-secondary-blue">เพื่อสร้างความเชื่อมั่นและความปลอดภัยให้กับลูกค้า</p>
+                      <p className="text-sm text-secondary-blue">เพื่อสร้างความเชื่อมั่นและความปลอดภัยให้กับลูกค้า</p>
                     </div>
                   </div>
                 </CardContent>
@@ -544,12 +556,31 @@ export default function SellerVerificationPage() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <FileSuccessDisplay
-                      fileName={idCardFile.name}
-                      description="อัปโหลดเรียบร้อยแล้ว"
-                      onRemove={removeIdCardFile}
-                      loading={loading}
-                    />
+                    <Card className="bg-green-50 border-green-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                              <FiCheck className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-green-800">บัตรประชาชน</p>
+                              <p className="text-xs text-green-600">อัปโหลดเรียบร้อยแล้ว</p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={removeIdCardFile}
+                            disabled={loading}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-100"
+                          >
+                            <FiX className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 ) : (
                   <div className="space-y-6 text-center">
@@ -644,7 +675,6 @@ export default function SellerVerificationPage() {
                               <FiCheck className="h-5 w-5 text-green-600" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-green-800">{profileFile.name}</p>
                               <p className="text-xs text-green-600">รูปโปรไฟล์พร้อมใช้งาน</p>
                             </div>
                           </div>
@@ -906,6 +936,11 @@ export default function SellerVerificationPage() {
                   />
                 </div>
               </div>
+               <div>
+                  <p className='text-sm text-red-600'>
+                    *กรอกข้อมูลให้ถูกต้องตามบัญชีธนาคารของคุณ เพื่อป้องกันปัญหาในการรับเงินค่าคอมมิชชั่น
+                  </p>
+                </div>
             </CardContent>
           </Card>
         </form>
