@@ -29,7 +29,7 @@ export default function AuthLayout({ children, title, subtitle, error, errorId }
           <div className="bg-gradient-to-r px-6 py-8" style={{background: 'linear-gradient(to right, #176daf, #5c9ad2)'}}>
             <div className="text-center">
               <div className="flex justify-center mb-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4">
                   <Image
                     src="/images/paydeeLOGO.svg"
                     alt="PayDee"
