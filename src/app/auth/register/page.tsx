@@ -64,9 +64,10 @@ function RegisterForm() {
     >
 
       <form className="space-y-6" onSubmit={handleEmailRegister}>
-        <div className="space-y-5">
+        <div className="space-y-6">
+          {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
               อีเมล
             </Label>
             <Input
@@ -76,7 +77,7 @@ function RegisterForm() {
               type="email"
               required
               autoComplete="email"
-              className="h-12 px-4 text-base md:h-10 md:text-sm"
+              className={`modern-input ${error ? 'error shake' : ''}`}
               placeholder="กรอกอีเมลของคุณ"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -84,8 +85,10 @@ function RegisterForm() {
               aria-invalid={!!error}
             />
           </div>
+
+          {/* Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
               รหัสผ่าน
             </Label>
             <Input
@@ -95,16 +98,32 @@ function RegisterForm() {
               required
               minLength={6}
               autoComplete="new-password"
-              className="h-12 px-4 text-base md:h-10 md:text-sm"
+              className={`modern-input ${error && error.includes('รหัสผ่าน') ? 'error shake' : ''}`}
               placeholder="อย่างน้อย 6 ตัวอักษร"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               aria-describedby={error ? "register-error" : undefined}
               aria-invalid={!!error}
             />
+            {/* Password Strength Indicator */}
+            {password && (
+              <div className="space-y-1">
+                <div className="flex space-x-1">
+                  <div className={`h-1 w-full rounded ${password.length >= 6 ? 'bg-green-400' : 'bg-gray-200'}`} style={password.length >= 6 ? {backgroundColor: '#4ade80'} : {}} />
+                  <div className={`h-1 w-full rounded ${password.length >= 8 ? 'bg-green-400' : 'bg-gray-200'}`} style={password.length >= 8 ? {backgroundColor: '#4ade80'} : {}} />
+                  <div className={`h-1 w-full rounded ${/[A-Z]/.test(password) ? 'bg-green-400' : 'bg-gray-200'}`} style={/[A-Z]/.test(password) ? {backgroundColor: '#4ade80'} : {}} />
+                  <div className={`h-1 w-full rounded ${/[0-9]/.test(password) ? 'bg-green-400' : 'bg-gray-200'}`} style={/[0-9]/.test(password) ? {backgroundColor: '#4ade80'} : {}} />
+                </div>
+                <p className="text-xs text-gray-500">
+                  ความแข็งแกร่ง: อย่างน้อย 6 ตัวอักษร, 8+ ตัวอักษร, ตัวพิมพ์ใหญ่, ตัวเลข
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Confirm Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
               ยืนยันรหัสผ่าน
             </Label>
             <Input
@@ -114,21 +133,42 @@ function RegisterForm() {
               required
               minLength={6}
               autoComplete="new-password"
-              className="h-12 px-4 text-base md:h-10 md:text-sm"
+              className={`modern-input ${error && error.includes('ไม่ตรงกัน') ? 'error shake' : confirmPassword && password && confirmPassword === password ? 'success' : ''}`}
               placeholder="กรอกรหัสผ่านอีกครั้ง"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               aria-describedby={error ? "register-error" : undefined}
               aria-invalid={!!error}
             />
+            {/* Password Match Indicator */}
+            {confirmPassword && (
+              <div className="flex items-center text-xs">
+                {password === confirmPassword ? (
+                  <div className="flex items-center" style={{color: '#16a34a'}}>
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    รหัสผ่านตรงกัน
+                  </div>
+                ) : (
+                  <div className="flex items-center" style={{color: '#dc2626'}}>
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    รหัสผ่านไม่ตรงกัน
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5 pt-2">
+          {/* Register Button */}
           <AuthButton
             type="submit"
             loading={loading}
-            disabled={isRedirecting}
+            disabled={isRedirecting || (password !== confirmPassword && confirmPassword !== '')}
             loadingText={error ? 'สมัครไม่สำเร็จ' : isRedirecting ? 'กำลังเข้าสู่หน้าหลัก...' : 'กำลังสร้างบัญชี...'}
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,15 +179,12 @@ function RegisterForm() {
             สมัครสมาชิก
           </AuthButton>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-500">หรือ</span>
-            </div>
+          {/* Divider */}
+          <div className="auth-divider">
+            <span>หรือ</span>
           </div>
 
+          {/* Google Register Button */}
           <AuthButton
             variant="secondary"
             onClick={handleGoogleRegister}
@@ -167,14 +204,29 @@ function RegisterForm() {
         </div>
       </form>
 
-      <div className="text-xs text-gray-500 text-center pt-4 border-t border-gray-100">
-        <div className="flex items-center justify-center mb-2">
-          <svg className="h-4 w-4 text-primary-blue mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Next Steps Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-6">
+        <div className="flex items-start">
+          <svg className="h-5 w-5 mr-3 flex-shrink-0 mt-0.5" style={{color: '#176daf'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span className="font-medium">หลังจากสมัครสมาชิก</span>
+          <div>
+            <h4 className="text-sm font-semibold mb-1" style={{color: '#176daf'}}>หลังจากสมัครสมาชิก</h4>
+            <p className="text-xs leading-relaxed" style={{color: '#1e40af'}}>
+              คุณจะต้องกรอกข้อมูลส่วนตัวเพิ่มเติมและรอการอนุมัติจากแอดมิน
+              เพื่อเริ่มใช้งานระบบจัดการทริปและได้รับคอมมิชชัน
+            </p>
+          </div>
         </div>
-        คุณจะต้องกรอกข้อมูลส่วนตัวเพิ่มเติมและรอการอนุมัติจากแอดมิน
+      </div>
+
+      {/* Terms and Privacy */}
+      <div className="text-center pt-4">
+        <p className="text-xs text-gray-500 leading-relaxed">
+          การสมัครสมาชิกหมายถึงคุณยอมรับ
+          <span className="font-medium" style={{color: '#176daf'}}> เงื่อนไขการใช้งาน</span> และ
+          <span className="font-medium" style={{color: '#176daf'}}> นโยบายความเป็นส่วนตัว</span> ของเรา
+        </p>
       </div>
     </AuthLayout>
   )

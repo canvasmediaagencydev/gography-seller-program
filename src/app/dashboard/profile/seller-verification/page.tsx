@@ -49,7 +49,6 @@ const ICON_CONTAINER_CLASSES = {
 }
 
 const SUCCESS_CARD_CLASSES = "bg-green-50 border-green-200"
-const FILE_ITEM_CLASSES = "flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-sm transition-shadow"
 
 // Reusable Components
 interface FileSuccessDisplayProps {
@@ -337,7 +336,7 @@ export default function SellerVerificationPage() {
       <div className="p-4">
         {/* Info Card */}
         <Card className="mb-6 overflow-hidden border border-gray-200 shadow-sm">
-          <div className="bg-gradient-to-br from-primary-blue via-primary-blue to-secondary-blue text-white p-4 sm:p-6">
+          <div className="bg-blue-500 text-white p-4 sm:p-6">
             <div className="flex items-start space-x-3 sm:space-x-4">
               <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
                 <FiShield className="w-6 h-6 sm:w-7 sm:h-7" />

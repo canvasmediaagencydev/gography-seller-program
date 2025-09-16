@@ -55,9 +55,10 @@ function LoginForm() {
       errorId="login-error"
     >
       <form className="space-y-6" onSubmit={handleEmailLogin}>
-        <div className="space-y-5">
+        <div className="space-y-6">
+          {/* Email Field */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
               อีเมล
             </Label>
             <Input
@@ -67,7 +68,7 @@ function LoginForm() {
               type="email"
               required
               autoComplete="email"
-              className="h-12 px-4 text-base md:h-10 md:text-sm"
+              className={`modern-input ${error ? 'error shake' : ''}`}
               placeholder="กรอกอีเมลของคุณ"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -75,8 +76,10 @@ function LoginForm() {
               aria-invalid={!!error}
             />
           </div>
+
+          {/* Password Field */}
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="password" className="text-sm font-semibold text-gray-700">
               รหัสผ่าน
             </Label>
             <Input
@@ -85,7 +88,7 @@ function LoginForm() {
               type="password"
               required
               autoComplete="current-password"
-              className="h-12 px-4 text-base md:h-10 md:text-sm"
+              className={`modern-input ${error ? 'error shake' : ''}`}
               placeholder="กรอกรหัสผ่านของคุณ"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -95,7 +98,8 @@ function LoginForm() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5 pt-2">
+          {/* Login Button */}
           <AuthButton
             type="submit"
             loading={loading}
@@ -110,15 +114,12 @@ function LoginForm() {
             เข้าสู่ระบบ
           </AuthButton>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-500">หรือ</span>
-            </div>
+          {/* Divider */}
+          <div className="auth-divider">
+            <span>หรือ</span>
           </div>
 
+          {/* Google Login Button */}
           <AuthButton
             variant="secondary"
             onClick={handleGoogleLogin}
@@ -135,6 +136,15 @@ function LoginForm() {
           >
             เข้าสู่ระบบด้วย Google
           </AuthButton>
+        </div>
+
+        {/* Additional Security Info */}
+        <div className="text-center pt-4">
+          <p className="text-xs text-gray-500 leading-relaxed">
+            การเข้าสู่ระบบหมายถึงคุณยอมรับ
+            <span className="font-medium" style={{color: '#176daf'}}> เงื่อนไขการใช้งาน</span> และ
+            <span className="font-medium" style={{color: '#176daf'}}> นโยบายความเป็นส่วนตัว</span> ของเรา
+          </p>
         </div>
       </form>
     </AuthLayout>
