@@ -103,9 +103,9 @@ export default function APIDocs() {
                                             <div className="space-y-1">
                                                 {Object.entries(methods).map(([method, details]) => (
                                                     <div key={method} className="flex items-center space-x-2">
-                                                        <span className={`px-2 py-1 text-xs font-semibold rounded uppercase ${method === 'get' ? 'bg-blue-100 text-blue-800' :
+                                                        <span className={`px-2 py-1 text-xs font-semibold rounded uppercase ${method === 'get' ? 'bg-primary-blue-light text-primary-blue' :
                                                             method === 'post' ? 'bg-green-100 text-green-800' :
-                                                                method === 'put' ? 'bg-yellow-100 text-yellow-800' :
+                                                                method === 'put' ? 'bg-primary-yellow-light text-primary-yellow' :
                                                                     method === 'delete' ? 'bg-red-100 text-red-800' :
                                                                         'bg-gray-100 text-gray-800'
                                                             }`}>

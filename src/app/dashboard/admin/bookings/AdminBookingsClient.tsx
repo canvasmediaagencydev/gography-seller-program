@@ -310,7 +310,7 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
           <div className="flex gap-3">
             <button
               onClick={fixCommissions}
-              className="inline-flex items-center px-4 py-2 border border-orange-300 rounded-lg shadow-sm text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-secondary-yellow rounded-lg shadow-sm text-sm font-medium text-primary-yellow bg-primary-yellow-light hover:bg-primary-yellow-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-yellow transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -319,7 +319,7 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-blue hover:bg-primary-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
@@ -348,7 +348,7 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
             <p className="text-red-600">เกิดข้อผิดพลาด: {error}</p>
             <button 
               onClick={() => refreshBookings()}
-              className="mt-2 text-blue-600 hover:text-blue-800"
+              className="mt-2 text-primary-blue hover:text-secondary-blue"
             >
               ลองใหม่
             </button>

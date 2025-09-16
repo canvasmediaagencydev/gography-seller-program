@@ -24,7 +24,7 @@ export default function AuthLayout({ children, title, subtitle, error, errorId }
       <div className="max-w-md w-full py-8 md:py-0">
         <div className="bg-white rounded-2xl shadow-xl p-6 space-y-6 sm:p-8 will-change-auto">
           <div className="text-center">
-            <div className="mx-auto h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center mb-4 sm:h-16 sm:w-16 flex-shrink-0">
+            <div className="mx-auto h-14 w-14 bg-primary-blue rounded-full flex items-center justify-center mb-4 sm:h-16 sm:w-16 flex-shrink-0">
               <svg className="h-7 w-7 text-white sm:h-8 sm:w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>

@@ -54,7 +54,7 @@ function RegisterForm() {
       subtitle={
         <>
           มีบัญชีแล้ว?{' '}
-          <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link href="/auth/login" className="font-medium text-primary-blue hover:text-secondary-blue">
             เข้าสู่ระบบ
           </Link>
         </>
@@ -169,7 +169,7 @@ function RegisterForm() {
 
       <div className="text-xs text-gray-500 text-center pt-4 border-t border-gray-100">
         <div className="flex items-center justify-center mb-2">
-          <svg className="h-4 w-4 text-blue-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 text-primary-blue mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span className="font-medium">หลังจากสมัครสมาชิก</span>

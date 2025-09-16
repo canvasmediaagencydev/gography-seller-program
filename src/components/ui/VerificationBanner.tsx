@@ -44,12 +44,12 @@ export default function VerificationBanner({ userProfile, onVerify }: Verificati
     }
   }
 
-  const bgColor = bannerConfig.type === 'error' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'
-  const textColor = bannerConfig.type === 'error' ? 'text-red-800' : 'text-yellow-800'
-  const iconColor = bannerConfig.type === 'error' ? 'text-red-500' : 'text-yellow-500'
+  const bgColor = bannerConfig.type === 'error' ? 'bg-red-50 border-red-200' : 'bg-primary-yellow-light border-secondary-yellow'
+  const textColor = bannerConfig.type === 'error' ? 'text-red-800' : 'text-primary-yellow'
+  const iconColor = bannerConfig.type === 'error' ? 'text-red-500' : 'text-primary-yellow'
   const buttonColor = bannerConfig.type === 'error' 
     ? 'bg-red-600 hover:bg-red-700 text-white' 
-    : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+    : 'bg-primary-yellow hover:bg-primary-yellow text-white'
 
   return (
     <div className={`mb-6 p-4 rounded-xl border-l-4 ${bgColor} animate-fadeIn`}>

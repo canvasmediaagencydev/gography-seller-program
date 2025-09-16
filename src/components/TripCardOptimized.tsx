@@ -119,7 +119,7 @@ const TripCardOptimized = memo(function TripCard({
         {/* Commission */}
         <div className="flex items-center justify-between mb-4 mt-2">
           <div>
-            <span className="text-orange-600 text-2xl font-bold">
+            <span className="text-primary-yellow text-2xl font-bold">
               คอมมิชชั่น {commissionAmount}
             </span>
           </div>

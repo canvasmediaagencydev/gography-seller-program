@@ -77,7 +77,7 @@ export function CountryFilter({
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors min-w-[100px] ${
           selectedCountries.length > 0 
-            ? 'bg-orange-100 text-orange-600 border border-orange-200' 
+            ? 'bg-primary-yellow-light text-primary-yellow border border-secondary-yellow' 
             : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
         }`}
       >
@@ -109,7 +109,7 @@ export function CountryFilter({
                   type="checkbox"
                   checked={tempSelectedCountries.includes(country.id)}
                   onChange={() => handleCountryToggle(country.id)}
-                  className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                  className="w-4 h-4 text-primary-yellow border-gray-300 rounded focus:ring-primary-yellow"
                 />
                 <span className="text-lg">{country.flag_emoji}</span>
                 <span className="text-sm text-gray-700 flex-1">{country.name}</span>
@@ -120,7 +120,7 @@ export function CountryFilter({
           <div className="p-4 border-t border-gray-100 bg-gray-50">
             <button
               onClick={handleConfirm}
-              className="w-full px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors"
+              className="w-full px-4 py-2 bg-primary-blue text-white text-sm font-medium rounded-lg hover:bg-primary-blue transition-colors"
             >
               ยืนยัน
             </button>

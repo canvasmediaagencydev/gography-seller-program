@@ -33,7 +33,7 @@ export default function CustomersPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue"></div>
       </div>
     )
   }
@@ -67,7 +67,7 @@ export default function CustomersPage() {
             onClick={() => setActiveFilter('all')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
               activeFilter === 'all'
-                ? 'bg-blue-50 text-blue-700 shadow-sm'
+                ? 'bg-blue-50 text-primary-blue shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
@@ -87,7 +87,7 @@ export default function CustomersPage() {
             onClick={() => setActiveFilter('inprogress')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
               activeFilter === 'inprogress'
-                ? 'bg-blue-50 text-blue-700 shadow-sm'
+                ? 'bg-blue-50 text-primary-blue shadow-sm'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
@@ -134,7 +134,7 @@ export default function CustomersPage() {
                 <p className="text-2xl font-semibold text-gray-900">{filteredCustomers.length}</p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-primary-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -167,7 +167,7 @@ export default function CustomersPage() {
                 <svg className={`w-6 h-6 ${
                   activeFilter === 'all' ? 'text-gray-600' :
                   activeFilter === 'pending' ? 'text-amber-600' :
-                  activeFilter === 'inprogress' ? 'text-blue-600' :
+                  activeFilter === 'inprogress' ? 'text-primary-blue' :
                   activeFilter === 'approved' ? 'text-green-600' :
                   activeFilter === 'rejected' ? 'text-red-600' :
                   'text-gray-600'

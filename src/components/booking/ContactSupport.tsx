@@ -11,7 +11,7 @@ export default function ContactSupport({ className = '' }: ContactSupportProps) 
       <div className="space-y-2">
         <a 
           href={`tel:${CONTACT_INFO.phone.number}`}
-          className="block w-full bg-gray-800 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm text-center"
+          className="block w-full bg-primary-blue text-white py-2 px-4 rounded-lg hover:bg-primary-blue transition-colors text-sm text-center"
         >
           {CONTACT_INFO.phone.display}
         </a>

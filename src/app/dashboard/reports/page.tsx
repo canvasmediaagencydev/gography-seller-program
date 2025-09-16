@@ -242,7 +242,7 @@ export default function ReportsPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-sm font-medium hover:bg-blue-100 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-primary-blue border border-secondary-blue rounded-lg text-sm font-medium hover:bg-blue-100 hover:border-secondary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg 
                 className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} 
@@ -285,12 +285,12 @@ export default function ReportsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs md:text-sm font-medium text-gray-600">คอมมิชชั่นรอรับ</p>
-              <p className="text-lg md:text-2xl font-semibold text-orange-600 mt-1">
+              <p className="text-lg md:text-2xl font-semibold text-primary-yellow mt-1">
                 ฿{totalCommissionPending.toLocaleString()}
               </p>
             </div>
-            <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-              <svg className="h-4 w-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="h-8 w-8 bg-primary-yellow-light rounded-lg flex items-center justify-center">
+              <svg className="h-4 w-4 text-primary-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -353,7 +353,7 @@ export default function ReportsPage() {
             <div className="text-xs md:text-sm text-gray-600 mt-1">จ่ายครบแล้ว</div>
           </div>
           <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-xl md:text-2xl font-semibold text-blue-600">{partialPaidBookings}</div>
+            <div className="text-xl md:text-2xl font-semibold text-primary-blue">{partialPaidBookings}</div>
             <div className="text-xs md:text-sm text-gray-600 mt-1">จ่ายมัดจำแล้ว</div>
           </div>
           <div className="text-center p-4 bg-red-50 rounded-lg">
@@ -370,7 +370,7 @@ export default function ReportsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-primary-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -393,7 +393,7 @@ export default function ReportsPage() {
               <button
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-blue-700 border border-blue-200 rounded-lg text-sm font-medium hover:bg-blue-50 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-primary-blue border border-secondary-blue rounded-lg text-sm font-medium hover:bg-blue-50 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="รีเฟรชข้อมูล"
               >
                 <svg 
@@ -429,9 +429,9 @@ export default function ReportsPage() {
                 const statusConfig = {
                   partial: { 
                     label: 'จ่ายมัดจำแล้ว', 
-                    bg: 'bg-blue-50 text-blue-700', 
-                    border: 'border-blue-200',
-                    dot: 'bg-blue-400'
+                    bg: 'bg-blue-50 text-primary-blue', 
+                    border: 'border-secondary-blue',
+                    dot: 'bg-secondary-blue'
                   },
                   completed: { 
                     label: 'จ่ายครบแล้ว', 
@@ -468,15 +468,15 @@ export default function ReportsPage() {
                   },
                   pending: { 
                     label: 'รอดำเนินการ', 
-                    bg: 'bg-yellow-50 text-yellow-700', 
+                    bg: 'bg-yellow-50 text-primary-yellow', 
                     border: 'border-yellow-200',
-                    dot: 'bg-yellow-400'
+                    dot: 'bg-secondary-yellow'
                   },
                   inprogress: { 
                     label: 'กำลังดำเนินการ', 
-                    bg: 'bg-blue-50 text-blue-700', 
-                    border: 'border-blue-200',
-                    dot: 'bg-blue-400'
+                    bg: 'bg-blue-50 text-primary-blue', 
+                    border: 'border-secondary-blue',
+                    dot: 'bg-secondary-blue'
                   },
                   cancelled: { 
                     label: 'ยกเลิกแล้ว', 
@@ -510,7 +510,7 @@ export default function ReportsPage() {
                       <div className="flex items-start gap-4">
                         {/* Avatar */}
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-6 h-6 text-primary-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>
@@ -561,7 +561,7 @@ export default function ReportsPage() {
                             ฿{commissionEarned.toLocaleString()}
                           </p>
                           {commissionPending > 0 && (
-                            <p className="text-sm text-orange-600">
+                            <p className="text-sm text-primary-yellow">
                               + ฿{commissionPending.toLocaleString()} รอรับ
                             </p>
                           )}
@@ -612,7 +612,7 @@ export default function ReportsPage() {
               
               {/* CTA Button */}
               <div className="space-y-3">
-                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                <button className="w-full px-4 py-2 bg-primary-blue text-white rounded-lg text-sm font-medium hover:bg-primary-blue transition-colors">
                   แชร์ลิงก์ของคุณ
                 </button>
                 <p className="text-xs text-gray-500">

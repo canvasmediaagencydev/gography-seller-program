@@ -30,7 +30,7 @@ export default function StatCard({
   }
 
   const getIconColor = (colorClass: string) => {
-    if (colorClass.includes('blue')) return 'text-blue-600'
+    if (colorClass.includes('blue')) return 'text-primary-blue'
     if (colorClass.includes('green')) return 'text-green-600'
     if (colorClass.includes('amber') || colorClass.includes('yellow')) return 'text-amber-600'
     if (colorClass.includes('red')) return 'text-red-600'

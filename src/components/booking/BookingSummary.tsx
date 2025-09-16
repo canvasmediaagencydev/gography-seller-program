@@ -49,7 +49,7 @@ export default function BookingSummary({
                 <div className="border-t border-gray-200 pt-4">
                     <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold text-gray-900">ยอดรวม</span>
-                        <span className="text-xl font-bold text-orange-600">{formatPrice(totalAmount)}</span>
+                        <span className="text-xl font-bold text-primary-yellow">{formatPrice(totalAmount)}</span>
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@ export default function BookingSummary({
                         className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
                             isBooking || !canBook
                                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                : 'bg-orange-500 text-white hover:bg-orange-600'
+                                : 'bg-primary-blue text-white hover:bg-primary-blue'
                         }`}
                     >
                         {isBooking ? (
@@ -103,7 +103,7 @@ export default function BookingSummary({
 
                     <p className="text-xs text-center text-gray-500 mt-3">
                         การกดยืนยัน หมายถึงคุณยอมรับ
-                        <span className="text-orange-600"> ข้อกำหนดและเงื่อนไข</span>
+                        <span className="text-primary-yellow"> ข้อกำหนดและเงื่อนไข</span>
                     </p>
 
                     {error && (

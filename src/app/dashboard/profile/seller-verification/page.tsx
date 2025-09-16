@@ -38,14 +38,14 @@ const UPLOAD_AREA_CLASSES = {
   base: "border-2 border-dashed rounded-2xl bg-slate-50/50 p-8 hover:border-opacity-75 transition-all duration-300 group",
   red: "border-red-200 hover:bg-red-50/30 hover:border-red-300",
   green: "border-green-200 hover:bg-green-50/30 hover:border-green-300",
-  purple: "border-purple-200 hover:bg-purple-50/30 hover:border-purple-300"
+  purple: "border-secondary-blue hover:bg-primary-blue-light hover:border-primary-blue"
 }
 
 const ICON_CONTAINER_CLASSES = {
   base: "mx-auto flex items-center justify-center group-hover:scale-105 transition-transform duration-200",
   red: "w-24 h-24 bg-gradient-to-br from-red-100 to-red-200 rounded-3xl",
   green: "w-20 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full",
-  purple: "w-20 h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full"
+  purple: "w-20 h-20 bg-gradient-to-br from-primary-blue-light to-secondary-blue rounded-full"
 }
 
 const SUCCESS_CARD_CLASSES = "bg-green-50 border-green-200"
@@ -305,7 +305,7 @@ export default function SellerVerificationPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
-          <FiLoader className="w-12 h-12 text-blue-600 animate-spin" />
+          <FiLoader className="w-12 h-12 text-primary-blue animate-spin" />
           <p className="text-slate-600 text-sm">กำลังโหลด...</p>
         </div>
       </div>
@@ -327,7 +327,7 @@ export default function SellerVerificationPage() {
           </Button>
           <div className="flex-1 text-center">
             <h1 className="text-lg font-semibold text-gray-900">ยืนยันตัวตน</h1>
-            <p className="text-sm text-blue-600">เพื่อเริ่มต้นขายทริป</p>
+            <p className="text-sm text-primary-blue">เพื่อเริ่มต้นขายทริป</p>
           </div>
           <div className="w-8" />
         </div>
@@ -337,7 +337,7 @@ export default function SellerVerificationPage() {
       <div className="p-4">
         {/* Info Card */}
         <Card className="mb-6 overflow-hidden border border-gray-200 shadow-sm">
-          <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 text-white p-4 sm:p-6">
+          <div className="bg-gradient-to-br from-primary-blue via-primary-blue to-secondary-blue text-white p-4 sm:p-6">
             <div className="flex items-start space-x-3 sm:space-x-4">
               <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center">
                 <FiShield className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -362,11 +362,11 @@ export default function SellerVerificationPage() {
         )}
 
         {uploadProgress && (
-          <Card className="border-blue-200 bg-blue-50 shadow-sm">
+          <Card className="border-secondary-blue bg-blue-50 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center space-x-3">
-                <FiLoader className="animate-spin h-5 w-5 text-blue-600 flex-shrink-0" />
-                <div className="text-blue-800 text-sm font-medium">{uploadProgress}</div>
+                <FiLoader className="animate-spin h-5 w-5 text-primary-blue flex-shrink-0" />
+                <div className="text-primary-blue text-sm font-medium">{uploadProgress}</div>
               </div>
             </CardContent>
           </Card>
@@ -377,7 +377,7 @@ export default function SellerVerificationPage() {
           <Card className="border border-gray-200 shadow-sm">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-blue-100 text-blue-700 font-bold text-xs sm:text-sm">
+                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-blue-100 text-primary-blue font-bold text-xs sm:text-sm">
                   1
                 </Badge>
                 ข้อมูลส่วนตัว
@@ -497,19 +497,19 @@ export default function SellerVerificationPage() {
                       <p className="text-sm font-medium text-slate-700 mb-3">คำแนะนำการถ่ายภาพ:</p>
                       <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
                         <div className="flex items-center space-x-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                          <div className="w-1.5 h-1.5 bg-primary-blue rounded-full"></div>
                           <span>วางบนพื้นเรียบ</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                          <div className="w-1.5 h-1.5 bg-primary-blue rounded-full"></div>
                           <span>ข้อมูลชัดเจน</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                          <div className="w-1.5 h-1.5 bg-primary-blue rounded-full"></div>
                           <span>แสงสว่างพอ</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                          <div className="w-1.5 h-1.5 bg-primary-blue rounded-full"></div>
                           <span>JPG/PNG/WebP</span>
                         </div>
                       </div>
@@ -727,7 +727,7 @@ export default function SellerVerificationPage() {
           <Card className="border border-gray-200 shadow-sm">
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="flex items-center text-base sm:text-lg">
-                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-orange-100 text-orange-700 font-bold text-xs sm:text-sm">
+                <Badge variant="secondary" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full p-0 flex items-center justify-center mr-3 bg-primary-yellow-light text-primary-yellow font-bold text-xs sm:text-sm">
                   4
                 </Badge>
                 ข้อมูลบัญชีธนาคาร

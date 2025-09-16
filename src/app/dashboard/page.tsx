@@ -24,12 +24,12 @@ interface ComingSoonCardProps {
 
 function ComingSoonCard({ title, description, mockValue, icon, color }: ComingSoonCardProps) {
   const colorClasses = {
-    blue: 'from-blue-500 to-blue-600 text-blue-600 bg-blue-50 border-blue-200',
+    blue: 'from-primary-blue to-secondary-blue text-primary-blue bg-blue-50 border-secondary-blue',
     green: 'from-green-500 to-green-600 text-green-600 bg-green-50 border-green-200',
     purple: 'from-purple-500 to-purple-600 text-purple-600 bg-purple-50 border-purple-200',
-    orange: 'from-orange-500 to-orange-600 text-orange-600 bg-orange-50 border-orange-200',
+    orange: 'from-primary-yellow to-secondary-yellow text-primary-yellow bg-primary-yellow-light border-secondary-yellow',
     red: 'from-red-500 to-red-600 text-red-600 bg-red-50 border-red-200',
-    yellow: 'from-yellow-500 to-yellow-600 text-yellow-600 bg-yellow-50 border-yellow-200'
+    yellow: 'from-primary-yellow to-secondary-yellow text-primary-yellow bg-yellow-50 border-secondary-yellow'
   }
 
   const colors = colorClasses[color].split(' ')
@@ -105,7 +105,7 @@ export default function SellerDashboard() {
 
         {/* Small note */}
         <p className="text-sm text-gray-500 mt-6">
-          ระหว่างนี้ลองดู <span className="font-semibold text-blue-600">ข้อมูล Trips</span> กันก่อนได้นะ!
+          ระหว่างนี้ลองดู <span className="font-semibold text-primary-blue">ข้อมูล Trips</span> กันก่อนได้นะ!
         </p>
       </div>
     </div>

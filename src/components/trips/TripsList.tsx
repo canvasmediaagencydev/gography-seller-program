@@ -196,7 +196,7 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
                                     <button
                                         onClick={() => copyShareLink(trip)}
                                         disabled={sellerStatus !== 'approved'}
-                                        className="px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm bg-gray-800 text-white hover:text-orange-600 hover:scale-110 transition-all duration-200 ease-in-out cursor-pointer mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:text-white"
+                                        className="px-3 py-1.5 rounded-lg flex items-center gap-1 text-sm bg-gray-800 text-white hover:text-primary-yellow hover:scale-110 transition-all duration-200 ease-in-out cursor-pointer mx-auto disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:text-white"
                                     >
                                         <ImLink className='text-xs' />
                                         <span>Share</span>

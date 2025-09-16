@@ -20,7 +20,7 @@ export default function CustomerFormWrapper({
                 <button
                     type="button"
                     onClick={onAddCustomer}
-                    className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+                    className="bg-primary-blue text-white px-4 py-2 rounded-lg hover:bg-primary-blue transition-colors text-sm font-medium"
                 >
                     + เพิ่มผู้เดินทาง
                 </button>
@@ -30,7 +30,7 @@ export default function CustomerFormWrapper({
                 {customers.map((customer, index) => (
                     <div key={index} className={`p-4 rounded-lg border ${
                         index === 0 
-                            ? 'border-orange-200 bg-orange-50' 
+                            ? 'border-primary-blue bg-primary-blue-light' 
                             : 'border-gray-200 bg-gray-50'
                     }`}>
                         <div className="flex items-center justify-between mb-4">
@@ -57,7 +57,7 @@ export default function CustomerFormWrapper({
                                     type="text"
                                     value={customer.full_name}
                                     onChange={(e) => onUpdateCustomer(index, 'full_name', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                                     placeholder="กรอกชื่อ-นามสกุล"
                                 />
                             </div>
@@ -70,7 +70,7 @@ export default function CustomerFormWrapper({
                                     type="email"
                                     value={customer.email}
                                     onChange={(e) => onUpdateCustomer(index, 'email', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                                     placeholder="กรอกอีเมล"
                                 />
                             </div>
@@ -83,7 +83,7 @@ export default function CustomerFormWrapper({
                                     type="tel"
                                     value={customer.phone}
                                     onChange={(e) => onUpdateCustomer(index, 'phone', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                                     placeholder="กรอกเบอร์โทรศัพท์"
                                 />
                             </div>
@@ -96,7 +96,7 @@ export default function CustomerFormWrapper({
                                     type="date"
                                     value={customer.date_of_birth}
                                     onChange={(e) => onUpdateCustomer(index, 'date_of_birth', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -104,12 +104,12 @@ export default function CustomerFormWrapper({
                 ))}
             </div>
 
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-secondary-blue">
                 <div className="flex items-start space-x-3">
-                    <span className="text-blue-600 mt-0.5">💡</span>
+                    <span className="text-primary-blue mt-0.5">💡</span>
                     <div>
-                        <p className="text-sm font-medium text-blue-800">เคล็ดลับ</p>
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm font-medium text-primary-blue">เคล็ดลับ</p>
+                        <p className="text-sm text-primary-blue">
                             กรุณาตรวจสอบข้อมูลให้ถูกต้อง โดยเฉพาะข้อมูลผู้ติดต่อหลัก เพื่อรับการติดต่อจากทีมงาน
                         </p>
                     </div>

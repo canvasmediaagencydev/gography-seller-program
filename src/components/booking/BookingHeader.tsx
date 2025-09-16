@@ -4,7 +4,7 @@ export default function BookingHeader() {
             <div className="max-w-6xl mx-auto px-4 py-3">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-primary-blue rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold">G</span>
                         </div>
                         <div>

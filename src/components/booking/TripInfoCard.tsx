@@ -43,7 +43,7 @@ export default function TripInfoCard({ trip, schedule, seller }: TripInfoCardPro
                         </div>
                     </div>
                     <div className="text-right">
-                        <p className="text-2xl font-bold text-orange-600">{formatPrice(trip.price_per_person)}</p>
+                        <p className="text-2xl font-bold text-primary-yellow">{formatPrice(trip.price_per_person)}</p>
                         <p className="text-lg text-gray-500">ต่อคน</p>
                     </div>
                 </div>
@@ -79,24 +79,24 @@ export default function TripInfoCard({ trip, schedule, seller }: TripInfoCardPro
                 
                 {/* Seller Info */}
                 {seller && (
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-secondary-blue">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                <div className="w-8 h-8 bg-primary-blue rounded-full flex items-center justify-center">
                                     <span className="text-white text-sm font-medium">S</span>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-blue-900">
+                                    <p className="text-sm font-medium text-primary-blue">
                                         ผู้แนะนำ: {seller.full_name || 'ไม่ระบุชื่อ'}
                                     </p>
-                                    <p className="text-xs text-blue-600">
+                                    <p className="text-xs text-primary-blue">
                                         ID: {seller.id.slice(-5)}
                                     </p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs text-blue-600">Ref Code</p>
-                                <p className="text-sm font-medium text-blue-900">{seller.referral_code}</p>
+                                <p className="text-xs text-primary-blue">Ref Code</p>
+                                <p className="text-sm font-medium text-primary-blue">{seller.referral_code}</p>
                             </div>
                         </div>
                     </div>

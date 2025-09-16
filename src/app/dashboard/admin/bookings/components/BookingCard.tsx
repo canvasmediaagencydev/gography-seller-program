@@ -172,7 +172,7 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
     return (
       <Badge variant={config.variant} className={cn(
         'gap-1.5',
-        paymentStatus === 'pending' && 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-50/80',
+        paymentStatus === 'pending' && 'bg-primary-yellow-light text-primary-yellow border-secondary-yellow hover:bg-primary-yellow-light',
         paymentStatus === 'partial' && 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50/80',
         paymentStatus === 'completed' && 'bg-green-50 text-green-700 border-green-200 hover:bg-green-50/80',
         paymentStatus === 'refunded' && 'bg-red-50 text-red-700 border-red-200 hover:bg-red-50/80'
@@ -357,8 +357,8 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
           </div>
 
           {/* Price Info */}
-          <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
-            <h4 className="text-sm font-medium text-orange-900 mb-3 flex items-center gap-2">
+          <div className="p-4 bg-primary-yellow-light rounded-lg border border-secondary-yellow">
+            <h4 className="text-sm font-medium text-primary-yellow mb-3 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               ยอดเงิน
             </h4>
@@ -369,7 +369,7 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
                 <p className="text-sm text-blue-600">มัดจำ: ฿{booking.deposit_amount.toLocaleString()}</p>
               )}
               {booking.remaining_amount && (
-                <p className="text-sm text-orange-600">คงเหลือ: ฿{booking.remaining_amount.toLocaleString()}</p>
+                <p className="text-sm text-primary-yellow">คงเหลือ: ฿{booking.remaining_amount.toLocaleString()}</p>
               )}
             </div>
           </div>

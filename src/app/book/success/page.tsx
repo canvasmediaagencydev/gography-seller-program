@@ -46,7 +46,7 @@ export default function BookingSuccessPage() {
                     {/* Action Button */}
                     {/* <Link 
                         href="/"
-                        className="inline-block w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                        className="inline-block w-full bg-primary-blue hover:bg-primary-blue text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                     >
                         กลับสู่หน้าแรก
                     </Link> */}

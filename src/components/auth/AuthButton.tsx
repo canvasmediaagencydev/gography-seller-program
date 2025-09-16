@@ -35,8 +35,8 @@ export default function AuthButton({
   const baseClasses = "w-full flex justify-center items-center py-2 px-4 text-base font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 min-h-[48px] sm:py-3 sm:text-sm sm:min-h-[44px]"
   
   const variantClasses = {
-    primary: "border border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 active:bg-blue-800",
-    secondary: "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500 active:bg-gray-100"
+    primary: "border border-transparent text-white bg-primary-blue hover:bg-primary-blue focus:ring-primary-blue active:bg-primary-blue",
+    secondary: "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-primary-blue active:bg-gray-100"
   }
 
   return (

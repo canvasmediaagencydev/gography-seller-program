@@ -18,7 +18,7 @@ const ValidationMessage = React.memo(function ValidationMessage({
   const typeClasses = {
     error: 'text-red-600 bg-red-50 border-red-200',
     success: 'text-green-600 bg-green-50 border-green-200',
-    info: 'text-blue-600 bg-blue-50 border-blue-200'
+    info: 'text-primary-blue bg-blue-50 border-secondary-blue'
   }
 
   const icons = {
