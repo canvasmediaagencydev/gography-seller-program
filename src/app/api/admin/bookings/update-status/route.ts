@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 import { apiCache } from '@/lib/cache'
 
@@ -33,11 +34,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    // Use consistent Supabase client setup like middleware for better session handling
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            // In API routes, we don't need to set cookies back to the response
+            // since this is a one-time operation
+          },
+        },
+      }
+    )
 
-    // Check if user is admin with caching
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    // Check if user is admin with improved error handling
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -47,15 +64,24 @@ export async function POST(request: NextRequest) {
     // Cache admin check for 2 minutes to reduce DB load
     const adminCacheKey = `admin_role_${user.id}`
     let isAdmin = apiCache.get(adminCacheKey)
-    
-    if (isAdmin === undefined) {
-      const { data: profile } = await supabase
+
+    if (isAdmin === undefined || isAdmin === null) {
+      const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
-        .select('role')
+        .select('role, status')
         .eq('id', user.id)
         .single()
 
-      isAdmin = profile?.role === 'admin'
+      if (profileError) {
+        console.error('Profile fetch error:', profileError)
+        return NextResponse.json(
+          { error: 'Failed to verify user permissions' },
+          { status: 403 }
+        )
+      }
+
+      // More robust role checking - ensure profile exists and has admin role
+      isAdmin = profile && profile.role === 'admin' && profile.status !== 'rejected'
       apiCache.set(adminCacheKey, isAdmin, 120000) // 2 minutes
     }
 
