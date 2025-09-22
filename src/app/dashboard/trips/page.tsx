@@ -10,6 +10,18 @@ import { TripsEmpty } from '../../../components/trips/TripsEmpty'
 import { ViewMode } from '../../../components/ui/ViewToggle'
 import { Pagination } from '../../../components/ui/Pagination'
 import { TabType } from '../../../hooks/useTripFilters'
+import VerificationModal from '@/components/VerificationModal'
+import { createClient } from '@/lib/supabase/client'
+
+interface UserProfile {
+  id: string
+  full_name: string | null
+  phone: string | null
+  role: string | null
+  status: string | null
+  commission_goal: number | null
+  referral_code: string | null
+}
 
 export default function TripsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -26,6 +38,8 @@ export default function TripsPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [availableCountries, setAvailableCountries] = useState<any[]>([])
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [showVerificationModal, setShowVerificationModal] = useState(false)
 
   const pageSize = 6
 
@@ -101,7 +115,29 @@ export default function TripsPage() {
 
   useEffect(() => {
     fetchTrips()
+    loadUserProfile()
   }, [])
+
+  const loadUserProfile = async () => {
+    const supabase = createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (profile) {
+      setUserProfile(profile)
+      // Show modal for pending sellers
+      if (profile.status === 'pending' || profile.status === 'suspended') {
+        setShowVerificationModal(true)
+      }
+    }
+  }
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
@@ -164,6 +200,13 @@ export default function TripsPage() {
           />
         </div>
       )}
+
+      {/* Verification Modal */}
+      <VerificationModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        userProfile={userProfile}
+      />
     </div>
   )
 }
