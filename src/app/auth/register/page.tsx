@@ -10,20 +10,23 @@ import { getRoleFromParams } from '@/lib/auth'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import AuthSkeleton from '@/components/auth/AuthSkeleton'
 
 function RegisterForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  
+  const [acceptTerms, setAcceptTerms] = useState(false)
+
   const searchParams = useSearchParams()
   const { loading, error, isRedirecting, setError, handleEmailAuth, handleGoogleAuth } = useAuthForm()
   
   const userRole = getRoleFromParams(searchParams)
-  
+
   // Focus management for accessibility
   const emailRef = React.useRef<HTMLInputElement>(null)
+  const checkboxRef = React.useRef<HTMLButtonElement>(null)
   
   React.useEffect(() => {
     // Auto-focus email input when component mounts
@@ -34,7 +37,18 @@ function RegisterForm() {
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
+    // Check if terms are accepted
+    if (!acceptTerms) {
+      setError('กรุณายอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว')
+      // Scroll to checkbox and focus
+      checkboxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => {
+        checkboxRef.current?.focus()
+      }, 300)
+      return
+    }
+
     // Check if passwords match
     if (password !== confirmPassword) {
       setError('รหัสผ่านไม่ตรงกัน')
@@ -45,6 +59,17 @@ function RegisterForm() {
   }
 
   const handleGoogleRegister = async () => {
+    // Check if terms are accepted
+    if (!acceptTerms) {
+      setError('กรุณายอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว')
+      // Scroll to checkbox and focus
+      checkboxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => {
+        checkboxRef.current?.focus()
+      }, 300)
+      return
+    }
+
     await handleGoogleAuth(userRole)
   }
 
@@ -163,6 +188,52 @@ function RegisterForm() {
           </div>
         </div>
 
+        {/* Terms and Privacy Checkbox */}
+        <div className="pt-4">
+          <div className={`flex items-start space-x-3 p-4 rounded-lg border transition-all ${
+            error && error.includes('เงื่อนไข')
+              ? 'border-red-300 bg-red-50 shake'
+              : 'border-gray-200 bg-gray-50'
+          }`}>
+            <Checkbox
+              ref={checkboxRef}
+              id="accept-terms"
+              checked={acceptTerms}
+              onCheckedChange={(checked) => {
+                setAcceptTerms(checked as boolean)
+                if (checked && error && error.includes('เงื่อนไข')) {
+                  setError('')
+                }
+              }}
+              className="mt-0.5"
+            />
+            <label
+              htmlFor="accept-terms"
+              className="text-xs text-gray-600 leading-relaxed cursor-pointer select-none"
+            >
+              ฉันยอมรับ
+              <a
+                href="https://www.paydee.me/seller-rules"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary-blue hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {' '}เงื่อนไขการใช้งาน
+              </a> และ
+              <span className="font-medium text-primary-blue"> นโยบายความเป็นส่วนตัว</span> ของเรา
+            </label>
+          </div>
+          {!acceptTerms && error && error.includes('เงื่อนไข') && (
+            <p className="text-xs text-red-600 mt-2 pl-4 flex items-center gap-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              กรุณายอมรับเงื่อนไขการใช้งานก่อนสมัครสมาชิก
+            </p>
+          )}
+        </div>
+
         <div className="space-y-5 pt-2">
           {/* Register Button */}
           <AuthButton
@@ -218,15 +289,6 @@ function RegisterForm() {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Terms and Privacy */}
-      <div className="text-center pt-4">
-        <p className="text-xs text-gray-500 leading-relaxed">
-          การสมัครสมาชิกหมายถึงคุณยอมรับ
-          <span className="font-medium" style={{color: '#176daf'}}> เงื่อนไขการใช้งาน</span> และ
-          <span className="font-medium" style={{color: '#176daf'}}> นโยบายความเป็นส่วนตัว</span> ของเรา
-        </p>
       </div>
     </AuthLayout>
   )
