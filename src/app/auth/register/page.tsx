@@ -221,7 +221,15 @@ function RegisterForm() {
               >
                 {' '}เงื่อนไขการใช้งาน
               </a> และ
-              <span className="font-medium text-primary-blue"> นโยบายความเป็นส่วนตัว</span> ของเรา
+                <a
+                href="https://www.paydee.me/terms-and-condition"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary-blue hover:underline"
+                onClick={(e) => e.stopPropagation()}
+                >
+                นโยบายความเป็นส่วนตัว
+                </a>ของเรา
             </label>
           </div>
           {!acceptTerms && error && error.includes('เงื่อนไข') && (

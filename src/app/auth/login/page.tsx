@@ -142,8 +142,24 @@ function LoginForm() {
         <div className="text-center pt-4">
           <p className="text-xs text-gray-500 leading-relaxed">
             การเข้าสู่ระบบหมายถึงคุณยอมรับ
-            <span className="font-medium" style={{color: '#176daf'}}> เงื่อนไขการใช้งาน</span> และ
-            <span className="font-medium" style={{color: '#176daf'}}> นโยบายความเป็นส่วนตัว</span> ของเรา
+             <a
+                href="https://www.paydee.me/seller-rules"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary-blue hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {' '}เงื่อนไขการใช้งาน
+              </a> และ
+                <a
+                href="https://www.paydee.me/terms-and-condition"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary-blue hover:underline"
+                onClick={(e) => e.stopPropagation()}
+                >
+                นโยบายความเป็นส่วนตัว
+                </a>ของเรา
           </p>
         </div>
       </form>
