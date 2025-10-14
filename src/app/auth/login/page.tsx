@@ -152,7 +152,7 @@ function LoginForm() {
                 {' '}เงื่อนไขการใช้งาน
               </a> และ
                 <a
-                href="https://www.paydee.me/terms-and-condition"
+                href="https://www.paydee.me/terms-and-conditions"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-primary-blue hover:underline"
