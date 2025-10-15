@@ -18,6 +18,7 @@ export interface TripCardProps {
     viewType?: 'seller' | 'general'
     currentSellerId?: string
     sellerData?: SellerData | null
+    realtimeVersion?: number
 }
 
 export type ViewType = 'seller' | 'general'
