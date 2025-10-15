@@ -380,6 +380,34 @@ const AdminBookingsClient = memo(function AdminBookingsClient({
                 />
               </div>
             ))}
+
+            {/* Load More Button */}
+            {bookings.length > 0 && hasMore && (
+              <div className="pt-4 border-t border-gray-200 text-center">
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+                      กำลังโหลด...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      โหลดเพิ่มเติม
+                    </>
+                  )}
+                </button>
+                <p className="text-sm text-gray-500 mt-3">
+                  แสดง {bookings.length} จาก {totalCount} รายการ ({currentPage}/{totalPages} หน้า)
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

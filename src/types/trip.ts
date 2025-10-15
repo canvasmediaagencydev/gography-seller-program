@@ -8,10 +8,16 @@ export interface TripWithRelations extends Tables<'trips'> {
     available_seats?: number | null
 }
 
+export interface SellerData {
+    referral_code: string | null
+    status: string | null
+}
+
 export interface TripCardProps {
     trip: TripWithRelations
     viewType?: 'seller' | 'general'
     currentSellerId?: string
+    sellerData?: SellerData | null
 }
 
 export type ViewType = 'seller' | 'general'

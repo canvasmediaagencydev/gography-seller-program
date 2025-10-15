@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { apiCache } from '@/lib/cache'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -31,15 +32,27 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Get user profile if user exists
+  // Get user profile if user exists (with caching)
   let userProfile = null
   if (user) {
-    const { data } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-    userProfile = data
+    // Check cache first
+    const profileCacheKey = `user_profile_${user.id}`
+    userProfile = apiCache.get(profileCacheKey)
+
+    if (!userProfile) {
+      // Cache miss - fetch from database
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      userProfile = data
+
+      // Cache for 1 minute
+      if (userProfile) {
+        apiCache.set(profileCacheKey, userProfile, 60000)
+      }
+    }
   }
 
   const url = request.nextUrl.clone()

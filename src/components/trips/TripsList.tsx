@@ -1,37 +1,22 @@
 import { FaUser } from "react-icons/fa"
 import { ImLink } from "react-icons/im"
-import { TripWithRelations, ViewType } from '../../types/trip'
+import TripImage from '../TripImage'
+import { TripWithRelations, ViewType, SellerData } from '../../types/trip'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
-import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface TripsListProps {
     trips: TripWithRelations[]
     viewType: ViewType
     userId: string | null
+    sellerData?: SellerData | null
 }
 
-export function TripsList({ trips, viewType, userId }: TripsListProps) {
+export function TripsList({ trips, viewType, userId, sellerData }: TripsListProps) {
     const { handleCopy } = useCopyToClipboard()
-    const [sellerStatus, setSellerStatus] = useState<string | null>(null)
-    const supabase = createClient()
 
-    // Fetch seller status
-    useEffect(() => {
-        if (userId) {
-            const fetchSellerStatus = async () => {
-                const { data } = await supabase
-                    .from('user_profiles')
-                    .select('status')
-                    .eq('id', userId)
-                    .single()
-                
-                setSellerStatus(data?.status || null)
-            }
-            fetchSellerStatus()
-        }
-    }, [userId])
+    // OPTIMIZED: Use seller data from props instead of fetching
+    const sellerStatus = sellerData?.status || null
 
     const formatDate = (dateString: string | null) => {
         if (!dateString) return '-'
@@ -118,11 +103,11 @@ export function TripsList({ trips, viewType, userId }: TripsListProps) {
                                     <div className="flex items-center">
                                         <div className="relative w-20 h-12 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0 rounded-lg overflow-hidden mr-3">
                                             {trip.cover_image_url ? (
-                                                <img
+                                                <TripImage
                                                     src={trip.cover_image_url}
                                                     alt={trip.title}
-                                                    className="absolute inset-0 w-full h-full object-cover object-center"
-                                                    style={{ aspectRatio: '5/3' }}
+                                                    className="w-full h-full object-cover object-center"
+                                                    priority={false}
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-lg">

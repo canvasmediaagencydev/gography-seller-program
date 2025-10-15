@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { apiCache } from '@/lib/cache'
 
 // GET - List all bookings (Admin only) with optimized pagination
 export async function GET(request: NextRequest) {
@@ -12,9 +13,9 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || ''
     const paymentStatus = searchParams.get('paymentStatus') || ''
     const sellerId = searchParams.get('sellerId') || ''
-    
+
     const supabase = await createClient()
-    
+
     // Check admin permission
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -29,6 +30,15 @@ export async function GET(request: NextRequest) {
 
     if (profile?.role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    }
+
+    // OPTIMIZED: Check cache first
+    const cacheKey = `admin_bookings_${user.id}_${page}_${pageSize}_${search}_${status}_${paymentStatus}_${sellerId}`
+    const cached = apiCache.get(cacheKey)
+    if (cached) {
+      const response = NextResponse.json(cached)
+      response.headers.set('X-Cache', 'HIT')
+      return response
     }
 
     // Query bookings with optimized select - only needed fields
@@ -178,25 +188,31 @@ export async function GET(request: NextRequest) {
     // Apply search filter here after data is combined
     let filteredBookings = bookingsWithRelations
     if (search) {
-      filteredBookings = bookingsWithRelations.filter(booking => 
+      filteredBookings = bookingsWithRelations.filter(booking =>
         booking.customers?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
         booking.customers?.email?.toLowerCase().includes(search.toLowerCase()) ||
         booking.trip_schedules?.trips?.title?.toLowerCase().includes(search.toLowerCase())
       )
     }
 
-    const response = NextResponse.json({
+    const responseData = {
       bookings: filteredBookings,
       totalCount: count || 0,
       currentPage: page,
       totalPages: Math.ceil((count || 0) / pageSize),
       pageSize
-    })
+    }
+
+    // OPTIMIZED: Cache the response for 30 seconds
+    apiCache.set(cacheKey, responseData, 30000)
+
+    const response = NextResponse.json(responseData)
 
     // Add cache headers for optimization
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
+    response.headers.set('X-Cache', 'MISS')
 
     return response
 

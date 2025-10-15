@@ -31,6 +31,22 @@ class SimpleCache {
   clear(): void {
     this.cache.clear()
   }
+
+  // Clear all cache entries that match a pattern
+  clearPattern(pattern: string): void {
+    const keysToDelete: string[] = []
+    this.cache.forEach((_, key) => {
+      if (key.includes(pattern)) {
+        keysToDelete.push(key)
+      }
+    })
+    keysToDelete.forEach(key => this.cache.delete(key))
+  }
+
+  // Delete a specific key
+  delete(key: string): void {
+    this.cache.delete(key)
+  }
 }
 
 export const apiCache = new SimpleCache()

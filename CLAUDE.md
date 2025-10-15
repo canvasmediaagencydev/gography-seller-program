@@ -40,7 +40,8 @@ src/
 │   ├── (auth)/              # Auth pages (login, register)
 │   ├── dashboard/           # Protected dashboard routes
 │   │   ├── admin/           # Admin-only pages (trips, bookings, sellers, customers)
-│   │   ├── trips/           # Seller trip management (currently empty - handled at /dashboard)
+│   │   ├── trips/           # Seller trip management page
+│   │   ├── profile/         # User profile pages
 │   │   └── reports/         # Seller reports
 │   ├── api/                 # API routes
 │   │   ├── trips/           # Trips API with caching
@@ -96,7 +97,7 @@ src/
 ### Route Protection & Middleware
 - **Middleware**: Located at `src/middleware.ts` - handles authentication and role-based route protection
 - **Public routes**: `/auth/*`, `/book/*`, `/api/docs`, `/api-docs`, and root `/`
-- **Role-based access**: Admin users get redirected to `/dashboard/admin/sellers`, sellers to `/dashboard`
+- **Role-based access**: Admin users get redirected to `/dashboard/admin/sellers`, sellers to `/dashboard/trips`
 - **Status-based access**: Rejected users are signed out automatically, unapproved sellers cannot access reports
 - **Authentication flow**: Unauthenticated users are redirected to `/auth/login`
 

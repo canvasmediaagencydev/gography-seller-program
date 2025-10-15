@@ -53,73 +53,31 @@ export function useTripSchedules(tripId: string) {
           return
         }
 
-        // Get real-time seats for each schedule
-        const schedulesWithSeats = await Promise.all(
-          schedulesData.map(async (schedule) => {
-            try {
-              // Try RPC function first
-              const { data: seatsData, error: rpcError } = await supabase
-                .rpc('get_available_seats', { schedule_id: schedule.id })
-              
-              if (!rpcError && seatsData !== null && seatsData !== undefined) {
-                return {
-                  ...schedule,
-                  realTimeSeats: Math.max(0, seatsData)
-                }
-              }
-              
-              throw new Error('RPC function failed or returned null')
-            } catch (err) {
-              console.log(`RPC failed for schedule ${schedule.id}, using fallback calculation`)
-              
-              // Fallback calculation - ถ้า RLS policy block การ query bookings ให้ใช้ original seats
-              try {
-                const { data: bookings, error: bookingError } = await supabase
-                  .from('bookings')
-                  .select('status')
-                  .eq('trip_schedule_id', schedule.id)
-                  .in('status', ['approved', 'pending', 'inprogress'])
+        // OPTIMIZED: Batch query for all bookings instead of N queries
+        // Get all schedule IDs
+        const scheduleIds = schedulesData.map(s => s.id)
 
-                if (bookingError) {
-                  console.warn(`Booking query failed for schedule ${schedule.id}:`, {
-                    error: bookingError,
-                    message: bookingError.message || 'Unknown booking query error',
-                    code: bookingError.code || 'NO_CODE',
-                    details: bookingError.details || 'No additional details',
-                    hint: 'This is likely due to RLS policy restrictions - using original seat count'
-                  })
-                  // If booking query fails, return original seats
-                  return {
-                    ...schedule,
-                    realTimeSeats: schedule.available_seats
-                  }
-                }
+        // Fetch all bookings for these schedules in ONE query
+        const { data: allBookings, error: bookingsError } = await supabase
+          .from('bookings')
+          .select('trip_schedule_id, status')
+          .in('trip_schedule_id', scheduleIds)
+          .in('status', ['approved', 'pending', 'inprogress'])
 
-                // Safely calculate booked seats
-                const bookedSeats = Array.isArray(bookings) ? bookings.length : 0
-                const realTimeSeats = Math.max(0, schedule.available_seats - bookedSeats)
-                
-                console.log(`Fallback calculation for schedule ${schedule.id}:`, {
-                  originalSeats: schedule.available_seats,
-                  bookedSeats,
-                  realTimeSeats
-                })
-                
-                return {
-                  ...schedule,
-                  realTimeSeats
-                }
-              } catch (fallbackErr) {
-                console.error('Fallback calculation failed:', fallbackErr)
-                // Last resort: return original seats
-                return {
-                  ...schedule,
-                  realTimeSeats: schedule.available_seats
-                }
-              }
-            }
-          })
-        )
+        // Calculate seats for each schedule using the batch data
+        const schedulesWithSeats = schedulesData.map(schedule => {
+          // Count bookings for this specific schedule
+          const bookedSeats = allBookings
+            ? allBookings.filter(b => b.trip_schedule_id === schedule.id).length
+            : 0
+
+          const realTimeSeats = Math.max(0, schedule.available_seats - bookedSeats)
+
+          return {
+            ...schedule,
+            realTimeSeats
+          }
+        })
 
         setSchedules(schedulesWithSeats)
       } catch (err: any) {
