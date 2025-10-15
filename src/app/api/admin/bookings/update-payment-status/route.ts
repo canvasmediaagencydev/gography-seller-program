@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+import { apiCache } from '@/lib/cache'
 
 // ฟังก์ชันสร้าง commission payment
 async function createCommissionPayment(adminSupabase: any, booking: any, paymentType: string) {
@@ -110,6 +111,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // OPTIMIZED: Clear admin bookings cache for this user
+    apiCache.clearPattern(`admin_bookings_${user.id}`)
 
     // จัดการ commission payments และข้อความตามสถานะ
     let commissionMessage = ''

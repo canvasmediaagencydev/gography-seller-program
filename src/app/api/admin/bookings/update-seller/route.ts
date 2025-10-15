@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
+import { apiCache } from '@/lib/cache'
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,6 +74,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // OPTIMIZED: Clear admin bookings cache for this user
+    apiCache.clearPattern(`admin_bookings_${user.id}`)
 
     return NextResponse.json({ 
       success: true, 

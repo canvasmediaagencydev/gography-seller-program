@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import TripImage from './TripImage'
 import SeatIndicator from './ui/SeatIndicator'
 import { useTripData } from '../hooks/useTripData'
@@ -13,17 +13,13 @@ import { ImLink } from "react-icons/im";
 import { BsInfoCircle } from "react-icons/bs";
 import { toast } from 'sonner';
 
-export default function TripCard({ trip, viewType = 'general', currentSellerId }: TripCardProps) {
+const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSellerId, sellerData }: TripCardProps) {
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-    const [sellerReferralCode, setSellerReferralCode] = useState<string | null>(null)
-    const [sellerStatus, setSellerStatus] = useState<string | null>(null)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
-    
+
     // Get real-time schedules with available seats
     const { schedules: allSchedules, loading: schedulesLoading } = useTripSchedules(trip.id)
-
-    const supabase = createClient()
 
     // Get real-time seats for currently selected schedule
     const getCurrentScheduleSeats = () => {
@@ -42,22 +38,8 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         return finalSeats
     }
 
-    // Fetch seller referral code and status
-    useEffect(() => {
-        if (currentSellerId) {
-            const fetchSellerData = async () => {
-                const { data } = await supabase
-                    .from('user_profiles')
-                    .select('referral_code, status')
-                    .eq('id', currentSellerId)
-                    .single()
-                
-                setSellerReferralCode(data?.referral_code || null)
-                setSellerStatus(data?.status || null)
-            }
-            fetchSellerData()
-        }
-    }, [currentSellerId])
+    // OPTIMIZED: Use seller data from props instead of fetching per card
+    const sellerStatus = sellerData?.status || null
 
     // Set first schedule as default when schedules are loaded
     useEffect(() => {
@@ -66,21 +48,22 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
         }
     }, [allSchedules, selectedSchedule])
 
-    const formatPrice = (amount: number) => {
+    // OPTIMIZED: Memoize expensive calculations
+    const commissionAmount = useMemo(() => {
+        if (trip.commission_type === 'percentage') {
+            return (trip.price_per_person * trip.commission_value) / 100
+        }
+        return trip.commission_value
+    }, [trip.commission_type, trip.price_per_person, trip.commission_value])
+
+    const formattedCommission = useMemo(() => {
         return new Intl.NumberFormat('th-TH', {
             style: 'currency',
             currency: 'THB',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }).format(amount)
-    }
-
-    const getCommissionAmount = () => {
-        if (trip.commission_type === 'percentage') {
-            return (trip.price_per_person * trip.commission_value) / 100
-        }
-        return trip.commission_value
-    }
+        }).format(commissionAmount)
+    }, [commissionAmount])
 
     const formatDeadline = (schedule: Tables<'trip_schedules'> | null) => {
         if (!schedule) return 'ยังไม่กำหนด'
@@ -248,7 +231,7 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
                 <div className="flex items-center justify-between mb-4 mt-2">
                     <div>
                         <span className="text-primary-yellow text-2xl font-bold">
-                            คอมมิชชั่น {formatPrice(getCommissionAmount())}
+                            คอมมิชชั่น {formattedCommission}
                         </span>
                     </div>
                 </div>
@@ -291,4 +274,6 @@ export default function TripCard({ trip, viewType = 'general', currentSellerId }
             </div>
         </div>
     )
-}
+})
+
+export default TripCard

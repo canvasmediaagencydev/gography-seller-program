@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import TripCard from '../TripCard'
 import { TripsList } from './TripsList'
 import { TripWithRelations, ViewType } from '../../types/trip'
@@ -10,13 +12,38 @@ interface TripsGridProps {
     viewMode: ViewMode
 }
 
+interface SellerData {
+    referral_code: string | null
+    status: string | null
+}
+
 export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps) {
+    const [sellerData, setSellerData] = useState<SellerData | null>(null)
+    const supabase = createClient()
+
+    // OPTIMIZED: Fetch seller data once for all cards instead of per card
+    useEffect(() => {
+        const fetchSellerData = async () => {
+            if (!userId) return
+
+            const { data } = await supabase
+                .from('user_profiles')
+                .select('referral_code, status')
+                .eq('id', userId)
+                .single()
+
+            setSellerData(data || null)
+        }
+
+        fetchSellerData()
+    }, [userId])
     if (viewMode === 'list') {
         return (
-            <TripsList 
+            <TripsList
                 trips={trips}
                 viewType={viewType}
                 userId={userId}
+                sellerData={sellerData}
             />
         )
     }
@@ -29,6 +56,7 @@ export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps)
                     trip={trip}
                     viewType={viewType}
                     currentSellerId={userId || undefined}
+                    sellerData={sellerData}
                 />
             ))}
         </div>

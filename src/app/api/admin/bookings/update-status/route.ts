@@ -113,9 +113,8 @@ export async function POST(request: NextRequest) {
         throw error
       }
 
-      // Clear related cache entries
-      // Note: Using existing cache.clear() or individual cache invalidation
-      // depending on cache implementation
+      // OPTIMIZED: Clear admin bookings cache for this user
+      apiCache.clearPattern(`admin_bookings_${user.id}`)
 
       return { 
         success: true, 
