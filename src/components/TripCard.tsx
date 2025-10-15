@@ -8,18 +8,17 @@ import { useTripSchedules } from '../hooks/useTripSchedules'
 import { TripCardProps } from '../types/trip'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../database.types'
-import { LuCalendarDays } from "react-icons/lu";
-import { ImLink } from "react-icons/im";
-import { BsInfoCircle } from "react-icons/bs";
+import { CalendarDays, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
-const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSellerId, sellerData }: TripCardProps) {
+const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSellerId, sellerData, realtimeVersion }: TripCardProps) {
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
 
     // Get real-time schedules with available seats
-    const { schedules: allSchedules, loading: schedulesLoading } = useTripSchedules(trip.id)
+    // OPTIMIZED: Pass realtimeVersion from parent to trigger refetches
+    const { schedules: allSchedules, loading: schedulesLoading } = useTripSchedules(trip.id, realtimeVersion)
 
     // Get real-time seats for currently selected schedule
     const getCurrentScheduleSeats = () => {
@@ -155,7 +154,7 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
                 </h3>
                 {/* Deadline */}
                 <div className="flex items-center text-gray-600 mb-3">
-                   <LuCalendarDays className='mr-2' />
+                   <CalendarDays className='mr-2' size={20} />
                     <span className="text-sm">ปิดรับสมัคร: {formatDeadline(selectedSchedule)}</span>
                 </div>
 
@@ -255,18 +254,18 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
                             disabled={sellerStatus !== 'approved' || !trip.file_link}
                             className="w-full bg-primary-blue text-white px-4 py-3 rounded-lg hover:bg-primary-blue transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <BsInfoCircle className="text-lg" />
+                            <Info size={18} />
                             <span>ดูข้อมูลทริป</span>
                         </button>
                     )}
                     
                     {/* View Trip Button (for general view) */}
                     {viewType !== 'seller' && (
-                        <button 
+                        <button
                             disabled={true}
                             className="w-full bg-gray-400 text-gray-200 px-4 py-2 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                         >
-                            <BsInfoCircle className="text-lg" />
+                            <Info size={18} />
                             <span>ดูทริป</span>
                         </button>
                     )}

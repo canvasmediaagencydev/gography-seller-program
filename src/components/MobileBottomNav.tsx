@@ -3,10 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import React, { memo, useCallback, useMemo, useTransition } from 'react'
-import { BsColumnsGap } from "react-icons/bs"
-import { LuPlaneTakeoff } from "react-icons/lu"
-import { TbUsers } from "react-icons/tb"
-import { FaRegUserCircle } from "react-icons/fa"
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -172,19 +169,19 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
   const navItems = useMemo((): NavItem[] => {
     const baseItems: NavItem[] = [
       {
-        icon: <BsColumnsGap className="w-5 h-5" />,
+        icon: <LayoutGrid className="w-5 h-5" />,
         label: 'Dashboard',
         href: '/dashboard',
         active: pathname === '/dashboard'
       },
       {
-        icon: <LuPlaneTakeoff className="w-5 h-5" />,
+        icon: <PlaneTakeoff className="w-5 h-5" />,
         label: 'Trips',
         href: '/dashboard/trips',
         active: pathname.includes('/dashboard/trips')
       },
       {
-        icon: <TbUsers className="w-5 h-5" />,
+        icon: <Users className="w-5 h-5" />,
         label: 'รายงาน',
         href: '/dashboard/reports',
         active: pathname === '/dashboard/reports',
@@ -198,11 +195,11 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
       baseItems.push({
         icon: verificationInfo.needsAction ? (
           <div className="relative">
-            <FaRegUserCircle className="w-5 h-5" />
+            <UserCircle className="w-5 h-5" />
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
           </div>
         ) : (
-          <FaRegUserCircle className="w-5 h-5" />
+          <UserCircle className="w-5 h-5" />
         ),
         label: verificationInfo.needsAction ? 'ยืนยันตัวตน' : 'โปรไฟล์',
         href: '/dashboard/profile',

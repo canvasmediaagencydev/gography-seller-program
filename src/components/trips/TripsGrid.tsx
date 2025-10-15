@@ -19,6 +19,7 @@ interface SellerData {
 
 export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps) {
     const [sellerData, setSellerData] = useState<SellerData | null>(null)
+    const [realtimeVersion, setRealtimeVersion] = useState(0)
     const supabase = createClient()
 
     // OPTIMIZED: Fetch seller data once for all cards instead of per card
@@ -37,6 +38,34 @@ export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps)
 
         fetchSellerData()
     }, [userId])
+
+    // OPTIMIZED: Single real-time subscription for all trips instead of one per card
+    useEffect(() => {
+        if (!trips || trips.length === 0) return
+
+        // Create a single subscription for all bookings related to these trips
+        const channel = supabase
+            .channel('trips-grid-bookings')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'bookings'
+                },
+                () => {
+                    // Trigger re-fetch for all schedules when any booking changes
+                    // This will cause all useTripSchedules hooks to refetch their data
+                    setRealtimeVersion(prev => prev + 1)
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [trips])
+
     if (viewMode === 'list') {
         return (
             <TripsList
@@ -57,6 +86,7 @@ export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps)
                     viewType={viewType}
                     currentSellerId={userId || undefined}
                     sellerData={sellerData}
+                    realtimeVersion={realtimeVersion}
                 />
             ))}
         </div>

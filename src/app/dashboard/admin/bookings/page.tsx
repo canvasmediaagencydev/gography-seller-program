@@ -1,7 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import AdminBookingsClient from './AdminBookingsClient'
+import dynamic from 'next/dynamic'
+
+// OPTIMIZED: Code splitting - lazy load admin component
+const AdminBookingsClient = dynamic(
+  () => import('./AdminBookingsClient'),
+  {
+    loading: () => (
+      <div className="p-12 text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+        <p className="mt-2 text-sm text-gray-500">กำลังโหลด...</p>
+      </div>
+    ),
+    ssr: false // Client-side only rendering
+  }
+)
 
 export default async function AdminBookingsPage() {
   const supabase = await createClient()

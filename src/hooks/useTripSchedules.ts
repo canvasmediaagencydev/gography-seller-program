@@ -6,7 +6,8 @@ interface ScheduleWithSeats extends Tables<'trip_schedules'> {
   realTimeSeats?: number
 }
 
-export function useTripSchedules(tripId: string) {
+// OPTIMIZED: Added realtimeVersion to trigger refetches from parent subscription
+export function useTripSchedules(tripId: string, realtimeVersion?: number) {
   const [schedules, setSchedules] = useState<ScheduleWithSeats[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +20,7 @@ export function useTripSchedules(tripId: string) {
       setError(null)
 
       try {
-        
+
         // First, check if there are any schedules at all for this trip
         const { data: allSchedules, error: allSchedulesError } = await supabase
           .from('trip_schedules')
@@ -34,7 +35,7 @@ export function useTripSchedules(tripId: string) {
         // Fetch active schedules (including today and future dates)
         const today = new Date()
         today.setHours(0, 0, 0, 0) // Start of today
-        
+
         const { data: schedulesData, error: schedulesError } = await supabase
           .from('trip_schedules')
           .select('*')
@@ -89,29 +90,9 @@ export function useTripSchedules(tripId: string) {
 
     fetchSchedulesWithSeats()
 
-    // Set up real-time subscription for booking changes
-    const channel = supabase
-      .channel(`trip-schedules-${tripId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'bookings'
-        },
-        (payload) => {
-          // Only refetch if the booking is for this trip
-          if (payload.new && (payload.new as any).trip_schedule_id && schedules.some(s => s.id === (payload.new as any).trip_schedule_id)) {
-            fetchSchedulesWithSeats()
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [tripId])
+    // OPTIMIZED: Removed individual subscription - now handled by parent component
+    // This reduces 6 subscriptions (one per card) to 1 subscription at parent level
+  }, [tripId, realtimeVersion]) // realtimeVersion triggers refetch when parent subscription fires
 
   return { schedules, loading, error, refetch: () => setSchedules([]) }
 }

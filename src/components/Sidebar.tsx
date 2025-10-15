@@ -1,12 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { BsColumnsGap } from "react-icons/bs";
-import { LuPlaneTakeoff } from "react-icons/lu";
-import { TbUsers } from "react-icons/tb";
-import { FaRegUserCircle } from "react-icons/fa";
-import { FiLogOut } from "react-icons/fi";
-import { BsShieldCheck, BsExclamationTriangle, BsClock, BsCheckCircle } from "react-icons/bs";
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
@@ -39,38 +34,38 @@ interface SidebarProps {
 
 // Memoized verification status function outside component to prevent recreation
 const getVerificationStatus = (userProfile: UserProfile | null) => {
-  if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: BsShieldCheck }
-  
+  if (!userProfile) return { status: 'unknown', text: 'ยืนยันตัวตน', color: 'blue', icon: ShieldCheck }
+
   const hasBasicInfo = userProfile.full_name && userProfile.phone
-  
+
   if (!hasBasicInfo) {
     return {
       status: 'not_started',
       text: 'ยืนยันตัวตน',
       subtext: 'ต้องดำเนินการ',
       color: 'red',
-      icon: BsExclamationTriangle,
+      icon: AlertTriangle,
       pulse: true
     }
   }
-  
+
   if (userProfile.status === 'pending') {
     return {
       status: 'pending',
       text: 'แก้ไขข้อมูล',
       subtext: 'อยู่ระหว่างตรวจสอบ',
       color: 'yellow',
-      icon: BsClock
+      icon: Clock
     }
   }
-  
+
   if (userProfile.status === 'approved') {
     return {
       status: 'verified',
       text: 'โปรไฟล์',
       subtext: 'ยืนยันแล้ว',
       color: 'green',
-      icon: BsCheckCircle
+      icon: CheckCircle
     }
   }
 
@@ -80,7 +75,7 @@ const getVerificationStatus = (userProfile: UserProfile | null) => {
       text: 'ถูกปฏิเสธ',
       subtext: 'ส่งข้อมูลใหม่',
       color: 'red',
-      icon: BsExclamationTriangle,
+      icon: AlertTriangle,
       pulse: true
     }
   }
@@ -91,7 +86,7 @@ const getVerificationStatus = (userProfile: UserProfile | null) => {
     text: 'ยืนยันตัวตน',
     subtext: 'ต้องดำเนินการ',
     color: 'red',
-    icon: BsExclamationTriangle,
+    icon: AlertTriangle,
     pulse: true
   }
 }
@@ -201,13 +196,13 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   const navigationItems: NavigationItem[] = useMemo(() => {
     const baseItems: NavigationItem[] = [
       {
-        icon: <BsColumnsGap className="text-lg" />,
+        icon: <LayoutGrid size={18} />,
         label: 'Dashboard',
         href: userProfile?.role === 'admin' ? '/dashboard/admin' : '/dashboard',
         isActive: isDashboardActive
       },
       {
-        icon: <LuPlaneTakeoff className="text-lg" />,
+        icon: <PlaneTakeoff size={18} />,
         label: userProfile?.role === 'admin' ? 'จัดการทริป' : 'ทริป',
         href: userProfile?.role === 'admin' ? '/dashboard/admin/trips' : '/dashboard/trips',
         isActive: isTripsActive
@@ -218,19 +213,19 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     if (userProfile?.role === 'admin') {
       baseItems.push(
         {
-          icon: <TbUsers className="text-lg" />,
+          icon: <Users size={18} />,
           label: 'ผู้ขาย',
           href: '/dashboard/admin/sellers',
           isActive: pathname === '/dashboard/admin/sellers'
         },
         {
-          icon: <TbUsers className="text-lg" />,
+          icon: <Users size={18} />,
           label: 'การจอง',
           href: '/dashboard/admin/bookings',
           isActive: pathname === '/dashboard/admin/bookings'
         },
         {
-          icon: <TbUsers className="text-lg" />,
+          icon: <Users size={18} />,
           label: 'ลูกค้า',
           href: '/dashboard/admin/customers',
           isActive: pathname === '/dashboard/admin/customers'
@@ -240,7 +235,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       // For sellers, show reports or disabled reports based on verification status
       if (userProfile?.status === 'approved') {
         baseItems.push({
-          icon: <TbUsers className="text-lg" />,
+          icon: <Users size={18} />,
           label: 'รายงาน',
           href: '/dashboard/reports',
           isActive: isReportsActive,
@@ -248,7 +243,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
         })
       } else {
         baseItems.push({
-          icon: <TbUsers className="text-lg" />,
+          icon: <Users size={18} />,
           label: 'รายงาน',
           href: '/dashboard/reports',
           isActive: false,
@@ -312,7 +307,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
               />
             ) : (
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <FaRegUserCircle className="w-6 h-6 text-gray-500" />
+                <UserCircle className="w-6 h-6 text-gray-500" />
               </div>
             )}
             {/* Show verification indicator only for sellers */}
@@ -390,11 +385,11 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           <SidebarButton
             icon={verificationInfo.pulse ? (
               <div className="relative">
-                <FaRegUserCircle className="text-lg" />
+                <UserCircle size={18} />
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
               </div>
             ) : (
-              <FaRegUserCircle className="text-lg" />
+              <UserCircle size={18} />
             )}
             label={verificationInfo.text}
             href="/dashboard/profile"
@@ -402,13 +397,13 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
             prefetch={true}
           />
         )}
-        
+
         <button
           onClick={handleLogout}
           disabled={loading}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-lg font-medium transition-all duration-75 text-red-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <FiLogOut className="text-lg" />
+          <LogOut size={18} />
           <span className="text-left">
             {loading ? 'กำลังออกจากระบบ...' : 'ออกจากระบบ'}
           </span>
