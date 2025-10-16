@@ -321,13 +321,7 @@ export default function ReportsPage() {
                 >
                   <ArrowPathIcon className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">{refreshing ? 'กำลังโหลด...' : 'รีเฟรช'}</span>
-                </button>
-
-                {/* Export Button */}
-                <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-all shadow-lg">
-                  <ArrowDownTrayIcon className="w-5 h-5" />
-                  <span className="hidden sm:inline">ส่งออกรายงาน</span>
-                </button>
+                </button>              
               </div>
             </div>
 
