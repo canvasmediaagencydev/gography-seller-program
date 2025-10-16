@@ -14,31 +14,12 @@ export default function CreateTripPage() {
   const { countries, loading: countriesLoading } = useCountries()
   const { uploadImage, uploading: imageUploading, error: imageError } = useImageUpload()
 
-  const uploadPDFFile = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('folder', 'files')
-
-    const response = await fetch('/api/upload/file', {
-      method: 'POST',
-      body: formData,
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error || 'Failed to upload file')
-    }
-
-    const result = await response.json()
-    return result.publicUrl
-  }
-
   const [formData, setFormData] = useState<TripFormData>({
     title: '',
     description: '',
-    price_per_person: 0,
+    price_per_person: '' as any,
     commission_type: 'percentage',
-    commission_value: 0,
+    commission_value: '' as any,
     country_id: '',
     cover_image_url: '',
     file_link: '',
@@ -48,7 +29,7 @@ export default function CreateTripPage() {
         departure_date: '',
         return_date: '',
         registration_deadline: '',
-        available_seats: 1,
+        available_seats: '' as any,
         is_active: true
       }
     ]
@@ -57,8 +38,6 @@ export default function CreateTripPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [fileUploading, setFileUploading] = useState(false)
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -75,7 +54,8 @@ export default function CreateTripPage() {
       newErrors.description = `Description must be at least ${VALIDATION_RULES.DESCRIPTION_MIN_LENGTH} characters`
     }
 
-    if (formData.price_per_person < VALIDATION_RULES.PRICE_MIN || formData.price_per_person > VALIDATION_RULES.PRICE_MAX) {
+    const priceValue = Number(formData.price_per_person)
+    if (!formData.price_per_person || priceValue < VALIDATION_RULES.PRICE_MIN || priceValue > VALIDATION_RULES.PRICE_MAX) {
       newErrors.price_per_person = `Price must be between ฿${VALIDATION_RULES.PRICE_MIN} and ฿${VALIDATION_RULES.PRICE_MAX}`
     }
 
@@ -89,7 +69,8 @@ export default function CreateTripPage() {
       ? VALIDATION_RULES.COMMISSION_MAX_PERCENTAGE
       : VALIDATION_RULES.COMMISSION_MAX_FIXED
 
-    if (formData.commission_value < VALIDATION_RULES.COMMISSION_MIN || formData.commission_value > maxCommission) {
+    const commissionValue = Number(formData.commission_value)
+    if (!formData.commission_value || commissionValue < VALIDATION_RULES.COMMISSION_MIN || commissionValue > maxCommission) {
       newErrors.commission_value = `Commission must be between ${VALIDATION_RULES.COMMISSION_MIN} and ${maxCommission}`
     }
 
@@ -108,7 +89,8 @@ export default function CreateTripPage() {
       if (!schedule.registration_deadline) {
         newErrors[`schedule_${index}_deadline`] = 'Registration deadline is required'
       }
-      if (schedule.available_seats < 1 || schedule.available_seats > 1000) {
+      const seatsValue = Number(schedule.available_seats)
+      if (!schedule.available_seats || seatsValue < 1 || seatsValue > 1000) {
         newErrors[`schedule_${index}_seats`] = `Available seats must be between 1 and 1000`
       }
 
@@ -159,7 +141,7 @@ export default function CreateTripPage() {
             departure_date: '',
             return_date: '',
             registration_deadline: '',
-            available_seats: 1,
+            available_seats: '' as any,
             is_active: true
           }
         ]
@@ -183,7 +165,6 @@ export default function CreateTripPage() {
 
     try {
       let coverImageUrl = formData.cover_image_url
-      let fileUrl = formData.file_link
 
       // Upload image if selected
       if (selectedImage) {
@@ -191,20 +172,15 @@ export default function CreateTripPage() {
         coverImageUrl = await uploadImage(selectedImage, tempTripId)
       }
 
-      // Upload PDF file if selected
-      if (selectedFile) {
-        setFileUploading(true)
-        try {
-          fileUrl = await uploadPDFFile(selectedFile)
-        } finally {
-          setFileUploading(false)
-        }
-      }
-
       const tripData = {
         ...formData,
         cover_image_url: coverImageUrl,
-        file_link: fileUrl
+        price_per_person: Number(formData.price_per_person) || 0,
+        commission_value: Number(formData.commission_value) || 0,
+        schedules: formData.schedules.map(schedule => ({
+          ...schedule,
+          available_seats: Number(schedule.available_seats) || 1
+        }))
       }
 
       await createTrip(tripData)
@@ -214,7 +190,7 @@ export default function CreateTripPage() {
     }
   }
 
-  const loading = tripLoading || imageUploading || fileUploading
+  const loading = tripLoading || imageUploading
   const error = tripError || imageError
 
   // Prepare countries data for combobox
@@ -347,6 +323,7 @@ export default function CreateTripPage() {
                   max={VALIDATION_RULES.PRICE_MAX}
                   className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.price_per_person ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}
+                  placeholder="เช่น 25000"
                 />
                 {errors.price_per_person && <p className="mt-2 text-sm text-red-600 font-medium">{errors.price_per_person}</p>}
               </div>
@@ -389,6 +366,7 @@ export default function CreateTripPage() {
                   step={formData.commission_type === 'percentage' ? '0.1' : '1'}
                   className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors.commission_value ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}
+                  placeholder={formData.commission_type === 'percentage' ? 'เช่น 10' : 'เช่น 2000'}
                 />
                 {errors.commission_value && <p className="mt-2 text-sm text-red-600 font-medium">{errors.commission_value}</p>}
               </div>
@@ -438,75 +416,36 @@ export default function CreateTripPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ไฟล์เอกสารประกอบ (PDF)
+                  ลิงก์เอกสารประกอบ (Google Drive, Dropbox, etc.)
                 </label>
-                <div className="space-y-3">
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        if (file.type !== 'application/pdf') {
-                          toast.error('กรุณาเลือกไฟล์ PDF เท่านั้น')
-                          e.target.value = ''
-                          return
-                        }
-                        if (file.size > 20 * 1024 * 1024) {
-                          toast.error('ขนาดไฟล์ต้องไม่เกิน 20MB')
-                          e.target.value = ''
-                          return
-                        }
-                        setSelectedFile(file)
-                      } else {
-                        setSelectedFile(null)
-                      }
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                  />
-                  {selectedFile && (
-                    <div className="p-3 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                        </svg>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedFile(null)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {formData.file_link && !selectedFile && (
-                    <div className="mt-3">
-                      <a
-                        href={formData.file_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 hover:text-red-800 transition-colors duration-200 text-sm font-medium"
-                      >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
-                        </svg>
-                        ดูเอกสารประกอบ
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </div>
-                  )}
-                </div>
+                <input
+                  type="url"
+                  value={formData.file_link}
+                  onChange={(e) => setFormData({ ...formData, file_link: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                  placeholder="https://drive.google.com/file/..."
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  สามารถใส่ลิงก์ไปยังเอกสารบน Google Drive, Dropbox หรือแหล่งอื่นๆ
+                </p>
+                {formData.file_link && (
+                  <div className="mt-3">
+                    <a
+                      href={formData.file_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200 text-sm font-medium"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      ดูลิงก์เอกสารประกอบ
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -610,6 +549,7 @@ export default function CreateTripPage() {
                         max={1000}
                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${errors[`schedule_${index}_seats`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
                           }`}
+                        placeholder="เช่น 30"
                       />
                       {errors[`schedule_${index}_seats`] && (
                         <p className="mt-2 text-sm text-red-600 font-medium">{errors[`schedule_${index}_seats`]}</p>
