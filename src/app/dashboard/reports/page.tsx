@@ -208,9 +208,17 @@ export default function ReportsPage() {
     if (selectedPeriod === 'all') return bookings || []
 
     const now = new Date()
-    const startOfDay = new Date(now.setHours(0, 0, 0, 0))
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()))
+
+    // Create separate date objects to avoid mutation issues
+    const startOfDay = new Date(now)
+    startOfDay.setHours(0, 0, 0, 0)
+
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    startOfMonth.setHours(0, 0, 0, 0)
 
     return (bookings || []).filter(booking => {
       const bookingDate = new Date(booking.created_at || '')
