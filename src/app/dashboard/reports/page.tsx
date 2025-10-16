@@ -357,7 +357,6 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex items-center gap-1 px-2 py-1 bg-green-50 rounded-full">
                   <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-xs font-semibold text-green-600">+12%</span>
                 </div>
               </div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">รายได้คอมมิชชั่น</h3>
