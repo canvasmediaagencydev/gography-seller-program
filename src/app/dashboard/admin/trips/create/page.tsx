@@ -38,6 +38,7 @@ export default function CreateTripPage() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -159,11 +160,17 @@ export default function CreateTripPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Prevent double submission
+    if (isSubmitting) {
+      return
+    }
+
     if (!validateForm()) {
       return
     }
 
     try {
+      setIsSubmitting(true)
       let coverImageUrl = formData.cover_image_url
 
       // Upload image if selected
@@ -187,10 +194,11 @@ export default function CreateTripPage() {
       router.push('/dashboard/admin/trips')
     } catch (error) {
       console.error('Failed to create trip:', error)
+      setIsSubmitting(false)
     }
   }
 
-  const loading = tripLoading || imageUploading
+  const loading = tripLoading || imageUploading || isSubmitting
   const error = tripError || imageError
 
   // Prepare countries data for combobox
