@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, memo } from 'react'
 import TripImage from './TripImage'
 import SeatIndicator from './ui/SeatIndicator'
+import { CampaignBadge } from './trips/CampaignBadge'
 import { useTripData } from '../hooks/useTripData'
 import { useTripSchedules } from '../hooks/useTripSchedules'
 import { TripCardProps } from '../types/trip'
@@ -124,12 +125,15 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
                     </div>
                 )}
                 <div className="absolute top-3 left-3 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-sm">
-                    <SeatIndicator 
+                    <SeatIndicator
                         availableSeats={getCurrentScheduleSeats()}
                         totalSeats={selectedSchedule?.available_seats || 0}
                         loading={schedulesLoading}
                     />
                 </div>
+
+                {/* Campaign Badge */}
+                <CampaignBadge tripId={trip.id} />
             </div>
 
             {/* Content */}

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
 
     // Apply filters
     if (transactionType) {
-      transactionsQuery = transactionsQuery.eq('transaction_type', transactionType)
+      transactionsQuery = transactionsQuery.eq('transaction_type', transactionType as any)
     }
     if (startDate) {
       transactionsQuery = transactionsQuery.gte('created_at', startDate)

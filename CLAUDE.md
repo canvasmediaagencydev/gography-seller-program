@@ -78,6 +78,12 @@ src/
 - **Bookings**: Customer bookings with status tracking
 - **Customers**: Customer data with referral tracking
 - **Commission System**: Seller commission tracking and payments
+- **Coin System**: Virtual currency reward system for sellers (NEW!)
+  - **seller_coins**: Tracks coin balances per seller
+  - **coin_transactions**: Immutable log of all coin movements
+  - **coin_bonus_campaigns**: Admin-created bonus campaigns
+  - **coin_redemptions**: Cash redemption requests
+  - **coin_earning_rules**: Configurable earning rules
 
 ### Key Features
 1. **Role-based Access**: Admin and Seller roles with different permissions
@@ -85,7 +91,13 @@ src/
 3. **Booking System**: Complete booking workflow with status management
 4. **Commission Tracking**: Automated commission calculation and payment tracking
 5. **Referral System**: Seller referral tracking and commission attribution
-6. **Performance Optimizations**: API caching, database indexes, batch queries
+6. **Coin & Reward System**: Virtual currency for seller incentives (NEW!)
+   - Earn coins from bookings, campaigns, and referrals
+   - Real-time balance updates across all devices
+   - Campaign badges on trip cards
+   - Cash redemption workflow
+   - Admin management dashboard
+7. **Performance Optimizations**: API caching, database indexes, batch queries
 
 ## Development Guidelines
 
@@ -141,6 +153,28 @@ The project uses an in-memory cache (`@/lib/cache.ts`) for API performance. Cach
 
 ### Commission System
 Complex commission calculations are handled server-side with proper tracking of seller attributions and referral bonuses.
+
+### Coin System (NEW!)
+A comprehensive virtual currency and reward system for sellers. See `COIN_SYSTEM_GUIDE.md` for complete documentation.
+
+**Key Routes**:
+- **Seller**: `/dashboard/coins` - View balance, transactions, and redeem coins
+- **Admin**: `/dashboard/admin/coins` - Manage campaigns, redemptions, and rules
+
+**API Endpoints**:
+- `/api/coins` - Get balance and transactions
+- `/api/coins/redeem` - Request cash redemption
+- `/api/coins/campaigns` - View active campaigns
+- `/api/admin/coins/*` - Admin management endpoints
+
+**Components**:
+- `CoinBalanceIndicator` - Real-time balance display in nav
+- `CampaignBadge` - Animated badges on trip cards
+- Full admin dashboard with 5 tabs (Overview, Campaigns, Redemptions, Rules, Manual Adjust)
+
+**Conversion Rate**: 1 coin = 1 THB (configurable)
+
+**Security**: Database triggers handle all coin operations. RLS policies prevent client manipulation.
 
 ## Additional Development Notes
 

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Check if user is admin
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('role')
+      .select('role, email')
       .eq('id', user.id)
       .single()
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       p_seller_id: seller_id,
       p_transaction_type: transactionType,
       p_source_type: 'admin',
-      p_source_id: null,
+      p_source_id: null as any,
       p_amount: amount,
       p_description: description,
       p_metadata: {

@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import SidebarButtonDisabled from '@/components/ui/SidebarButtonDisabled'
+import { CoinBalanceIndicator } from '@/components/coins/CoinBalanceIndicator'
 import Image from 'next/image'
 
 interface UserProfile {
@@ -354,6 +355,13 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           </div>
         </div>
       </div>
+
+      {/* Coin Balance Indicator - Only for sellers */}
+      {userProfile.role !== 'admin' && (
+        <div className="px-6 pt-4">
+          <CoinBalanceIndicator userId={userProfile.id} variant="sidebar" />
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
