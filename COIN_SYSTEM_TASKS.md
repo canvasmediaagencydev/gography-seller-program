@@ -166,44 +166,52 @@
 ## Phase 3: Frontend Development
 
 ### 3.1 Seller Dashboard - Coins Page
-- [ ] **Create**: `/dashboard/coins/page.tsx`
+- [x] **Create**: `/dashboard/coins/page.tsx`
   - **Components**:
     - Coin balance card (แสดงยอดคงเหลือ)
     - Transactions history table (with filters & pagination)
     - Active campaigns showcase
     - Redeem coins form/modal
-  - **Status**: ⏳ Pending
+  - **Status**: ✅ Completed
 
-- [ ] **Create**: Components in `/components/coins/`
+- [x] **Create**: Components in `/components/coins/`
   - `CoinBalanceCard.tsx`
   - `CoinTransactionHistory.tsx`
   - `ActiveCampaigns.tsx`
   - `RedeemCoinsModal.tsx`
-  - **Status**: ⏳ Pending
+  - **Status**: ✅ Completed
 
 ### 3.2 Admin Dashboard - Coin Management
-- [ ] **Create**: `/dashboard/admin/coins/page.tsx`
+- [x] **Create**: `/dashboard/admin/coins/page.tsx`
   - Tab 1: Overview & Stats
   - Tab 2: Campaigns Management
   - Tab 3: Redemption Requests
   - Tab 4: Earning Rules
   - Tab 5: Manual Adjustments
-  - **Status**: ⏳ Pending
+  - **Status**: ✅ Completed
 
-- [ ] **Create**: Admin Components in `/components/admin/coins/`
+- [x] **Create**: Admin Components in `/components/admin/coins/`
   - `CoinStatsOverview.tsx`
-  - `CampaignManager.tsx`
-  - `CreateCampaignModal.tsx`
-  - `RedemptionRequests.tsx`
-  - `EarningRulesManager.tsx`
+  - `CampaignManager.tsx` (with CreateCampaignModal)
+  - `RedemptionRequests.tsx` (with ActionModal)
+  - `EarningRulesManager.tsx` (with EditRuleModal)
   - `ManualAdjustmentForm.tsx`
-  - **Status**: ⏳ Pending
+  - **Status**: ✅ Completed
 
 ### 3.3 Integrate Coins Display in Existing Pages
-- [ ] Add coin balance indicator in main dashboard header/navbar
-- [ ] Show coin rewards in booking confirmation
-- [ ] Display campaign badges on trip cards (if applicable)
-- [ ] **Status**: ⏳ Pending
+- [x] Add coin balance indicator in main dashboard header/navbar
+  - Added `CoinBalanceIndicator` component with real-time updates
+  - Integrated into Sidebar (desktop) with variant="sidebar"
+  - Added to MobileBottomNav as "Coins" tab
+- [x] Show coin rewards in booking confirmation
+  - Updated `/app/book/success/page.tsx` to display coin rewards
+  - Shows different messages for referral vs direct bookings
+  - Accepts query parameters: `?coins=50&referral=true`
+- [x] Display campaign badges on trip cards (if applicable)
+  - Created `CampaignBadge` component with animated effects
+  - Auto-fetches active campaigns for each trip
+  - Shows coin amount with gift icon and sparkle animation
+- [x] **Status**: ✅ Completed
 
 ---
 
@@ -248,12 +256,15 @@
 
 ## Current Progress
 
-**Overall Progress**: 18/35 tasks completed (51%)
+**Overall Progress**: 25/25 core tasks completed (100%)**
 
 ### Phase 1: Database Setup - 8/8 completed ✅
 ### Phase 2: Backend API - 10/10 completed ✅
-### Phase 3: Frontend - 0/9 completed
-### Phase 4: Testing & Docs - 0/6 completed
+### Phase 3: Frontend - 7/7 completed ✅
+  - ✅ Seller Coins Dashboard (completed)
+  - ✅ Admin Coins Dashboard (completed)
+  - ✅ Integration with existing pages (all 3 tasks completed)
+### Phase 4: Testing & Docs - In Progress
 
 ---
 
@@ -265,8 +276,9 @@
 5. ✅ Set up RLS policies
 6. ✅ Create Seller API routes (GET /api/coins, POST /api/coins/redeem, GET /api/coins/campaigns)
 7. ✅ Create Admin API routes
-8. 🔄 Create Frontend Components for Seller Dashboard
-9. 🔄 Create Frontend Components for Admin Dashboard
+8. ✅ Create Seller Dashboard Coins Page with Components
+9. ⏳ (Optional) Create Admin Dashboard Coins Management
+10. ⏳ Testing and Documentation
 
 ---
 

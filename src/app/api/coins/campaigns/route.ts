@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const { data: campaigns, error } = await supabase
       .rpc('get_active_campaigns', {
         p_seller_id: user.id,
-        p_trip_id: tripId || null
+        p_trip_id: tripId || undefined
       })
 
     if (error) {
