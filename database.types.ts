@@ -160,6 +160,235 @@ export type Database = {
           },
         ]
       }
+      coin_bonus_campaigns: {
+        Row: {
+          campaign_type: Database["public"]["Enums"]["campaign_type"]
+          coin_amount: number
+          conditions: Json | null
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean
+          start_date: string
+          target_trip_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_type: Database["public"]["Enums"]["campaign_type"]
+          coin_amount: number
+          conditions?: Json | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean
+          start_date: string
+          target_trip_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_type?: Database["public"]["Enums"]["campaign_type"]
+          coin_amount?: number
+          conditions?: Json | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          start_date?: string
+          target_trip_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_bonus_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coin_bonus_campaigns_target_trip_id_fkey"
+            columns: ["target_trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coin_bonus_campaigns_target_trip_id_fkey"
+            columns: ["target_trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips_with_next_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coin_earning_rules: {
+        Row: {
+          calculation_type: Database["public"]["Enums"]["calculation_type"]
+          coin_amount: number
+          conditions: Json | null
+          created_at: string
+          id: string
+          is_active: boolean
+          priority: number
+          rule_name: string
+          rule_type: Database["public"]["Enums"]["rule_type"]
+          updated_at: string
+        }
+        Insert: {
+          calculation_type?: Database["public"]["Enums"]["calculation_type"]
+          coin_amount: number
+          conditions?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          rule_name: string
+          rule_type: Database["public"]["Enums"]["rule_type"]
+          updated_at?: string
+        }
+        Update: {
+          calculation_type?: Database["public"]["Enums"]["calculation_type"]
+          coin_amount?: number
+          conditions?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          priority?: number
+          rule_name?: string
+          rule_type?: Database["public"]["Enums"]["rule_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coin_redemptions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          bank_account_id: string
+          cash_amount: number
+          coin_amount: number
+          conversion_rate: number
+          id: string
+          notes: string | null
+          paid_at: string | null
+          rejection_reason: string | null
+          requested_at: string
+          seller_id: string
+          status: Database["public"]["Enums"]["redemption_status"]
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_id: string
+          cash_amount: number
+          coin_amount: number
+          conversion_rate?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          seller_id: string
+          status?: Database["public"]["Enums"]["redemption_status"]
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_id?: string
+          cash_amount?: number
+          coin_amount?: number
+          conversion_rate?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          rejection_reason?: string | null
+          requested_at?: string
+          seller_id?: string
+          status?: Database["public"]["Enums"]["redemption_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_redemptions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coin_redemptions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coin_redemptions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coin_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          seller_id: string
+          source_id: string | null
+          source_type: Database["public"]["Enums"]["coin_source_type"]
+          transaction_type: Database["public"]["Enums"]["coin_transaction_type"]
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          balance_before: number
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          seller_id: string
+          source_id?: string | null
+          source_type: Database["public"]["Enums"]["coin_source_type"]
+          transaction_type: Database["public"]["Enums"]["coin_transaction_type"]
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          balance_before?: number
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          seller_id?: string
+          source_id?: string | null
+          source_type?: Database["public"]["Enums"]["coin_source_type"]
+          transaction_type?: Database["public"]["Enums"]["coin_transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coin_transactions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_payments: {
         Row: {
           amount: number
@@ -321,6 +550,41 @@ export type Database = {
             foreignKeyName: "sales_targets_seller_id_fkey"
             columns: ["seller_id"]
             isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_coins: {
+        Row: {
+          balance: number
+          created_at: string
+          seller_id: string
+          total_earned: number
+          total_redeemed: number
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          seller_id: string
+          total_earned?: number
+          total_redeemed?: number
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          seller_id?: string
+          total_earned?: number
+          total_redeemed?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_coins_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: true
             referencedRelation: "user_profiles"
             referencedColumns: ["id"]
           },
@@ -589,6 +853,35 @@ export type Database = {
       }
     }
     Functions: {
+      add_coin_transaction: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_metadata?: Json
+          p_seller_id: string
+          p_source_id: string
+          p_source_type: Database["public"]["Enums"]["coin_source_type"]
+          p_transaction_type: Database["public"]["Enums"]["coin_transaction_type"]
+        }
+        Returns: string
+      }
+      calculate_sales_target_bonus: {
+        Args: { p_month: string; p_seller_id: string }
+        Returns: number
+      }
+      get_active_campaigns: {
+        Args: { p_seller_id?: string; p_trip_id?: string }
+        Returns: {
+          campaign_type: Database["public"]["Enums"]["campaign_type"]
+          coin_amount: number
+          description: string
+          end_date: string
+          id: string
+          start_date: string
+          target_trip_id: string
+          title: string
+        }[]
+      }
       get_available_countries: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -646,6 +939,10 @@ export type Database = {
         }
         Returns: Json
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_storage_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -660,7 +957,25 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      calculation_type: "fixed" | "percentage" | "tier"
+      campaign_type:
+        | "trip_specific"
+        | "date_specific"
+        | "sales_milestone"
+        | "general"
+      coin_source_type:
+        | "booking"
+        | "sales_target"
+        | "referral"
+        | "campaign"
+        | "admin"
+      coin_transaction_type: "earn" | "redeem" | "bonus" | "adjustment"
+      redemption_status: "pending" | "approved" | "rejected" | "paid"
+      rule_type:
+        | "booking_approved"
+        | "sales_target_monthly"
+        | "referral_first_sale"
+        | "referral_signup"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -787,6 +1102,29 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      calculation_type: ["fixed", "percentage", "tier"],
+      campaign_type: [
+        "trip_specific",
+        "date_specific",
+        "sales_milestone",
+        "general",
+      ],
+      coin_source_type: [
+        "booking",
+        "sales_target",
+        "referral",
+        "campaign",
+        "admin",
+      ],
+      coin_transaction_type: ["earn", "redeem", "bonus", "adjustment"],
+      redemption_status: ["pending", "approved", "rejected", "paid"],
+      rule_type: [
+        "booking_approved",
+        "sales_target_monthly",
+        "referral_first_sale",
+        "referral_signup",
+      ],
+    },
   },
 } as const
