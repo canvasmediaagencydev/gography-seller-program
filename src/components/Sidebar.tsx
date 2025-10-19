@@ -230,6 +230,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           label: 'ลูกค้า',
           href: '/dashboard/admin/customers',
           isActive: pathname === '/dashboard/admin/customers'
+        },
+        {
+          icon: <CoinsIcon size={18} />,
+          label: 'Coins Management',
+          href: '/dashboard/admin/coins',
+          isActive: pathname === '/dashboard/admin/coins'
         }
       )
     } else {

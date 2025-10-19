@@ -53,157 +53,197 @@ export function CoinStatsOverview() {
 
   return (
     <div className="space-y-6">
-      {/* Main Stats Grid */}
+      {/* Clean Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Distributed */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              Total Distributed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-600 dark:text-green-500">
-              {stats.total_distributed.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">coins given to sellers</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">Total</span>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Distributed</h3>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-3xl font-bold text-gray-900">
+                {stats.total_distributed.toLocaleString()}
+              </p>
+              <span className="text-sm font-medium text-gray-500">coins</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">แจกจ่ายให้ผู้ขายทั้งหมด</p>
+          </div>
+        </div>
 
         {/* Total Redeemed */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-blue-500" />
-              Total Redeemed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-500">
-              {stats.total_redeemed.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">coins exchanged for cash</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <TrendingDown className="h-5 w-5 text-blue-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">Redeemed</span>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Redeemed</h3>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-3xl font-bold text-gray-900">
+                {stats.total_redeemed.toLocaleString()}
+              </p>
+              <span className="text-sm font-medium text-gray-500">coins</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">แลกเป็นเงินสดแล้ว</p>
+          </div>
+        </div>
 
         {/* Current Balance */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <CoinsIcon className="h-4 w-4 text-yellow-500" />
-              Current Balance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-500">
-              {stats.current_balance.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">total coins in circulation</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <CoinsIcon className="h-5 w-5 text-amber-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">Active</span>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Current Balance</h3>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-3xl font-bold text-gray-900">
+                {stats.current_balance.toLocaleString()}
+              </p>
+              <span className="text-sm font-medium text-gray-500">coins</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">คงเหลือในระบบ</p>
+          </div>
+        </div>
 
         {/* Active Sellers */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="h-4 w-4 text-purple-500" />
-              Active Sellers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-purple-600 dark:text-purple-500">
-              {stats.sellers_with_coins.toLocaleString()}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">sellers with coins</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-slate-50 rounded-lg">
+                <Users className="h-5 w-5 text-slate-600" />
+              </div>
+              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">Sellers</span>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Active Sellers</h3>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-3xl font-bold text-gray-900">
+                {stats.sellers_with_coins.toLocaleString()}
+              </p>
+              <span className="text-sm font-medium text-gray-500">คน</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">ผู้ขายที่มี Coins</p>
+          </div>
+        </div>
       </div>
 
-      {/* Redemption Stats */}
+      {/* Clean Redemption Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Pending Redemptions */}
-        <Card className="border-2 border-orange-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-500" />
-              Pending Redemptions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded">
-              <span className="text-sm font-medium">Requests:</span>
-              <span className="text-2xl font-bold text-orange-600 dark:text-orange-500">
-                {stats.pending_redemptions.count}
-              </span>
+        <div className="bg-white rounded-lg shadow-sm border border-orange-200 hover:shadow-md transition-shadow">
+          <div className="p-5 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <AlertCircle className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Pending Redemptions</h3>
+                <p className="text-xs text-gray-500">รอการอนุมัติ</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">คำขอทั้งหมด</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-gray-900">
+                  {stats.pending_redemptions.count}
+                </span>
+                <span className="text-sm text-gray-500">คำขอ</span>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-muted rounded">
-                <p className="text-xs text-muted-foreground mb-1">Coins</p>
-                <p className="text-lg font-bold">
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-xs font-medium text-gray-500 mb-1">Coins</p>
+                <p className="text-xl font-bold text-gray-900">
                   {stats.pending_redemptions.coins.toLocaleString()}
                 </p>
               </div>
-              <div className="p-3 bg-muted rounded">
-                <p className="text-xs text-muted-foreground mb-1">Cash (THB)</p>
-                <p className="text-lg font-bold">
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-xs font-medium text-gray-500 mb-1">Cash (฿)</p>
+                <p className="text-xl font-bold text-gray-900">
                   {stats.pending_redemptions.cash.toLocaleString()}
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Approved Redemptions */}
-        <Card className="border-2 border-blue-500/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CoinsIcon className="h-5 w-5 text-blue-500" />
-              Approved (Pending Payment)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
-              <span className="text-sm font-medium">Requests:</span>
-              <span className="text-2xl font-bold text-blue-600 dark:text-blue-500">
-                {stats.approved_redemptions.count}
-              </span>
+        <div className="bg-white rounded-lg shadow-sm border border-blue-200 hover:shadow-md transition-shadow">
+          <div className="p-5 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <CoinsIcon className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Approved Redemptions</h3>
+                <p className="text-xs text-gray-500">รอการจ่ายเงิน</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+              <span className="text-sm font-medium text-gray-700">คำขอที่อนุมัติ</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-gray-900">
+                  {stats.approved_redemptions.count}
+                </span>
+                <span className="text-sm text-gray-500">คำขอ</span>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-muted rounded">
-                <p className="text-xs text-muted-foreground mb-1">Coins</p>
-                <p className="text-lg font-bold">
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-xs font-medium text-gray-500 mb-1">Coins</p>
+                <p className="text-xl font-bold text-gray-900">
                   {stats.approved_redemptions.coins.toLocaleString()}
                 </p>
               </div>
-              <div className="p-3 bg-muted rounded">
-                <p className="text-xs text-muted-foreground mb-1">Cash (THB)</p>
-                <p className="text-lg font-bold">
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-xs font-medium text-gray-500 mb-1">Cash (฿)</p>
+                <p className="text-xl font-bold text-gray-900">
                   {stats.approved_redemptions.cash.toLocaleString()}
                 </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Active Campaigns */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GiftIcon className="h-5 w-5 text-purple-500" />
-            Active Campaigns
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold text-purple-600 dark:text-purple-500">
-            {stats.active_campaigns}
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            campaigns currently running
-          </p>
-        </CardContent>
-      </Card>
+      {/* Clean Active Campaigns */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-slate-100 rounded-lg">
+                <GiftIcon className="h-6 w-6 text-slate-700" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Active Campaigns</h3>
+                <p className="text-sm text-gray-500">แคมเปญที่กำลังดำเนินการ</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-baseline gap-1.5">
+                <p className="text-4xl font-bold text-gray-900">
+                  {stats.active_campaigns}
+                </p>
+                <span className="text-lg font-medium text-gray-500">แคมเปญ</span>
+              </div>
+              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded mt-1 inline-block">Currently Running</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
