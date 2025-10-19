@@ -1,7 +1,4 @@
 import { Pagination } from '@/components/ui/Pagination'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { HistoryIcon, CoinsIcon, Clock, TrendingUp, TrendingDown } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -38,13 +35,7 @@ export function CoinTransactionHistory({
   currentPage,
   totalPages,
   totalCount,
-  onPageChange,
-  transactionType,
-  onTransactionTypeChange,
-  startDate,
-  onStartDateChange,
-  endDate,
-  onEndDateChange
+  onPageChange
 }: CoinTransactionHistoryProps) {
 
   const getTransactionBadge = (type: string, amount: number) => {
@@ -123,47 +114,6 @@ export function CoinTransactionHistory({
               <span className="text-sm font-bold text-gray-900">{totalCount}</span>
               <span className="text-sm text-gray-600"> รายการ</span>
             </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div>
-            <Label htmlFor="transaction-type" className="text-xs font-semibold text-gray-700 uppercase">Type</Label>
-            <Select value={transactionType} onValueChange={onTransactionTypeChange}>
-              <SelectTrigger id="transaction-type" className="mt-1">
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                <SelectItem value="earn">Earn</SelectItem>
-                <SelectItem value="bonus">Bonus</SelectItem>
-                <SelectItem value="redeem">Redeem</SelectItem>
-                <SelectItem value="adjustment">Adjustment</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="start-date" className="text-xs font-semibold text-gray-700 uppercase">Start Date</Label>
-            <Input
-              id="start-date"
-              type="date"
-              value={startDate}
-              onChange={(e) => onStartDateChange(e.target.value)}
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="end-date" className="text-xs font-semibold text-gray-700 uppercase">End Date</Label>
-            <Input
-              id="end-date"
-              type="date"
-              value={endDate}
-              onChange={(e) => onEndDateChange(e.target.value)}
-              className="mt-1"
-            />
           </div>
         </div>
       </div>

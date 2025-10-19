@@ -204,20 +204,25 @@ export default function CoinsPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/10 to-amber-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl shadow-lg shadow-yellow-500/30">
+                <div className="p-3 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl shadow-lg shadow-yellow-500/30 group-hover:scale-110 transition-transform duration-300">
                   <CoinsIcon className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-50 rounded-full">
-                  <TrendingUp className="w-4 h-4 text-yellow-600" />
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-yellow-50 rounded-full">
+                  <TrendingUp className="w-3.5 h-3.5 text-yellow-600" />
+                  <span className="text-xs font-semibold text-yellow-700">Active</span>
                 </div>
               </div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">ยอด Coins คงเหลือ</h3>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-4xl font-bold text-gray-900">
                   {balance?.balance.toLocaleString() || '0'}
                 </p>
+                <span className="text-lg font-semibold text-gray-500">Coins</span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">พร้อมใช้งาน</p>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">พร้อมใช้งาน</p>
+                <p className="text-xs font-semibold text-amber-600">≈ ฿{balance?.balance.toLocaleString() || '0'}</p>
+              </div>
             </div>
           </div>
 
@@ -226,20 +231,27 @@ export default function CoinsPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-500/30">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform duration-300">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex items-center gap-1 px-2 py-1 bg-green-50 rounded-full">
-                  <Gift className="w-4 h-4 text-green-600" />
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-green-50 rounded-full">
+                  <Gift className="w-3.5 h-3.5 text-green-600" />
                 </div>
               </div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">Coins ที่ได้รับทั้งหมด</h3>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-4xl font-bold text-gray-900">
                   {balance?.total_earned.toLocaleString() || '0'}
                 </p>
+                <span className="text-lg font-semibold text-gray-500">Coins</span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">สะสมตั้งแต่เริ่มใช้งาน</p>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">สะสมตั้งแต่เริ่มใช้งาน</p>
+                <div className="flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-semibold text-green-600">รับต่อเนื่อง</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -248,20 +260,24 @@ export default function CoinsPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg shadow-purple-500/30">
+                <div className="p-3 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-300">
                   <Gift className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex items-center gap-1 px-2 py-1 bg-purple-50 rounded-full">
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-purple-50 rounded-full">
                   <span className="text-xs font-semibold text-purple-600">{(balance?.total_redeemed || 0) > 0 ? 'แลกแล้ว' : 'ยังไม่ได้แลก'}</span>
                 </div>
               </div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">Coins ที่แลกไปแล้ว</h3>
               <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="text-4xl font-bold text-gray-900">
                   {balance?.total_redeemed.toLocaleString() || '0'}
                 </p>
+                <span className="text-lg font-semibold text-gray-500">Coins</span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">≈ ฿{balance?.total_redeemed.toLocaleString() || '0'}</p>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">มูลค่าที่แลกแล้ว</p>
+                <p className="text-xs font-semibold text-purple-600">≈ ฿{balance?.total_redeemed.toLocaleString() || '0'}</p>
+              </div>
             </div>
           </div>
         </div>
