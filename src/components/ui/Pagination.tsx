@@ -4,21 +4,21 @@ interface PaginationProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
-  itemsPerPage: number
-  totalItems: number
+  itemsPerPage?: number
+  totalItems?: number
 }
 
-export function Pagination({ 
-  currentPage, 
-  totalPages, 
-  onPageChange, 
-  itemsPerPage, 
-  totalItems 
+export function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  itemsPerPage = 10,
+  totalItems = 0
 }: PaginationProps) {
   if (totalPages <= 1) return null
 
-  const startItem = (currentPage - 1) * itemsPerPage + 1
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+  const startItem = itemsPerPage && totalItems ? (currentPage - 1) * itemsPerPage + 1 : 0
+  const endItem = itemsPerPage && totalItems ? Math.min(currentPage * itemsPerPage, totalItems) : 0
 
   const getPageNumbers = () => {
     const pages = []
