@@ -71,7 +71,7 @@ export function CoinBalanceIndicator({
   if (loading) {
     if (variant === 'sidebar') {
       return (
-        <div className="relative flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-br from-amber-50/50 via-yellow-50/50 to-amber-50/50 dark:from-yellow-900/10 dark:via-amber-900/10 dark:to-yellow-900/10 border border-amber-200/30 dark:border-yellow-800/30 animate-pulse">
+        <div className="relative flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-br from-amber-50/50 via-yellow-50/50 to-amber-50/50 dark:from-yellow-900/10 dark:via-amber-900/10 dark:to-yellow-900/10 animate-pulse">
           <div className="p-2.5 bg-gradient-to-br from-amber-400/50 to-yellow-500/50 rounded-xl">
             <CoinsIcon className="h-5 w-5 text-white animate-pulse" />
           </div>
@@ -117,7 +117,7 @@ export function CoinBalanceIndicator({
     return (
       <Link
         href="/dashboard/coins"
-        className="group relative flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:via-amber-900/20 dark:to-yellow-900/20 hover:from-amber-100 hover:via-yellow-100 hover:to-amber-100 dark:hover:from-yellow-900/30 dark:hover:via-amber-900/30 dark:hover:to-yellow-900/30 transition-all duration-300 border border-amber-200/50 dark:border-yellow-800/50 hover:border-amber-300 dark:hover:border-yellow-700 shadow-sm hover:shadow-md overflow-hidden"
+        className="group relative flex items-center gap-3 px-5 py-3.5 rounded-full  hover:from-amber-100 hover:via-yellow-100 hover:to-amber-100 dark:hover:from-yellow-900/30 dark:hover:via-amber-900/30 dark:hover:to-yellow-900/30 transition-all duration-300 shadow-md hover:shadow-md overflow-hidden"
       >
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
