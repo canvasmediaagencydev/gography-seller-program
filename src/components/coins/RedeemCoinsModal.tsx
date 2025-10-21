@@ -12,9 +12,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CoinsIcon, BanknoteIcon, AlertCircle, CheckCircle } from 'lucide-react'
+import { CoinsIcon, BanknoteIcon, AlertCircle, CheckCircle, Building2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface BankAccount {
@@ -33,17 +32,16 @@ interface RedeemCoinsModalProps {
 
 export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemCoinsModalProps) {
   const [coinAmount, setCoinAmount] = useState('')
-  const [selectedBankAccount, setSelectedBankAccount] = useState('')
-  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([])
+  const [bankAccount, setBankAccount] = useState<BankAccount | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
   useEffect(() => {
-    fetchBankAccounts()
+    fetchBankAccount()
   }, [])
 
-  const fetchBankAccounts = async () => {
+  const fetchBankAccount = async () => {
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -53,19 +51,13 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
         .from('bank_accounts')
         .select('*')
         .eq('seller_id', user.id)
-        .order('is_primary', { ascending: false })
+        .single()
 
       if (error) throw error
 
-      setBankAccounts(data || [])
-
-      // Auto-select primary account
-      const primaryAccount = data?.find(acc => acc.is_primary)
-      if (primaryAccount) {
-        setSelectedBankAccount(primaryAccount.id)
-      }
+      setBankAccount(data)
     } catch (err: any) {
-      console.error('Error fetching bank accounts:', err)
+      console.error('Error fetching bank account:', err)
     }
   }
 
@@ -86,8 +78,8 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
       return
     }
 
-    if (!selectedBankAccount) {
-      setError('Please select a bank account')
+    if (!bankAccount) {
+      setError('Please add a bank account in your profile first')
       return
     }
 
@@ -101,7 +93,7 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
         },
         body: JSON.stringify({
           coin_amount: amount,
-          bank_account_id: selectedBankAccount
+          bank_account_id: bankAccount.id
         })
       })
 
@@ -129,12 +121,16 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
   if (success) {
     return (
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[450px] bg-white">
           <div className="text-center py-6">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-xl font-bold mb-2">Redemption Request Submitted!</h3>
-            <p className="text-muted-foreground">
-              Your request to redeem {parseFloat(coinAmount).toLocaleString()} coins has been submitted successfully.
+            <div className="h-16 w-16 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-9 w-9 text-white" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Request Submitted!</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Your request to redeem <span className="font-semibold text-gray-900">{parseFloat(coinAmount).toLocaleString()} coins</span> has been submitted.
+            </p>
+            <p className="text-xs text-gray-500">
               An admin will review and process your request soon.
             </p>
           </div>
@@ -145,42 +141,47 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[480px] bg-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CoinsIcon className="h-5 w-5 text-yellow-500" />
-            Redeem Coins
-          </DialogTitle>
+          <DialogTitle className="text-xl">Redeem Coins</DialogTitle>
           <DialogDescription>
-            Convert your coins to cash. 1 coin = 1 THB
+            Convert your coins to cash (1 coin = 1 THB)
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           {/* Current Balance */}
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
-            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-500">
-              {currentBalance.toLocaleString()} coins
-            </p>
+          <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div>
+              <p className="text-xs text-gray-600 mb-1">Available Balance</p>
+              <p className="text-2xl font-bold text-yellow-700">
+                {currentBalance.toLocaleString()}
+              </p>
+            </div>
+            <CoinsIcon className="h-8 w-8 text-yellow-600" />
           </div>
 
           {/* Coin Amount Input */}
           <div className="space-y-2">
-            <Label htmlFor="coin-amount">Coin Amount</Label>
-            <Input
-              id="coin-amount"
-              type="number"
-              min="1"
-              max={currentBalance}
-              step="1"
-              value={coinAmount}
-              onChange={(e) => setCoinAmount(e.target.value)}
-              placeholder="Enter amount to redeem"
-              required
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Minimum: 1 coin</span>
+            <Label htmlFor="coin-amount">Amount to Redeem</Label>
+            <div className="relative">
+              <Input
+                id="coin-amount"
+                type="number"
+                min="1"
+                max={currentBalance}
+                step="1"
+                value={coinAmount}
+                onChange={(e) => setCoinAmount(e.target.value)}
+                placeholder="Enter amount"
+                className="pr-16"
+                required
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                coins
+              </span>
+            </div>
+            <div className="flex justify-end">
               <Button
                 type="button"
                 variant="link"
@@ -188,53 +189,47 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
                 className="h-auto p-0 text-xs"
                 onClick={() => setCoinAmount(currentBalance.toString())}
               >
-                Use maximum
+                Use all
               </Button>
             </div>
           </div>
 
           {/* Cash Amount Display */}
           {coinAmount && parseFloat(coinAmount) > 0 && (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BanknoteIcon className="h-5 w-5 text-green-600 dark:text-green-500" />
-                  <span className="font-medium">You will receive:</span>
+                  <BanknoteIcon className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-medium">You will receive</span>
                 </div>
-                <span className="text-xl font-bold text-green-600 dark:text-green-500">
-                  {cashAmount.toLocaleString()} THB
-                </span>
+                <p className="text-2xl font-bold text-green-700">
+                  ฿{cashAmount.toLocaleString()}
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Conversion rate: 1 coin = {conversionRate} THB
-              </p>
             </div>
           )}
 
-          {/* Bank Account Selection */}
+          {/* Bank Account Display */}
           <div className="space-y-2">
-            <Label htmlFor="bank-account">Bank Account</Label>
-            {bankAccounts.length === 0 ? (
-              <Alert>
+            <Label>Bank Account</Label>
+            {!bankAccount ? (
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  No bank account found. Please add a bank account in your profile first.
+                  No bank account found. Please add one in your profile first.
                 </AlertDescription>
               </Alert>
             ) : (
-              <Select value={selectedBankAccount} onValueChange={setSelectedBankAccount} required>
-                <SelectTrigger id="bank-account">
-                  <SelectValue placeholder="Select bank account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {bankAccounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.bank_name} - {account.account_number} ({account.account_name})
-                      {account.is_primary && ' (Primary)'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-start gap-3">
+                  <Building2 className="h-5 w-5 text-gray-600 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900">{bankAccount.bank_name}</p>
+                    <p className="text-sm font-mono text-gray-600">{bankAccount.account_number}</p>
+                    <p className="text-sm text-gray-500">{bankAccount.account_name}</p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
@@ -246,11 +241,19 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
             </Alert>
           )}
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
+          <DialogFooter className="gap-2 mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || bankAccounts.length === 0}>
+            <Button
+              type="submit"
+              disabled={loading || !bankAccount}
+            >
               {loading ? 'Processing...' : 'Submit Request'}
             </Button>
           </DialogFooter>

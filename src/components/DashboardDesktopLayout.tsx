@@ -54,7 +54,7 @@ export default function DashboardDesktopLayout({ children, initialProfile }: Das
   }, [])
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen ">
       {/* Desktop Sidebar */}
       <Sidebar initialProfile={currentProfile} />
 
