@@ -15,27 +15,6 @@ export default function AdminCoinsPage() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Clean Professional Header */}
-        <div className="bg-white border-b border-gray-200 rounded-lg shadow-sm">
-          <div className="px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <CoinsIcon className="h-6 w-6 text-slate-700" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Coin System Management
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-0.5">
-                    จัดการระบบ Coins, แคมเปญ, การแลก และกำหนดกฎการได้รับ Coins
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Clean Minimal Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">

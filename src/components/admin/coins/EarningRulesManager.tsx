@@ -212,7 +212,7 @@ function EditRuleModal({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white">
         <DialogHeader>
           <DialogTitle>Edit Earning Rule</DialogTitle>
           <DialogDescription>
@@ -255,7 +255,7 @@ function EditRuleModal({
             </p>
           </div>
 
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-gray-400">
             <div>
               <Label htmlFor="is_active">Active Status</Label>
               <p className="text-xs text-muted-foreground">
@@ -266,6 +266,7 @@ function EditRuleModal({
               id="is_active"
               checked={formData.is_active}
               onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+              className='bg-white'
             />
           </div>
 
