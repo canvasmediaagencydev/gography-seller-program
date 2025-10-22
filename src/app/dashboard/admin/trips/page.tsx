@@ -73,15 +73,11 @@ export default function AdminTripsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-            <div>
-              <h1 className="text-xl font-medium text-gray-900 mb-1">จัดการทริป</h1>
-              <p className="text-gray-600 text-sm">สร้าง แก้ไข และจัดการทริปทั้งหมด</p>
-            </div>
+          <div className="flex flex-col lg:flex-row lg:justify-end lg:items-start gap-6">
             <Link
               href="/dashboard/admin/trips/create"
               className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-800 transition-colors flex items-center gap-2 text-sm"
