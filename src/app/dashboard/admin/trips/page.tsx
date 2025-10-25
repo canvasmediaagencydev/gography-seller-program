@@ -5,9 +5,21 @@ import { useState, useMemo, useCallback } from 'react'
 import { useAdminTrips } from '@/hooks/useAdminTrips'
 import TripImage from '@/components/TripImage'
 import { showConfirmDialog } from '@/lib/confirm-dialog'
+import { Pagination } from '@/components/ui/Pagination'
 
 export default function AdminTripsPage() {
-  const { trips, loading, error, deleteTrip, toggleTripStatus } = useAdminTrips()
+  const {
+    trips,
+    loading,
+    error,
+    totalCount,
+    currentPage,
+    totalPages,
+    pageSize,
+    setCurrentPage,
+    deleteTrip,
+    toggleTripStatus
+  } = useAdminTrips(6) // 6 trips per page
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
 
@@ -91,8 +103,9 @@ export default function AdminTripsPage() {
         </div>
 
         {trips && trips.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {trips.map((trip) => (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {trips.map((trip) => (
               <div key={trip.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
                 {/* Trip Image */}
                 {trip.cover_image_url && (
@@ -232,8 +245,20 @@ export default function AdminTripsPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                itemsPerPage={pageSize}
+                totalItems={totalCount}
+              />
+            )}
+          </>
         ) : (
           <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
             <svg className="mx-auto h-16 w-16 text-gray-400 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
