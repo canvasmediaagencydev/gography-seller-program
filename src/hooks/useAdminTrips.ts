@@ -7,6 +7,11 @@ export interface UseAdminTripsResult {
   trips: Trip[]
   loading: boolean
   error: string | null
+  totalCount: number
+  currentPage: number
+  totalPages: number
+  pageSize: number
+  setCurrentPage: (page: number) => void
   createTrip: (tripData: TripFormData) => Promise<Trip>
   updateTrip: (id: string, tripData: TripFormData) => Promise<Trip>
   deleteTrip: (id: string) => Promise<void>
@@ -202,15 +207,20 @@ export function useAdminTrips(pageSize: number = 10): UseAdminTripsResult {
     await fetchTrips(currentPage, '', true) // Force refresh
   }
 
-  // Fetch trips on component mount
+  // Fetch trips on component mount and when page changes
   useEffect(() => {
-    fetchTrips()
-  }, [])
+    fetchTrips(currentPage)
+  }, [currentPage])
 
   return {
     trips,
     loading,
     error,
+    totalCount,
+    currentPage,
+    totalPages,
+    pageSize,
+    setCurrentPage,
     createTrip,
     updateTrip,
     deleteTrip,
