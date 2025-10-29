@@ -73,12 +73,21 @@ export async function GET(request: NextRequest) {
     const result = {
       balance: coinBalance || {
         seller_id: user.id,
-        balance: 0,
+        locked_balance: 0,
+        redeemable_balance: 0,
+        total_balance: 0,
         total_earned: 0,
         total_redeemed: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       },
+      // Calculate total_balance if coinBalance exists
+      ...(coinBalance && {
+        balance: {
+          ...coinBalance,
+          total_balance: (coinBalance.locked_balance || 0) + (coinBalance.redeemable_balance || 0)
+        }
+      }),
       transactions: transactions || [],
       pagination: {
         page,

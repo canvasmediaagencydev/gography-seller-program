@@ -46,12 +46,14 @@ export async function GET(request: NextRequest) {
 
     const totalRedeemed = totalRedeemedData?.reduce((sum, item) => sum + (Number(item.total_redeemed) || 0), 0) || 0
 
-    // Get current total balance
+    // Get current total earning and redeemable balances
     const { data: balanceData } = await supabase
       .from('seller_coins')
-      .select('balance')
+      .select('locked_balance, redeemable_balance')
 
-    const currentBalance = balanceData?.reduce((sum, item) => sum + (Number(item.balance) || 0), 0) || 0
+    const totalEarningBalance = balanceData?.reduce((sum, item) => sum + (Number(item.locked_balance) || 0), 0) || 0
+    const totalRedeemableBalance = balanceData?.reduce((sum, item) => sum + (Number(item.redeemable_balance) || 0), 0) || 0
+    const currentBalance = totalEarningBalance + totalRedeemableBalance
 
     // Get pending redemptions
     const { data: pendingRedemptions, count: pendingCount } = await supabase
@@ -71,23 +73,28 @@ export async function GET(request: NextRequest) {
     const approvedCoins = approvedRedemptions?.reduce((sum, item) => sum + (Number(item.coin_amount) || 0), 0) || 0
     const approvedCash = approvedRedemptions?.reduce((sum, item) => sum + (Number(item.cash_amount) || 0), 0) || 0
 
-    // Get active campaigns count
+    // Get active gamification campaigns count
     const { count: activeCampaignsCount } = await supabase
-      .from('coin_bonus_campaigns')
+      .from('gamification_campaigns')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
       .gte('end_date', new Date().toISOString())
 
-    // Get active sellers with coins
-    const { count: sellersWithCoinsCount } = await supabase
+    // Get active sellers with coins (either earning or redeemable)
+    const { data: sellersData } = await supabase
       .from('seller_coins')
-      .select('*', { count: 'exact', head: true })
-      .gt('balance', 0)
+      .select('locked_balance, redeemable_balance')
+
+    const sellersWithCoinsCount = sellersData?.filter(s =>
+      (Number(s.locked_balance) || 0) > 0 || (Number(s.redeemable_balance) || 0) > 0
+    ).length || 0
 
     const result = {
       total_distributed: totalDistributed,
       total_redeemed: totalRedeemed,
       current_balance: currentBalance,
+      total_earning_balance: totalEarningBalance,
+      total_redeemable_balance: totalRedeemableBalance,
       pending_redemptions: {
         count: pendingCount || 0,
         coins: pendingCoins,
@@ -99,7 +106,7 @@ export async function GET(request: NextRequest) {
         cash: approvedCash
       },
       active_campaigns: activeCampaignsCount || 0,
-      sellers_with_coins: sellersWithCoinsCount || 0
+      sellers_with_coins: sellersWithCoinsCount
     }
 
     // Cache the result for 30 seconds

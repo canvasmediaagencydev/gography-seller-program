@@ -9,6 +9,8 @@ interface CoinStats {
   total_distributed: number
   total_redeemed: number
   current_balance: number
+  total_earning_balance: number
+  total_redeemable_balance: number
   pending_redemptions: {
     count: number
     coins: number
@@ -53,25 +55,45 @@ export function CoinStatsOverview() {
 
   return (
     <div className="space-y-6">
-      {/* Clean Stats Grid */}
+      {/* Clean Stats Grid - Row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Distributed */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        {/* Total Earning Balance */}
+        <div className="bg-white rounded-lg shadow-sm border border-amber-200 hover:shadow-md transition-shadow">
           <div className="p-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-600" />
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-amber-600" />
               </div>
-              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">Total</span>
+              <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded">Earning</span>
             </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Distributed</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Earning Coins</h3>
             <div className="flex items-baseline gap-1.5">
               <p className="text-3xl font-bold text-gray-900">
-                {stats.total_distributed.toLocaleString()}
+                {(stats.total_earning_balance || 0).toLocaleString()}
               </p>
               <span className="text-sm font-medium text-gray-500">coins</span>
             </div>
-            <p className="text-xs text-gray-500 mt-2">แจกจ่ายให้ผู้ขายทั้งหมด</p>
+            <p className="text-xs text-gray-500 mt-2">รอปลดล็อกในระบบ</p>
+          </div>
+        </div>
+
+        {/* Total Redeemable Balance */}
+        <div className="bg-white rounded-lg shadow-sm border border-green-200 hover:shadow-md transition-shadow">
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <CoinsIcon className="h-5 w-5 text-green-600" />
+              </div>
+              <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded">Redeemable</span>
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Redeemable Coins</h3>
+            <div className="flex items-baseline gap-1.5">
+              <p className="text-3xl font-bold text-gray-900">
+                {(stats.total_redeemable_balance || 0).toLocaleString()}
+              </p>
+              <span className="text-sm font-medium text-gray-500">coins</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">พร้อมแลกได้</p>
           </div>
         </div>
 
@@ -92,26 +114,6 @@ export function CoinStatsOverview() {
               <span className="text-sm font-medium text-gray-500">coins</span>
             </div>
             <p className="text-xs text-gray-500 mt-2">แลกเป็นเงินสดแล้ว</p>
-          </div>
-        </div>
-
-        {/* Current Balance */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-          <div className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-amber-50 rounded-lg">
-                <CoinsIcon className="h-5 w-5 text-amber-600" />
-              </div>
-              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">Active</span>
-            </div>
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Current Balance</h3>
-            <div className="flex items-baseline gap-1.5">
-              <p className="text-3xl font-bold text-gray-900">
-                {stats.current_balance.toLocaleString()}
-              </p>
-              <span className="text-sm font-medium text-gray-500">coins</span>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">คงเหลือในระบบ</p>
           </div>
         </div>
 
