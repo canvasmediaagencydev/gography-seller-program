@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid bank account' }, { status: 400 })
     }
 
-    // Check coin balance
+    // Check coin balance (redeemable only)
     const { data: coinBalance, error: balanceError } = await supabase
       .from('seller_coins')
-      .select('balance')
+      .select('locked_balance, redeemable_balance')
       .eq('seller_id', user.id)
       .single()
 
@@ -47,13 +47,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch coin balance' }, { status: 500 })
     }
 
-    const currentBalance = coinBalance?.balance || 0
+    const lockedBalance = coinBalance?.locked_balance || 0
+    const redeemableBalance = coinBalance?.redeemable_balance || 0
 
-    if (currentBalance < coin_amount) {
+    if (redeemableBalance < coin_amount) {
       return NextResponse.json({
-        error: 'Insufficient coin balance',
-        current_balance: currentBalance,
-        requested_amount: coin_amount
+        error: 'Insufficient redeemable coins',
+        locked_balance: lockedBalance,
+        redeemable_balance: redeemableBalance,
+        requested_amount: coin_amount,
+        message: lockedBalance > 0
+          ? `You have ${lockedBalance} locked coins. Complete challenges to unlock them.`
+          : 'You need to earn more coins before redemption.'
       }, { status: 400 })
     }
 

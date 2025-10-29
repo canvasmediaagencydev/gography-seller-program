@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 interface CoinBalance {
-  balance: number
+  locked_balance: number
+  redeemable_balance: number
+  total_earned: number
+  total_redeemed: number
 }
 
 interface CoinBalanceIndicatorProps {
@@ -20,7 +23,7 @@ export function CoinBalanceIndicator({
   variant = 'sidebar',
   showLabel = true
 }: CoinBalanceIndicatorProps) {
-  const [balance, setBalance] = useState<number | null>(null)
+  const [balance, setBalance] = useState<CoinBalance | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,19 +50,29 @@ export function CoinBalanceIndicator({
       const supabase = createClient()
       const { data, error } = await supabase
         .from('seller_coins')
-        .select('balance')
+        .select('locked_balance, redeemable_balance, total_earned, total_redeemed')
         .eq('seller_id', userId)
         .single()
 
       if (error) {
         // If no record exists yet, balance is 0
         if (error.code === 'PGRST116') {
-          setBalance(0)
+          setBalance({
+            locked_balance: 0,
+            redeemable_balance: 0,
+            total_earned: 0,
+            total_redeemed: 0
+          })
         } else {
           console.error('Error fetching coin balance:', error)
         }
       } else {
-        setBalance(data?.balance || 0)
+        setBalance(data || {
+          locked_balance: 0,
+          redeemable_balance: 0,
+          total_earned: 0,
+          total_redeemed: 0
+        })
       }
     } catch (err) {
       console.error('Error fetching coin balance:', err)
@@ -101,10 +114,10 @@ export function CoinBalanceIndicator({
           <CoinsIcon className="h-4 w-4 text-white" />
         </div>
         <div className="relative flex flex-col">
-          {showLabel && <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">Coins</span>}
+          {showLabel && <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">Total Coins</span>}
           <div className="flex items-baseline gap-1">
             <span className="text-base font-bold text-amber-600 dark:text-amber-500">
-              {balance?.toLocaleString() || '0'}
+              {((balance?.locked_balance || 0) + (balance?.redeemable_balance || 0)).toLocaleString()}
             </span>
             <span className="text-xs text-amber-500/70">coins</span>
           </div>
@@ -138,12 +151,20 @@ export function CoinBalanceIndicator({
           )}
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-bold text-amber-600 dark:text-amber-500 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
-              {balance?.toLocaleString() || '0'}
+              {((balance?.locked_balance || 0) + (balance?.redeemable_balance || 0)).toLocaleString()}
             </span>
             <span className="text-xs font-semibold text-amber-500/70 dark:text-amber-600">
               coins
             </span>
           </div>
+          {balance && (balance.locked_balance > 0) && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] text-amber-600 dark:text-amber-500 font-medium">
+                {balance.locked_balance.toLocaleString()} earning
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Arrow indicator */}
@@ -165,7 +186,7 @@ export function CoinBalanceIndicator({
       <CoinsIcon className="h-4 w-4 text-yellow-500" />
       {showLabel && <span className="text-sm text-muted-foreground">Coins:</span>}
       <span className="font-bold text-yellow-600 dark:text-yellow-500">
-        {balance?.toLocaleString() || '0'}
+        {((balance?.locked_balance || 0) + (balance?.redeemable_balance || 0)).toLocaleString()}
       </span>
     </Link>
   )

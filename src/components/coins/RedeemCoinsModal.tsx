@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CoinsIcon, BanknoteIcon, AlertCircle, CheckCircle, Building2 } from 'lucide-react'
+import { CoinsIcon, BanknoteIcon, AlertCircle, CheckCircle, Building2, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface BankAccount {
@@ -25,12 +25,13 @@ interface BankAccount {
 }
 
 interface RedeemCoinsModalProps {
-  currentBalance: number
+  redeemableBalance: number
+  earningBalance?: number
   onClose: () => void
   onSuccess: () => void
 }
 
-export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemCoinsModalProps) {
+export function RedeemCoinsModal({ redeemableBalance, earningBalance = 0, onClose, onSuccess }: RedeemCoinsModalProps) {
   const [coinAmount, setCoinAmount] = useState('')
   const [bankAccount, setBankAccount] = useState<BankAccount | null>(null)
   const [loading, setLoading] = useState(false)
@@ -73,8 +74,8 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
       return
     }
 
-    if (amount > currentBalance) {
-      setError(`Insufficient balance. You have ${currentBalance.toLocaleString()} coins available.`)
+    if (amount > redeemableBalance) {
+      setError(`Insufficient redeemable balance. You have ${redeemableBalance.toLocaleString()} coins available.`)
       return
     }
 
@@ -150,16 +151,26 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-          {/* Current Balance */}
-          <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          {/* Redeemable Balance */}
+          <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
             <div>
-              <p className="text-xs text-gray-600 mb-1">Available Balance</p>
-              <p className="text-2xl font-bold text-yellow-700">
-                {currentBalance.toLocaleString()}
+              <p className="text-xs text-gray-600 mb-1">Redeemable Balance</p>
+              <p className="text-2xl font-bold text-green-700">
+                {redeemableBalance.toLocaleString()}
               </p>
             </div>
-            <CoinsIcon className="h-8 w-8 text-yellow-600" />
+            <CoinsIcon className="h-8 w-8 text-green-600" />
           </div>
+
+          {/* Earning Coins Warning */}
+          {earningBalance > 0 && (
+            <Alert className="bg-amber-50 border-amber-200">
+              <TrendingUp className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                You have <span className="font-semibold">{earningBalance.toLocaleString()} Earning Coins</span> that will be unlocked when you complete your first trip sale.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Coin Amount Input */}
           <div className="space-y-2">
@@ -169,7 +180,7 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
                 id="coin-amount"
                 type="number"
                 min="1"
-                max={currentBalance}
+                max={redeemableBalance}
                 step="1"
                 value={coinAmount}
                 onChange={(e) => setCoinAmount(e.target.value)}
@@ -187,7 +198,7 @@ export function RedeemCoinsModal({ currentBalance, onClose, onSuccess }: RedeemC
                 variant="link"
                 size="sm"
                 className="h-auto p-0 text-xs"
-                onClick={() => setCoinAmount(currentBalance.toString())}
+                onClick={() => setCoinAmount(redeemableBalance.toString())}
               >
                 Use all
               </Button>

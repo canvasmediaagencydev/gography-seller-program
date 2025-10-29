@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { CoinTransactionHistory } from '@/components/coins/CoinTransactionHistory'
 import { ActiveCampaigns } from '@/components/coins/ActiveCampaigns'
 import { RedeemCoinsModal } from '@/components/coins/RedeemCoinsModal'
+import { GamificationChallenges } from '@/components/coins/GamificationChallenges'
 import { LoadingSystem, ErrorSystem } from '@/components/ui'
 import {
   CoinsIcon,
@@ -15,7 +16,8 @@ import {
 
 interface CoinBalance {
   seller_id: string
-  balance: number
+  locked_balance: number
+  redeemable_balance: number
   total_earned: number
   total_redeemed: number
   created_at: string
@@ -25,8 +27,8 @@ interface CoinBalance {
 interface CoinTransaction {
   id: string
   seller_id: string
-  transaction_type: 'earn' | 'redeem' | 'bonus' | 'adjustment'
-  source_type: 'booking' | 'sales_target' | 'referral' | 'campaign' | 'admin'
+  transaction_type: 'earn' | 'redeem' | 'bonus' | 'adjustment' | 'unlock'
+  source_type: 'booking' | 'sales_target' | 'referral' | 'campaign' | 'admin' | 'gamification'
   source_id: string | null
   amount: number
   balance_before: number
@@ -34,6 +36,8 @@ interface CoinTransaction {
   description: string
   metadata: any
   created_at: string
+  coin_type?: 'earning' | 'redeemable' | 'unlock'
+  unlocked_from_transaction_id?: string | null
 }
 
 interface Campaign {
@@ -175,7 +179,7 @@ export default function CoinsPage() {
                 {/* Redeem Button */}
                 <button
                   onClick={() => setShowRedeemModal(true)}
-                  disabled={!balance || balance.balance <= 0}
+                  disabled={!balance || balance.redeemable_balance <= 0}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-amber-600 rounded-xl font-medium hover:bg-amber-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
                   <span>แลก Coins</span>
@@ -198,30 +202,59 @@ export default function CoinsPage() {
         </div>
 
         {/* Enhanced Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Current Balance Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Redeemable Balance Card */}
           <div className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/10 to-amber-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative p-6">
               <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl shadow-lg shadow-yellow-500/30 group-hover:scale-110 transition-transform duration-300">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform duration-300">
                   <CoinsIcon className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex items-center gap-1 px-2.5 py-1 bg-yellow-50 rounded-full">
-                  <TrendingUp className="w-3.5 h-3.5 text-yellow-600" />
-                  <span className="text-xs font-semibold text-yellow-700">Active</span>
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-green-50 rounded-full">
+                  <TrendingUp className="w-3.5 h-3.5 text-green-600" />
+                  <span className="text-xs font-semibold text-green-700">ถอนได้</span>
                 </div>
               </div>
-              <h3 className="text-sm font-medium text-gray-600 mb-2">ยอด Coins คงเหลือ</h3>
+              <h3 className="text-sm font-medium text-gray-600 mb-2">Redeemable Coins</h3>
               <div className="flex items-baseline gap-2">
                 <p className="text-4xl font-bold text-gray-900">
-                  {balance?.balance.toLocaleString() || '0'}
+                  {balance?.redeemable_balance.toLocaleString() || '0'}
                 </p>
                 <span className="text-lg font-semibold text-gray-500">Coins</span>
               </div>
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-500">พร้อมใช้งาน</p>
-                <p className="text-xs font-semibold text-amber-600">≈ ฿{balance?.balance.toLocaleString() || '0'}</p>
+                <p className="text-xs text-gray-500">พร้อมแลก</p>
+                <p className="text-xs font-semibold text-green-600">≈ ฿{balance?.redeemable_balance.toLocaleString() || '0'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Earning Balance Card */}
+          <div className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-yellow-500/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="relative p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 rounded-full">
+                  {(balance?.locked_balance || 0) > 0 && (
+                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
+                  )}
+                  <span className="text-xs font-semibold text-amber-700">ที่ได้รับ</span>
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600 mb-2">Earning Coins</h3>
+              <div className="flex items-baseline gap-2">
+                <p className="text-4xl font-bold text-gray-900">
+                  {balance?.locked_balance.toLocaleString() || '0'}
+                </p>
+                <span className="text-lg font-semibold text-gray-500">Coins</span>
+              </div>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <p className="text-xs text-gray-500">ปลดล็อกเมื่อขายทริปแรก</p>
+                <p className="text-xs font-semibold text-amber-600">≈ ฿{balance?.locked_balance.toLocaleString() || '0'}</p>
               </div>
             </div>
           </div>
@@ -282,7 +315,10 @@ export default function CoinsPage() {
           </div>
         </div>
 
-        {/* Active Campaigns */}
+        {/* Gamification Challenges */}
+        <GamificationChallenges />
+
+        {/* Active Campaigns (Old System - can be removed if not needed) */}
         {campaigns.length > 0 && (
           <ActiveCampaigns campaigns={campaigns} />
         )}
@@ -306,7 +342,8 @@ export default function CoinsPage() {
       {/* Redeem Modal */}
       {showRedeemModal && balance && (
         <RedeemCoinsModal
-          currentBalance={balance.balance}
+          redeemableBalance={balance.redeemable_balance}
+          earningBalance={balance.locked_balance}
           onClose={() => setShowRedeemModal(false)}
           onSuccess={handleRedeemSuccess}
         />
