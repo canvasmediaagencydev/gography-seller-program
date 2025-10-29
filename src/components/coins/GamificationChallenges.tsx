@@ -8,7 +8,6 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   GiftIcon,
-  TrendingUp,
   CheckCircle2,
   Lock,
   Unlock,
@@ -18,7 +17,6 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { createClient } from '@/lib/supabase/client'
 
 interface GamificationCampaign {
   id: string
@@ -175,27 +173,27 @@ export function GamificationChallenges() {
   }
 
   return (
-    <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 via-pink-50 to-white">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
-              <Sparkles className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-xl">Gamification Challenges</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Complete tasks to earn and unlock coins
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-purple-100 rounded-xl">
+            <Sparkles className="h-5 w-5 text-purple-600" />
           </div>
-          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-            {campaigns.length} Active
-          </Badge>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Active Challenges</h2>
+            <p className="text-sm text-gray-600">
+              Complete tasks to earn and unlock coins
+            </p>
+          </div>
         </div>
-      </CardHeader>
+        <Badge variant="secondary" className="bg-purple-100 text-purple-700 px-3 py-1">
+          {campaigns.length} Active
+        </Badge>
+      </div>
 
-      <CardContent className="space-y-4">
+      {/* Challenges Grid - 4:3 Ratio Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {campaigns.map((campaign) => {
           const progress = getProgress(campaign.id)
           const condition1Done = progress?.condition_1_completed || false
@@ -205,41 +203,43 @@ export function GamificationChallenges() {
           return (
             <div
               key={campaign.id}
-              className={`relative p-5 rounded-xl border-2 transition-all ${
+              className={`relative rounded-2xl border-2 transition-all overflow-hidden shadow-md hover:shadow-xl ${
                 bothDone
-                  ? 'bg-green-50 border-green-300'
-                  : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-md'
+                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'
+                  : 'bg-white border-gray-200 hover:border-purple-300'
               }`}
+              style={{ aspectRatio: '4/3' }}
             >
-              {/* Campaign Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-bold text-lg text-gray-900">{campaign.title}</h3>
-                    {bothDone && (
-                      <Badge className="bg-green-500 text-white">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Completed
-                      </Badge>
-                    )}
+              {/* Status Badge */}
+              {bothDone && (
+                <div className="absolute top-3 right-3 z-10">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500 rounded-full shadow-lg">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                    <span className="text-xs font-semibold text-white">Completed</span>
                   </div>
+                </div>
+              )}
+
+              {/* Card Content - Flex Layout */}
+              <div className="h-full flex flex-col p-5">
+                {/* Campaign Header */}
+                <div className="mb-4">
+                  <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-2">{campaign.title}</h3>
                   {campaign.description && (
-                    <p className="text-sm text-muted-foreground">{campaign.description}</p>
+                    <p className="text-xs text-gray-600 line-clamp-1">{campaign.description}</p>
                   )}
                 </div>
-              </div>
 
-              {/* Progress Section */}
-              <div className="space-y-3 mb-4">
-                {/* Condition 1 */}
-                <div className={`p-4 rounded-lg border ${
-                  condition1Done
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-amber-50 border-amber-200'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className={`p-1.5 rounded-full ${
+                {/* Progress Section - Grow to fill space */}
+                <div className="flex-1 space-y-2.5">
+                  {/* Condition 1 - Compact */}
+                  <div className={`p-3 rounded-lg border transition-all ${
+                    condition1Done
+                      ? 'bg-green-50 border-green-300'
+                      : 'bg-amber-50 border-amber-300'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`p-1.5 rounded-lg ${
                         condition1Done ? 'bg-green-500' : 'bg-amber-500'
                       }`}>
                         {condition1Done ? (
@@ -248,50 +248,49 @@ export function GamificationChallenges() {
                           <Target className="h-4 w-4 text-white" />
                         )}
                       </div>
-                      <span className="font-semibold text-sm">
-                        Step 1: {getCondition1Label(campaign.condition_1_type)}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 truncate">
+                          {getCondition1Label(campaign.condition_1_type)}
+                        </p>
+                      </div>
+                      <Badge className={`text-xs ${
+                        campaign.condition_1_reward_type === 'earning'
+                          ? 'bg-amber-500'
+                          : 'bg-green-500'
+                      }`}>
+                        +{campaign.condition_1_reward_amount}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className={
-                      campaign.condition_1_reward_type === 'earning'
-                        ? 'border-amber-400 text-amber-700'
-                        : 'border-green-400 text-green-700'
-                    }>
-                      +{campaign.condition_1_reward_amount} {
-                        campaign.condition_1_reward_type === 'earning' ? 'Earning' : 'Redeemable'
-                      }
-                    </Badge>
+
+                    {!condition1Done && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteTask(campaign.id)}
+                        disabled={completingCampaign === campaign.id}
+                        className="w-full h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-xs font-semibold"
+                      >
+                        {completingCampaign === campaign.id ? 'Processing...' : 'Complete Now'}
+                      </Button>
+                    )}
+
+                    {condition1Done && (
+                      <div className="flex items-center gap-1.5 text-xs text-green-700">
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span className="font-medium">Completed</span>
+                      </div>
+                    )}
                   </div>
 
-                  {!condition1Done && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleCompleteTask(campaign.id)}
-                      disabled={completingCampaign === campaign.id}
-                      className="w-full mt-2 bg-amber-500 hover:bg-amber-600"
-                    >
-                      {completingCampaign === campaign.id ? 'Processing...' : 'Complete Task'}
-                    </Button>
-                  )}
-
-                  {condition1Done && progress?.condition_1_completed_at && (
-                    <p className="text-xs text-green-600 mt-2">
-                      ✓ Completed on {format(new Date(progress.condition_1_completed_at), 'MMM d, yyyy')}
-                    </p>
-                  )}
-                </div>
-
-                {/* Condition 2 */}
-                <div className={`p-4 rounded-lg border ${
-                  condition2Done
-                    ? 'bg-green-50 border-green-200'
-                    : condition1Done
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'bg-gray-100 border-gray-300'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
+                  {/* Condition 2 - Compact */}
+                  <div className={`p-3 rounded-lg border transition-all ${
+                    condition2Done
+                      ? 'bg-green-50 border-green-300'
+                      : condition1Done
+                      ? 'bg-blue-50 border-blue-300'
+                      : 'bg-gray-100 border-gray-300'
+                  }`}>
                     <div className="flex items-center gap-2">
-                      <div className={`p-1.5 rounded-full ${
+                      <div className={`p-1.5 rounded-lg ${
                         condition2Done
                           ? 'bg-green-500'
                           : condition1Done
@@ -306,61 +305,50 @@ export function GamificationChallenges() {
                           <Lock className="h-4 w-4 text-white" />
                         )}
                       </div>
-                      <span className={`font-semibold text-sm ${
-                        !condition1Done ? 'text-gray-500' : ''
-                      }`}>
-                        Step 2: {getCondition2Label(campaign.condition_2_type)}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-semibold text-sm truncate ${
+                          !condition1Done ? 'text-gray-500' : 'text-gray-900'
+                        }`}>
+                          {getCondition2Label(campaign.condition_2_type)}
+                        </p>
+                        {!condition1Done && (
+                          <p className="text-xs text-gray-500">Locked</p>
+                        )}
+                        {condition1Done && !condition2Done && (
+                          <p className="text-xs text-blue-600">Auto-unlock</p>
+                        )}
+                        {condition2Done && (
+                          <p className="text-xs text-green-600 font-medium">Completed</p>
+                        )}
+                      </div>
+                      {campaign.condition_2_action === 'unlock' && (
+                        <Unlock className="h-4 w-4 text-purple-500" />
+                      )}
+                      {campaign.condition_2_action === 'bonus' && (
+                        <Award className="h-4 w-4 text-pink-500" />
+                      )}
                     </div>
-                    {campaign.condition_2_action === 'unlock' && (
-                      <Badge variant="outline" className="border-purple-400 text-purple-700">
-                        <Unlock className="h-3 w-3 mr-1" />
-                        Unlock Coins
-                      </Badge>
-                    )}
-                    {campaign.condition_2_action === 'bonus' && (
-                      <Badge variant="outline" className="border-pink-400 text-pink-700">
-                        <Award className="h-3 w-3 mr-1" />
-                        +{campaign.condition_2_bonus_amount} Bonus
-                      </Badge>
+                  </div>
+                </div>
+
+                {/* Campaign Duration - Footer */}
+                <div className="pt-3 mt-auto border-t">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500 truncate">
+                      {format(new Date(campaign.start_date), 'MMM d')} - {format(new Date(campaign.end_date), 'MMM d, yyyy')}
+                    </span>
+                    {bothDone && (
+                      <span className="text-green-600 font-bold whitespace-nowrap ml-2">
+                        🎉 Done!
+                      </span>
                     )}
                   </div>
-
-                  {!condition1Done && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Complete Step 1 first to unlock this step
-                    </p>
-                  )}
-
-                  {condition1Done && !condition2Done && (
-                    <p className="text-xs text-blue-600 mt-2">
-                      Automatic - will complete when you {getCondition2Label(campaign.condition_2_type).toLowerCase()}
-                    </p>
-                  )}
-
-                  {condition2Done && progress?.condition_2_completed_at && (
-                    <p className="text-xs text-green-600 mt-2">
-                      ✓ Completed on {format(new Date(progress.condition_2_completed_at), 'MMM d, yyyy')}
-                    </p>
-                  )}
                 </div>
-              </div>
-
-              {/* Campaign Duration */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t">
-                <span>
-                  Valid: {format(new Date(campaign.start_date), 'MMM d')} - {format(new Date(campaign.end_date), 'MMM d, yyyy')}
-                </span>
-                {bothDone && (
-                  <span className="text-green-600 font-semibold">
-                    🎉 Challenge Complete!
-                  </span>
-                )}
               </div>
             </div>
           )
         })}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

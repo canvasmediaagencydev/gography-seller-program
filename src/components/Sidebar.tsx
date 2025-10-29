@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon } from 'lucide-react';
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
@@ -256,6 +256,26 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           isActive: false,
           isDisabled: true,
           disabledText: 'ยืนยันตัวเพื่อใช้งาน'
+        })
+      }
+
+      // Add Gamification - requires verification like reports
+      if (userProfile?.status === 'approved') {
+        baseItems.push({
+          icon: <Gamepad2 size={18} />,
+          label: 'Gamification',
+          href: '/dashboard/gamification',
+          isActive: pathname === '/dashboard/gamification',
+          isDisabled: false
+        })
+      } else {
+        baseItems.push({
+          icon: <Gamepad2 size={18} />,
+          label: 'Gamification',
+          href: '/dashboard/gamification',
+          isActive: false,
+          isDisabled: true,
+          disabledText: 'ยืนยันตัวตน'
         })
       }
     }

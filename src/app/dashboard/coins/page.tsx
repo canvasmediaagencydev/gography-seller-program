@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { CoinTransactionHistory } from '@/components/coins/CoinTransactionHistory'
 import { ActiveCampaigns } from '@/components/coins/ActiveCampaigns'
 import { RedeemCoinsModal } from '@/components/coins/RedeemCoinsModal'
-import { GamificationChallenges } from '@/components/coins/GamificationChallenges'
 import { LoadingSystem, ErrorSystem } from '@/components/ui'
 import {
   CoinsIcon,
@@ -314,9 +313,6 @@ export default function CoinsPage() {
             </div>
           </div>
         </div>
-
-        {/* Gamification Challenges */}
-        <GamificationChallenges />
 
         {/* Active Campaigns (Old System - can be removed if not needed) */}
         {campaigns.length > 0 && (
