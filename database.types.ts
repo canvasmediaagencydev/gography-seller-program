@@ -230,45 +230,6 @@ export type Database = {
           },
         ]
       }
-      coin_earning_rules: {
-        Row: {
-          calculation_type: Database["public"]["Enums"]["calculation_type"]
-          coin_amount: number
-          conditions: Json | null
-          created_at: string
-          id: string
-          is_active: boolean
-          priority: number
-          rule_name: string
-          rule_type: Database["public"]["Enums"]["rule_type"]
-          updated_at: string
-        }
-        Insert: {
-          calculation_type?: Database["public"]["Enums"]["calculation_type"]
-          coin_amount: number
-          conditions?: Json | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          priority?: number
-          rule_name: string
-          rule_type: Database["public"]["Enums"]["rule_type"]
-          updated_at?: string
-        }
-        Update: {
-          calculation_type?: Database["public"]["Enums"]["calculation_type"]
-          coin_amount?: number
-          conditions?: Json | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          priority?: number
-          rule_name?: string
-          rule_type?: Database["public"]["Enums"]["rule_type"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
       coin_redemptions: {
         Row: {
           approved_at: string | null
@@ -344,6 +305,7 @@ export type Database = {
           amount: number
           balance_after: number
           balance_before: number
+          coin_type: string | null
           created_at: string
           description: string
           id: string
@@ -352,11 +314,13 @@ export type Database = {
           source_id: string | null
           source_type: Database["public"]["Enums"]["coin_source_type"]
           transaction_type: Database["public"]["Enums"]["coin_transaction_type"]
+          unlocked_from_transaction_id: string | null
         }
         Insert: {
           amount: number
           balance_after: number
           balance_before: number
+          coin_type?: string | null
           created_at?: string
           description: string
           id?: string
@@ -365,11 +329,13 @@ export type Database = {
           source_id?: string | null
           source_type: Database["public"]["Enums"]["coin_source_type"]
           transaction_type: Database["public"]["Enums"]["coin_transaction_type"]
+          unlocked_from_transaction_id?: string | null
         }
         Update: {
           amount?: number
           balance_after?: number
           balance_before?: number
+          coin_type?: string | null
           created_at?: string
           description?: string
           id?: string
@@ -378,6 +344,7 @@ export type Database = {
           source_id?: string | null
           source_type?: Database["public"]["Enums"]["coin_source_type"]
           transaction_type?: Database["public"]["Enums"]["coin_transaction_type"]
+          unlocked_from_transaction_id?: string | null
         }
         Relationships: [
           {
@@ -385,6 +352,13 @@ export type Database = {
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coin_transactions_unlocked_from_transaction_id_fkey"
+            columns: ["unlocked_from_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "coin_transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -520,6 +494,173 @@ export type Database = {
           },
         ]
       }
+      gamification_campaigns: {
+        Row: {
+          condition_1_data: Json | null
+          condition_1_reward_amount: number
+          condition_1_reward_type: string
+          condition_1_type: string
+          condition_2_action: string
+          condition_2_bonus_amount: number | null
+          condition_2_data: Json | null
+          condition_2_type: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          start_date: string
+          target_audience: string | null
+          target_seller_ids: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          condition_1_data?: Json | null
+          condition_1_reward_amount: number
+          condition_1_reward_type: string
+          condition_1_type: string
+          condition_2_action: string
+          condition_2_bonus_amount?: number | null
+          condition_2_data?: Json | null
+          condition_2_type: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          start_date: string
+          target_audience?: string | null
+          target_seller_ids?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          condition_1_data?: Json | null
+          condition_1_reward_amount?: number
+          condition_1_reward_type?: string
+          condition_1_type?: string
+          condition_2_action?: string
+          condition_2_bonus_amount?: number | null
+          condition_2_data?: Json | null
+          condition_2_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          start_date?: string
+          target_audience?: string | null
+          target_seller_ids?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamification_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gamification_progress: {
+        Row: {
+          both_completed: boolean
+          campaign_id: string
+          condition_1_completed: boolean
+          condition_1_completed_at: string | null
+          condition_2_completed: boolean
+          condition_2_completed_at: string | null
+          created_at: string
+          id: string
+          seller_id: string
+          updated_at: string
+        }
+        Insert: {
+          both_completed?: boolean
+          campaign_id: string
+          condition_1_completed?: boolean
+          condition_1_completed_at?: string | null
+          condition_2_completed?: boolean
+          condition_2_completed_at?: string | null
+          created_at?: string
+          id?: string
+          seller_id: string
+          updated_at?: string
+        }
+        Update: {
+          both_completed?: boolean
+          campaign_id?: string
+          condition_1_completed?: boolean
+          condition_1_completed_at?: string | null
+          condition_2_completed?: boolean
+          condition_2_completed_at?: string | null
+          created_at?: string
+          id?: string
+          seller_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamification_progress_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "gamification_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gamification_progress_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       sales_targets: {
         Row: {
           commission_target: number
@@ -555,26 +696,103 @@ export type Database = {
           },
         ]
       }
+      seller_campaign_progress: {
+        Row: {
+          both_completed: boolean | null
+          campaign_id: string
+          condition_1_completed: boolean | null
+          condition_1_completed_at: string | null
+          condition_1_transaction_id: string | null
+          condition_2_completed: boolean | null
+          condition_2_completed_at: string | null
+          condition_2_transaction_id: string | null
+          created_at: string | null
+          id: string
+          seller_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          both_completed?: boolean | null
+          campaign_id: string
+          condition_1_completed?: boolean | null
+          condition_1_completed_at?: string | null
+          condition_1_transaction_id?: string | null
+          condition_2_completed?: boolean | null
+          condition_2_completed_at?: string | null
+          condition_2_transaction_id?: string | null
+          created_at?: string | null
+          id?: string
+          seller_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          both_completed?: boolean | null
+          campaign_id?: string
+          condition_1_completed?: boolean | null
+          condition_1_completed_at?: string | null
+          condition_1_transaction_id?: string | null
+          condition_2_completed?: boolean | null
+          condition_2_completed_at?: string | null
+          condition_2_transaction_id?: string | null
+          created_at?: string | null
+          id?: string
+          seller_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_campaign_progress_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "gamification_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_campaign_progress_condition_1_transaction_id_fkey"
+            columns: ["condition_1_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "coin_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_campaign_progress_condition_2_transaction_id_fkey"
+            columns: ["condition_2_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "coin_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_campaign_progress_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_coins: {
         Row: {
-          balance: number
           created_at: string
+          locked_balance: number
+          redeemable_balance: number
           seller_id: string
           total_earned: number
           total_redeemed: number
           updated_at: string
         }
         Insert: {
-          balance?: number
           created_at?: string
+          locked_balance?: number
+          redeemable_balance?: number
           seller_id: string
           total_earned?: number
           total_redeemed?: number
           updated_at?: string
         }
         Update: {
-          balance?: number
           created_at?: string
+          locked_balance?: number
+          redeemable_balance?: number
           seller_id?: string
           total_earned?: number
           total_redeemed?: number
@@ -652,6 +870,7 @@ export type Database = {
           file_link: string | null
           id: string
           is_active: boolean | null
+          partner_id: string | null
           price_per_person: number
           title: string
           total_seats: number
@@ -670,6 +889,7 @@ export type Database = {
           file_link?: string | null
           id?: string
           is_active?: boolean | null
+          partner_id?: string | null
           price_per_person: number
           title: string
           total_seats: number
@@ -688,6 +908,7 @@ export type Database = {
           file_link?: string | null
           id?: string
           is_active?: boolean | null
+          partner_id?: string | null
           price_per_person?: number
           title?: string
           total_seats?: number
@@ -708,6 +929,13 @@ export type Database = {
             referencedRelation: "user_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "trips_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_profiles: {
@@ -721,6 +949,8 @@ export type Database = {
           document_uploaded_at: string | null
           documents_urls: string[] | null
           email: string | null
+          first_trip_completed: boolean | null
+          first_trip_completed_at: string | null
           full_name: string | null
           id: string
           id_card_uploaded_at: string | null
@@ -741,6 +971,8 @@ export type Database = {
           document_uploaded_at?: string | null
           documents_urls?: string[] | null
           email?: string | null
+          first_trip_completed?: boolean | null
+          first_trip_completed_at?: string | null
           full_name?: string | null
           id: string
           id_card_uploaded_at?: string | null
@@ -761,6 +993,8 @@ export type Database = {
           document_uploaded_at?: string | null
           documents_urls?: string[] | null
           email?: string | null
+          first_trip_completed?: boolean | null
+          first_trip_completed_at?: string | null
           full_name?: string | null
           id?: string
           id_card_uploaded_at?: string | null
@@ -853,21 +1087,29 @@ export type Database = {
       }
     }
     Functions: {
-      add_coin_transaction: {
+      add_locked_or_redeemable_coins: {
         Args: {
           p_amount: number
+          p_coin_type: string
           p_description: string
           p_metadata?: Json
           p_seller_id: string
           p_source_id: string
           p_source_type: Database["public"]["Enums"]["coin_source_type"]
-          p_transaction_type: Database["public"]["Enums"]["coin_transaction_type"]
         }
         Returns: string
       }
       calculate_sales_target_bonus: {
         Args: { p_month: string; p_seller_id: string }
         Returns: number
+      }
+      check_and_complete_condition_2: {
+        Args: { p_seller_id: string }
+        Returns: undefined
+      }
+      complete_gamification_task: {
+        Args: { p_campaign_id: string; p_seller_id: string; p_task_data?: Json }
+        Returns: Json
       }
       get_active_campaigns: {
         Args: { p_seller_id?: string; p_trip_id?: string }
@@ -882,16 +1124,10 @@ export type Database = {
           title: string
         }[]
       }
-      get_available_countries: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      get_available_seats: {
-        Args: { schedule_id: string }
-        Returns: number
-      }
+      get_available_countries: { Args: never; Returns: Json }
+      get_available_seats: { Args: { schedule_id: string }; Returns: number }
       get_booking_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approved_bookings: number
           cancelled_bookings: number
@@ -902,7 +1138,7 @@ export type Database = {
         }[]
       }
       get_sellers_with_emails: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approved_at: string
           approved_by: string
@@ -939,25 +1175,19 @@ export type Database = {
         }
         Returns: Json
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_storage_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_storage_file_owner: {
-        Args: { file_path: string }
-        Returns: boolean
-      }
-      refresh_seller_booking_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
+      is_admin: { Args: never; Returns: boolean }
+      is_storage_admin: { Args: never; Returns: boolean }
+      is_storage_file_owner: { Args: { file_path: string }; Returns: boolean }
+      refresh_seller_booking_stats: { Args: never; Returns: undefined }
+      unlock_coins_for_seller: {
+        Args: { p_campaign_id?: string; p_seller_id: string }
+        Returns: {
+          transaction_id: string
+          unlocked_amount: number
+        }[]
       }
     }
     Enums: {
-      calculation_type: "fixed" | "percentage" | "tier"
       campaign_type:
         | "trip_specific"
         | "date_specific"
@@ -969,13 +1199,25 @@ export type Database = {
         | "referral"
         | "campaign"
         | "admin"
-      coin_transaction_type: "earn" | "redeem" | "bonus" | "adjustment"
+        | "gamification"
+      coin_transaction_type:
+        | "earn"
+        | "redeem"
+        | "bonus"
+        | "adjustment"
+        | "unlock"
+      gamification_condition_1_type:
+        | "survey"
+        | "onboarding_task"
+        | "profile_complete"
+        | "referral"
+      gamification_condition_2_action: "unlock" | "bonus" | "none"
+      gamification_condition_2_type:
+        | "first_trip_sold"
+        | "trip_count"
+        | "sales_amount"
+      gamification_reward_type: "earning" | "redeemable"
       redemption_status: "pending" | "approved" | "rejected" | "paid"
-      rule_type:
-        | "booking_approved"
-        | "sales_target_monthly"
-        | "referral_first_sale"
-        | "referral_signup"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1103,7 +1345,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      calculation_type: ["fixed", "percentage", "tier"],
       campaign_type: [
         "trip_specific",
         "date_specific",
@@ -1116,15 +1357,29 @@ export const Constants = {
         "referral",
         "campaign",
         "admin",
+        "gamification",
       ],
-      coin_transaction_type: ["earn", "redeem", "bonus", "adjustment"],
+      coin_transaction_type: [
+        "earn",
+        "redeem",
+        "bonus",
+        "adjustment",
+        "unlock",
+      ],
+      gamification_condition_1_type: [
+        "survey",
+        "onboarding_task",
+        "profile_complete",
+        "referral",
+      ],
+      gamification_condition_2_action: ["unlock", "bonus", "none"],
+      gamification_condition_2_type: [
+        "first_trip_sold",
+        "trip_count",
+        "sales_amount",
+      ],
+      gamification_reward_type: ["earning", "redeemable"],
       redemption_status: ["pending", "approved", "rejected", "paid"],
-      rule_type: [
-        "booking_approved",
-        "sales_target_monthly",
-        "referral_first_sale",
-        "referral_signup",
-      ],
     },
   },
 } as const

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminTrips, useCountries } from '@/hooks/useAdminTrips'
+import { useActivePartners } from '@/hooks/usePartners'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { toast } from 'sonner'
 
@@ -19,6 +20,7 @@ interface TripFormData {
   commission_type: 'fixed' | 'percentage'
   commission_value: number
   country_id: string
+  partner_id: string
   cover_image_url: string
   file_link: string
   is_active: boolean
@@ -65,6 +67,7 @@ export default function EditTripPage({ params }: PageProps) {
   const router = useRouter()
   const { updateTrip, loading: tripLoading, error: tripError } = useAdminTrips()
   const { countries, loading: countriesLoading } = useCountries()
+  const { partners, loading: partnersLoading } = useActivePartners()
   const { uploadImage, uploading: imageUploading, error: imageError } = useImageUpload()
 
   const [trip, setTrip] = useState<any>(null)
@@ -78,6 +81,7 @@ export default function EditTripPage({ params }: PageProps) {
     commission_type: 'percentage',
     commission_value: 0,
     country_id: '',
+    partner_id: '',
     cover_image_url: '',
     file_link: '',
     is_active: true,
@@ -133,6 +137,7 @@ export default function EditTripPage({ params }: PageProps) {
           commission_type: tripData.commission_type || 'percentage',
           commission_value: tripData.commission_value || 0,
           country_id: tripData.country_id || '',
+          partner_id: tripData.partner_id || '',
           cover_image_url: tripData.cover_image_url || '',
           file_link: tripData.file_link || '',
           is_active: tripData.is_active ?? true,
@@ -186,6 +191,10 @@ export default function EditTripPage({ params }: PageProps) {
 
     if (!formData.country_id) {
       newErrors.country_id = 'Please select a country'
+    }
+
+    if (!formData.partner_id) {
+      newErrors.partner_id = 'Please select a partner'
     }
 
     const maxCommission = formData.commission_type === 'percentage' 
@@ -468,6 +477,27 @@ export default function EditTripPage({ params }: PageProps) {
                 {errors.country_id && <p className="mt-2 text-sm text-red-600 font-medium">{errors.country_id}</p>}
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Partner *
+                </label>
+                <select
+                  value={formData.partner_id}
+                  onChange={(e) => setFormData({ ...formData, partner_id: e.target.value })}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors ${
+                    errors.partner_id ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  }`}
+                  disabled={partnersLoading}
+                >
+                  <option value="">เลือก Partner</option>
+                  {partners.map((partner) => (
+                    <option key={partner.id} value={partner.id}>
+                      {partner.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.partner_id && <p className="mt-2 text-sm text-red-600 font-medium">{errors.partner_id}</p>}
+              </div>
 
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">

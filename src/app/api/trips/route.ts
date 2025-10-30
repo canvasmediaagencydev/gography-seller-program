@@ -157,6 +157,11 @@ async function fallbackTripsQuery(supabase: any, user: any, userRole: string | n
         id,
         name,
         flag_emoji
+      ),
+      partners!left (
+        id,
+        name,
+        logo_url
       )
     `, { count: 'exact' })
     .eq('is_active', true)
