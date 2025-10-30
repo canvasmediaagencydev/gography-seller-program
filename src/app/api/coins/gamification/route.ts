@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { apiCache } from '@/lib/cache'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/coins/gamification
+ * Fetch active gamification campaigns and seller's progress
+ */
+export async function GET() {
   try {
     const supabase = await createClient()
 
@@ -12,69 +15,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Create cache key
-    const cacheKey = `gamification_${user.id}`
-
-    // Check cache first
-    const cachedResult = apiCache.get(cacheKey)
-    if (cachedResult) {
-      return NextResponse.json(cachedResult)
-    }
-
-    // Get active campaigns
+    // Fetch active campaigns
     const { data: campaigns, error: campaignsError } = await supabase
-      .from('gamification_campaigns')
+      .from('gamification_campaigns' as any)
       .select('*')
       .eq('is_active', true)
-      .lte('start_date', new Date().toISOString())
       .gte('end_date', new Date().toISOString())
-      .order('created_at', { ascending: false })
+      .lte('start_date', new Date().toISOString())
+      .order('start_date', { ascending: true })
 
     if (campaignsError) {
       console.error('Error fetching campaigns:', campaignsError)
       return NextResponse.json({ error: 'Failed to fetch campaigns' }, { status: 500 })
     }
 
-    // Filter campaigns by target_audience
-    const filteredCampaigns = campaigns?.filter(campaign => {
-      if (campaign.target_audience === 'all') return true
-      if (campaign.target_audience === 'specific_sellers') {
-        return campaign.target_seller_ids?.includes(user.id)
+    // Fetch seller's progress for these campaigns
+    const campaignIds = campaigns?.map((c: any) => c.id) || []
+
+    let myProgress: any[] = []
+    if (campaignIds.length > 0) {
+      const { data: progressData, error: progressError } = await supabase
+        .from('gamification_progress' as any)
+        .select('*')
+        .eq('seller_id', user.id)
+        .in('campaign_id', campaignIds)
+
+      if (progressError) {
+        console.error('Error fetching progress:', progressError)
+        // Don't fail the request if progress fetch fails
+      } else {
+        myProgress = progressData || []
       }
-      // Add more audience filters if needed
-      return true
-    }) || []
-
-    // Get seller's progress for these campaigns
-    const { data: progress, error: progressError } = await supabase
-      .from('seller_campaign_progress')
-      .select('*')
-      .eq('seller_id', user.id)
-      .in('campaign_id', filteredCampaigns.map(c => c.id))
-
-    if (progressError) {
-      console.error('Error fetching progress:', progressError)
-      return NextResponse.json({ error: 'Failed to fetch progress' }, { status: 500 })
     }
 
-    // Combine campaigns with progress
-    const campaignsWithProgress = filteredCampaigns.map(campaign => {
-      const campaignProgress = progress?.find(p => p.campaign_id === campaign.id)
-      return {
-        ...campaign,
-        progress: campaignProgress || null
-      }
+    return NextResponse.json({
+      campaigns: campaigns || [],
+      my_progress: myProgress
     })
-
-    const result = {
-      campaigns: campaignsWithProgress,
-      total: campaignsWithProgress.length
-    }
-
-    // Cache for 30 seconds
-    apiCache.set(cacheKey, result, 30000)
-
-    return NextResponse.json(result)
   } catch (error) {
     console.error('Error in GET /api/coins/gamification:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

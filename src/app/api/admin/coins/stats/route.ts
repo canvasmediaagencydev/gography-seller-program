@@ -46,14 +46,13 @@ export async function GET(request: NextRequest) {
 
     const totalRedeemed = totalRedeemedData?.reduce((sum, item) => sum + (Number(item.total_redeemed) || 0), 0) || 0
 
-    // Get current total earning and redeemable balances
+    // Get current total balance (locked + redeemable)
     const { data: balanceData } = await supabase
       .from('seller_coins')
       .select('locked_balance, redeemable_balance')
 
-    const totalEarningBalance = balanceData?.reduce((sum, item) => sum + (Number(item.locked_balance) || 0), 0) || 0
-    const totalRedeemableBalance = balanceData?.reduce((sum, item) => sum + (Number(item.redeemable_balance) || 0), 0) || 0
-    const currentBalance = totalEarningBalance + totalRedeemableBalance
+    const currentBalance = balanceData?.reduce((sum, item: any) =>
+      sum + (Number(item.locked_balance) || 0) + (Number(item.redeemable_balance) || 0), 0) || 0
 
     // Get pending redemptions
     const { data: pendingRedemptions, count: pendingCount } = await supabase
@@ -74,27 +73,22 @@ export async function GET(request: NextRequest) {
     const approvedCash = approvedRedemptions?.reduce((sum, item) => sum + (Number(item.cash_amount) || 0), 0) || 0
 
     // Get active gamification campaigns count
-    const { count: activeCampaignsCount } = await supabase
-      .from('gamification_campaigns')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
-      .gte('end_date', new Date().toISOString())
+    // Note: gamification_campaigns table might not exist yet
+    const activeCampaignsCount = 0
 
-    // Get active sellers with coins (either earning or redeemable)
+    // Get active sellers with coins
     const { data: sellersData } = await supabase
       .from('seller_coins')
       .select('locked_balance, redeemable_balance')
 
-    const sellersWithCoinsCount = sellersData?.filter(s =>
-      (Number(s.locked_balance) || 0) > 0 || (Number(s.redeemable_balance) || 0) > 0
+    const sellersWithCoinsCount = sellersData?.filter((s: any) =>
+      ((Number(s.locked_balance) || 0) + (Number(s.redeemable_balance) || 0)) > 0
     ).length || 0
 
     const result = {
       total_distributed: totalDistributed,
       total_redeemed: totalRedeemed,
       current_balance: currentBalance,
-      total_earning_balance: totalEarningBalance,
-      total_redeemable_balance: totalRedeemableBalance,
       pending_redemptions: {
         count: pendingCount || 0,
         coins: pendingCoins,
