@@ -142,22 +142,23 @@ export function usePartners(): UsePartnersResult {
     try {
       setError(null)
 
+      // Optimistic update - remove immediately
+      const previousPartners = partners
+      setPartners(prev => prev.filter(p => p.id !== id))
+
       const response = await fetch(`/api/admin/partners/${id}`, {
         method: 'DELETE'
       })
 
       if (!response.ok) {
         const errorData = await response.json()
+        // Revert optimistic update on error
+        setPartners(previousPartners)
         throw new Error(errorData.error || 'Failed to delete partner')
       }
 
       toast.success('Partner deleted successfully')
-
-      // Remove from local state immediately for instant UI update
-      setPartners(prev => prev.filter(p => p.id !== id))
-
-      // Then refresh the list to get updated data
-      await fetchPartners(pagination.page)
+      // Don't refetch - rely on optimistic update
 
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to delete partner'

@@ -29,6 +29,7 @@ export default function CreatePartnerPage() {
   })
 
   const [logoPreview, setLogoPreview] = useState<string>('')
+  const [logoFile, setLogoFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -44,22 +45,26 @@ export default function CreatePartnerPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    try {
-      // Show preview immediately
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-
-      // Upload to server
-      const url = await uploadLogo(file)
-      setFormData(prev => ({ ...prev, logo_url: url }))
-      toast.success('Logo uploaded successfully')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload logo')
-      setLogoPreview('')
+    // Validate file
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Logo file must be less than 5MB')
+      return
     }
+
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Logo must be JPEG, PNG, or WebP format')
+      return
+    }
+
+    // Show preview immediately
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setLogoPreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Store file for later upload
+    setLogoFile(file)
   }
 
   const validateForm = (): boolean => {
@@ -95,7 +100,25 @@ export default function CreatePartnerPage() {
 
     try {
       setSubmitting(true)
-      await createPartner(formData)
+
+      // Upload logo first if there's a file
+      let logoUrl = formData.logo_url
+      if (logoFile) {
+        try {
+          logoUrl = await uploadLogo(logoFile)
+        } catch (error: any) {
+          toast.error(error.message || 'Failed to upload logo')
+          setSubmitting(false)
+          return
+        }
+      }
+
+      // Create partner with logo URL
+      await createPartner({
+        ...formData,
+        logo_url: logoUrl
+      })
+
       toast.success('Partner created successfully')
       router.push('/dashboard/admin/partners')
     } catch (error: any) {
