@@ -17,14 +17,18 @@ export default function RootLayout({
   return (
     <html lang="th">
       <head>
-        {/* Favicon */}
-        <link rel="icon" href="/images/paydeeLOGO.svg" type="image/svg+xml" />
+        {/* Favicon - Multiple formats for better browser compatibility */}
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="alternate icon" href="/images/paydeeLOGO.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+        <link rel="manifest" href="/site.webmanifest" />
 
         {/* Mobile viewport optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Paydee" />
         <meta name="theme-color" content="#176daf" />
 
         {/* Google Fonts preconnect */}
