@@ -17,6 +17,7 @@ export default function PartnersPage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -25,7 +26,7 @@ export default function PartnersPage() {
 
   useEffect(() => {
     loadPartners()
-  }, [filter])
+  }, [filter, search])
 
   useEffect(() => {
     // Calculate stats from partners list
@@ -55,11 +56,19 @@ export default function PartnersPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (deleting) return // Prevent multiple clicks
+
     try {
-      await deletePartner(id)
+      // Set deleting state
+      setDeleting(id)
+      // Reset confirm state immediately
       setDeleteConfirm(null)
+      // Then delete
+      await deletePartner(id)
     } catch (error) {
       // Error is already handled in the hook
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -292,13 +301,15 @@ export default function PartnersPage() {
                               variant="destructive"
                               size="sm"
                               onClick={() => handleDelete(partner.id)}
+                              disabled={deleting === partner.id}
                             >
-                              Confirm
+                              {deleting === partner.id ? 'Deleting...' : 'Confirm'}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => setDeleteConfirm(null)}
+                              disabled={deleting === partner.id}
                             >
                               Cancel
                             </Button>
@@ -309,6 +320,7 @@ export default function PartnersPage() {
                             size="sm"
                             onClick={() => setDeleteConfirm(partner.id)}
                             className="text-red-600 hover:text-red-700"
+                            disabled={deleting !== null}
                           >
                             <TrashIcon className="h-4 w-4" />
                           </Button>

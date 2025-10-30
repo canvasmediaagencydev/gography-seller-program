@@ -153,7 +153,10 @@ export function usePartners(): UsePartnersResult {
 
       toast.success('Partner deleted successfully')
 
-      // Refresh the list
+      // Remove from local state immediately for instant UI update
+      setPartners(prev => prev.filter(p => p.id !== id))
+
+      // Then refresh the list to get updated data
       await fetchPartners(pagination.page)
 
     } catch (err: any) {
