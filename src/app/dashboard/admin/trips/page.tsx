@@ -6,6 +6,8 @@ import { useAdminTrips } from '@/hooks/useAdminTrips'
 import TripImage from '@/components/TripImage'
 import { showConfirmDialog } from '@/lib/confirm-dialog'
 import { Pagination } from '@/components/ui/Pagination'
+import { Building2 } from 'lucide-react'
+import Image from 'next/image'
 
 export default function AdminTripsPage() {
   const {
@@ -109,12 +111,37 @@ export default function AdminTripsPage() {
               <div key={trip.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
                 {/* Trip Image */}
                 {trip.cover_image_url && (
-                  <div className="aspect-video">
+                  <div className="aspect-video relative">
                     <TripImage
                       src={trip.cover_image_url}
                       alt={trip.title}
                       className="w-full h-full object-cover"
                     />
+
+                    {/* Partner Badge - Bottom Right */}
+                    {(trip as any).partners && (
+                      <div className="absolute bottom-2 right-2">
+                        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-xs px-3 py-1.5 rounded-full">
+                          {(trip as any).partners.logo_url ? (
+                            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                              <Image
+                                src={(trip as any).partners.logo_url}
+                                alt={(trip as any).partners.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <Building2 size={12} className="text-gray-500" />
+                            </div>
+                          )}
+                          <span className="text-xs font-medium text-white whitespace-nowrap">
+                            {(trip as any).partners.name}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -169,22 +196,22 @@ export default function AdminTripsPage() {
                       <span className="text-gray-900 font-medium">
                         {(() => {
                           if (!trip.trip_schedules || trip.trip_schedules.length === 0) return '- วัน - คืน'
-                          
+
                           // ใช้ schedule แรกในการคำนวณระยะเวลา
                           const schedule = trip.trip_schedules[0]
                           const departure = new Date(schedule.departure_date)
                           const returnDate = new Date(schedule.return_date)
-                          
+
                           // คำนวณจำนวนวัน: return_date - departure_date + 1
                           const diffTime = returnDate.getTime() - departure.getTime()
                           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1
                           const nights = Math.max(0, diffDays - 1)
-                          
+
                           return `${diffDays} วัน ${nights} คืน`
                         })()}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-sm">ราคา</span>
                       <span className="text-gray-900 font-medium text-base">
@@ -195,8 +222,8 @@ export default function AdminTripsPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-sm">จำนวนที่นั่ง</span>
                       <span className="text-gray-900 font-medium">
-                        {trip.trip_schedules && trip.trip_schedules.length > 0 
-                          ? Math.max(...trip.trip_schedules.map(s => s.available_seats)) 
+                        {trip.trip_schedules && trip.trip_schedules.length > 0
+                          ? Math.max(...trip.trip_schedules.map(s => s.available_seats))
                           : 0
                         } คน
                       </span>
