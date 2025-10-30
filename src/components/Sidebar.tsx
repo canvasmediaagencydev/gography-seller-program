@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2 } from 'lucide-react';
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2, Building2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
@@ -213,6 +213,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     // Add role-specific items
     if (userProfile?.role === 'admin') {
       baseItems.push(
+        {
+          icon: <Building2 size={18} />,
+          label: 'Partners',
+          href: '/dashboard/admin/partners',
+          isActive: pathname.includes('/dashboard/admin/partners')
+        },
         {
           icon: <Users size={18} />,
           label: 'ผู้ขาย',

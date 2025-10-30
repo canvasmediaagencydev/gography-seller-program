@@ -44,11 +44,17 @@ export async function GET(request: NextRequest) {
         updated_at,
         created_by,
         country_id,
+        partner_id,
         cover_image_url,
         countries!inner (
           id,
           name,
           flag_emoji
+        ),
+        partners!left (
+          id,
+          name,
+          logo_url
         ),
         trip_schedules (
           id,

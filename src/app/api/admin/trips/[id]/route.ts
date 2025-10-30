@@ -37,6 +37,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
           name,
           flag_emoji
         ),
+        partners (
+          id,
+          name,
+          logo_url
+        ),
         trip_schedules (
           id,
           departure_date,
@@ -107,6 +112,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         commission_type: formData.commission_type,
         commission_value: formData.commission_value,
         country_id: formData.country_id,
+        partner_id: formData.partner_id,
         cover_image_url: formData.cover_image_url,
         file_link: formData.file_link,
         is_active: formData.is_active
@@ -244,6 +250,11 @@ function validateTripFormData(data: TripFormData): string | null {
   // Country validation
   if (!data.country_id) {
     return 'Country is required'
+  }
+
+  // Partner validation
+  if (!data.partner_id) {
+    return 'Partner is required'
   }
 
   // Schedules validation

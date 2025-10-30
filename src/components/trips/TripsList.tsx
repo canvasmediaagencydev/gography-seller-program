@@ -1,9 +1,11 @@
 import { FaUser } from "react-icons/fa"
 import { ImLink } from "react-icons/im"
+import { Building2 } from 'lucide-react'
 import TripImage from '../TripImage'
 import { TripWithRelations, ViewType, SellerData } from '../../types/trip'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 interface TripsListProps {
     trips: TripWithRelations[]
@@ -81,6 +83,7 @@ export function TripsList({ trips, viewType, userId, sellerData }: TripsListProp
                 <thead className="bg-gray-50">
                     <tr>
                         <th className="px-4 py-3 text-left text-sm text-gray-700">Trip Name</th>
+                        <th className="px-4 py-3 text-center text-sm text-gray-700">Partner</th>
                         <th className="px-4 py-3 text-center text-sm text-gray-700">Travel Dates</th>
                         <th className="px-4 py-3 text-center text-sm text-gray-700">Deadline</th>
                         <th className="px-4 py-3 text-center text-sm text-gray-700">Seats</th>
@@ -119,6 +122,31 @@ export function TripsList({ trips, viewType, userId, sellerData }: TripsListProp
                                             <h3 className="font-semibold text-gray-800 text-md">{trip.title}</h3>
                                         </div>
                                     </div>
+                                </td>
+
+                                {/* Partner */}
+                                <td className="px-4 py-4">
+                                    {trip.partners ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                            {trip.partners.logo_url ? (
+                                                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                                    <Image
+                                                        src={trip.partners.logo_url}
+                                                        alt={trip.partners.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                                    <Building2 size={14} className="text-gray-500" />
+                                                </div>
+                                            )}
+                                            <span className="text-sm text-gray-700 truncate max-w-[120px]">{trip.partners.name}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm text-gray-400 text-center">-</div>
+                                    )}
                                 </td>
 
                                 {/* Travel Dates - using next_schedule if available */}

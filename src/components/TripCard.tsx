@@ -9,8 +9,9 @@ import { useTripSchedules } from '../hooks/useTripSchedules'
 import { TripCardProps } from '../types/trip'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../database.types'
-import { CalendarDays, Info } from 'lucide-react';
+import { CalendarDays, Info, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Image from 'next/image'
 
 const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSellerId, sellerData, realtimeVersion }: TripCardProps) {
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
@@ -156,6 +157,30 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
                         {trip.title}
                     </span>
                 </h3>
+
+                {/* Partner Badge */}
+                {trip.partners && (
+                    <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
+                        {trip.partners.logo_url ? (
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                <Image
+                                    src={trip.partners.logo_url}
+                                    alt={trip.partners.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                        ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                <Building2 size={16} className="text-gray-500" />
+                            </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-700 truncate">{trip.partners.name}</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Deadline */}
                 <div className="flex items-center text-gray-600 mb-3">
                    <CalendarDays className='mr-2' size={20} />

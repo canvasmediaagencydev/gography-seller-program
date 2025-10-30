@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminTrips, useCountries } from '@/hooks/useAdminTrips'
+import { useActivePartners } from '@/hooks/usePartners'
 import { useImageUpload } from '@/hooks/useImageUpload'
 import { TripFormData, TripScheduleFormData, COMMISSION_TYPES, VALIDATION_RULES } from '@/types/admin'
 import { toast } from 'sonner'
@@ -12,6 +13,7 @@ export default function CreateTripPage() {
   const router = useRouter()
   const { createTrip, loading: tripLoading, error: tripError } = useAdminTrips()
   const { countries, loading: countriesLoading } = useCountries()
+  const { partners, loading: partnersLoading } = useActivePartners()
   const { uploadImage, uploading: imageUploading, error: imageError } = useImageUpload()
 
   const [formData, setFormData] = useState<TripFormData>({
@@ -21,6 +23,7 @@ export default function CreateTripPage() {
     commission_type: 'percentage',
     commission_value: '' as any,
     country_id: '',
+    partner_id: '', // Required field
     cover_image_url: '',
     file_link: '',
     is_active: true,
@@ -64,6 +67,10 @@ export default function CreateTripPage() {
 
     if (!formData.country_id) {
       newErrors.country_id = 'Please select a country'
+    }
+
+    if (!formData.partner_id) {
+      newErrors.partner_id = 'Please select a partner'
     }
 
     const maxCommission = formData.commission_type === 'percentage'
@@ -207,6 +214,12 @@ export default function CreateTripPage() {
     label: `${country.flag_emoji} ${country.name} (${country.code})`
   }))
 
+  // Prepare partners data for combobox
+  const partnerOptions = partners.map(partner => ({
+    value: partner.id,
+    label: partner.name
+  }))
+
   // Calculate duration for schedule
   const calculateScheduleDuration = (schedule: TripScheduleFormData) => {
     if (!schedule.departure_date || !schedule.return_date) {
@@ -303,6 +316,23 @@ export default function CreateTripPage() {
                 {errors.country_id && <p className="mt-2 text-sm text-red-600 font-medium">{errors.country_id}</p>}
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Partner *
+                </label>
+                <Combobox
+                  options={partnerOptions}
+                  value={formData.partner_id}
+                  onChange={(value) => setFormData({ ...formData, partner_id: value })}
+                  placeholder="เลือก Partner"
+                  searchPlaceholder="ค้นหา Partner..."
+                  emptyMessage="ไม่พบ Partner ที่ค้นหา"
+                  className={`${errors.partner_id ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    }`}
+                  disabled={partnersLoading}
+                />
+                {errors.partner_id && <p className="mt-2 text-sm text-red-600 font-medium">{errors.partner_id}</p>}
+              </div>
 
               <div className="lg:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">

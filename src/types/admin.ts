@@ -3,6 +3,7 @@ import { Tables, TablesInsert, TablesUpdate } from '../../database.types'
 // Trip Types
 export type Trip = Tables<'trips'> & {
   countries?: Tables<'countries'>
+  partners?: Tables<'partners'>
   trip_schedules?: TripSchedule[]
 }
 
@@ -22,6 +23,7 @@ export type TripFormData = {
   commission_type: 'fixed' | 'percentage'
   commission_value: number
   country_id: string
+  partner_id: string // Required: Partner who provides this trip
   cover_image_url?: string
   file_link?: string
   is_active: boolean
@@ -38,6 +40,29 @@ export type TripScheduleFormData = {
 
 // Country Type
 export type Country = Tables<'countries'>
+
+// Partner Types
+export type Partner = Tables<'partners'>
+export type PartnerInsert = TablesInsert<'partners'>
+export type PartnerUpdate = TablesUpdate<'partners'>
+
+// Partner with statistics
+export type PartnerWithStats = Partner & {
+  trips_count?: number
+  total_bookings?: number
+  total_revenue?: number
+}
+
+// Partner Form Data
+export type PartnerFormData = {
+  name: string
+  description: string
+  logo_url?: string
+  contact_email?: string
+  contact_phone?: string
+  website?: string
+  is_active: boolean
+}
 
 // Commission Options
 export const COMMISSION_TYPES = [
