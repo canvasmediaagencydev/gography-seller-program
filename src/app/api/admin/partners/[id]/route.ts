@@ -213,31 +213,55 @@ export async function DELETE(
       )
     }
 
-    // Check if partner is used in any trips
-    const { data: trips, error: tripsError } = await supabase
-      .from('trips')
-      .select('id')
-      .eq('partner_id', id)
-      .limit(1)
+    // Use admin client for operations
+    const adminSupabase = createAdminClient()
 
-    if (tripsError) {
-      console.error('Error checking partner usage:', tripsError)
+    // Get partner data to check if it has a logo
+    const { data: partner } = await adminSupabase
+      .from('partners')
+      .select('logo_url')
+      .eq('id', id)
+      .single()
+
+    // First, set partner_id to NULL for all trips using this partner
+    const { error: updateError } = await adminSupabase
+      .from('trips')
+      .update({ partner_id: null })
+      .eq('partner_id', id)
+
+    if (updateError) {
+      console.error('Error removing partner from trips:', updateError)
       return NextResponse.json(
-        { error: 'Failed to check partner usage' },
+        { error: 'Failed to remove partner from trips' },
         { status: 500 }
       )
     }
 
-    if (trips && trips.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete partner that is used in trips. Please reassign trips first.' },
-        { status: 400 }
-      )
+    // Delete logo from storage if exists
+    if (partner?.logo_url) {
+      try {
+        // Extract file path from URL
+        const url = new URL(partner.logo_url)
+        const pathParts = url.pathname.split('/partner-logos/')
+        if (pathParts.length > 1) {
+          const filePath = pathParts[1]
+
+          const { error: storageError } = await adminSupabase.storage
+            .from('partner-logos')
+            .remove([filePath])
+
+          if (storageError) {
+            console.error('Error deleting logo from storage:', storageError)
+            // Continue with partner deletion even if logo deletion fails
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing logo URL:', error)
+        // Continue with partner deletion
+      }
     }
 
-    // Use admin client for delete
-    const adminSupabase = createAdminClient()
-
+    // Now delete the partner
     const { error } = await adminSupabase
       .from('partners')
       .delete()
