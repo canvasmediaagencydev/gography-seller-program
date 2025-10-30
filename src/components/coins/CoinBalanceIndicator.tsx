@@ -67,7 +67,7 @@ export function CoinBalanceIndicator({
           console.error('Error fetching coin balance:', error)
         }
       } else {
-        setBalance(data || {
+        setBalance((data as any) || {
           locked_balance: 0,
           redeemable_balance: 0,
           total_earned: 0,
@@ -157,14 +157,6 @@ export function CoinBalanceIndicator({
               coins
             </span>
           </div>
-          {balance && (balance.locked_balance > 0) && (
-            <div className="flex items-center gap-1 mt-0.5">
-              <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
-              <span className="text-[10px] text-amber-600 dark:text-amber-500 font-medium">
-                {balance.locked_balance.toLocaleString()} earning
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Arrow indicator */}

@@ -26,8 +26,8 @@ interface CoinBalance {
 interface CoinTransaction {
   id: string
   seller_id: string
-  transaction_type: 'earn' | 'redeem' | 'bonus' | 'adjustment' | 'unlock'
-  source_type: 'booking' | 'sales_target' | 'referral' | 'campaign' | 'admin' | 'gamification'
+  transaction_type: 'earn' | 'redeem' | 'bonus' | 'adjustment'
+  source_type: 'booking' | 'sales_target' | 'referral' | 'campaign' | 'admin'
   source_id: string | null
   amount: number
   balance_before: number
@@ -35,8 +35,6 @@ interface CoinTransaction {
   description: string
   metadata: any
   created_at: string
-  coin_type?: 'earning' | 'redeemable' | 'unlock'
-  unlocked_from_transaction_id?: string | null
 }
 
 interface Campaign {

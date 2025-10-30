@@ -3,8 +3,11 @@
 import { useSearchParams } from 'next/navigation'
 import { CoinsIcon } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense } from 'react'
 
-export default function BookingSuccessPage() {
+export const dynamic = 'force-dynamic'
+
+function BookingSuccessContent() {
     const searchParams = useSearchParams()
     const coinReward = searchParams.get('coins')
     const hasReferral = searchParams.get('referral') === 'true'
@@ -83,5 +86,13 @@ export default function BookingSuccessPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function BookingSuccessPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <BookingSuccessContent />
+        </Suspense>
     )
 }

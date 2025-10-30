@@ -368,7 +368,7 @@ export function CampaignManager() {
           setError('')
         }
       }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-amber-50">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white">
           <DialogHeader className="pb-4 border-b">
             <DialogTitle className="text-2xl">{editingCampaign ? 'Edit Campaign' : 'Create New Campaign'}</DialogTitle>
             <DialogDescription className="text-base">
