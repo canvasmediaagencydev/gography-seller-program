@@ -6,7 +6,7 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Paydee Seller Program",
-  description: "แพลตฟอร์มผู้ขายสำหรับจัดการร้านค้าและยอดขายของคุณอย่างมีประสิทธิภาพ",
+  description: "แพลตฟอร์มสำหรับผู้ขายทัวร์และทริปท่องเที่ยว",
 };
 
 export default function RootLayout({
