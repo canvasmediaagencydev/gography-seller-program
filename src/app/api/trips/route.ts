@@ -9,9 +9,10 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '6')
     const filter = searchParams.get('filter') || 'all'
     const countries = searchParams.get('countries')?.split(',').filter(Boolean) || []
-    
+    const partners = searchParams.get('partners')?.split(',').filter(Boolean) || []
+
     const supabase = await createClient()
-    
+
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -19,8 +20,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Create cache key
-    const cacheKey = `trips_${user.id}_${filter}_${page}_${pageSize}_${countries.join(',')}`
-    
+    const cacheKey = `trips_${user.id}_${filter}_${page}_${pageSize}_${countries.join(',')}_${partners.join(',')}`
+
     // Check cache first
     const cachedResult = apiCache.get(cacheKey)
     if (cachedResult) {
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Get available countries from existing trips - cache this separately as it changes less frequently
     const countriesCacheKey = 'available_countries'
     let uniqueCountries = apiCache.get(countriesCacheKey)
-    
+
     if (!uniqueCountries) {
       const { data: availableCountries } = await supabase
         .from('trips')
@@ -69,13 +70,51 @@ export async function GET(request: NextRequest) {
           return acc
         }, [])
         ?.sort((a: any, b: any) => a.name.localeCompare(b.name)) || []
-      
+
       // Cache countries for 5 minutes
       apiCache.set(countriesCacheKey, uniqueCountries, 300000)
     }
 
+    // Get available partners from existing trips - cache this separately as it changes less frequently
+    const partnersCacheKey = 'available_partners'
+    let uniquePartners = apiCache.get(partnersCacheKey)
+
+    if (!uniquePartners) {
+      const { data: availablePartners } = await supabase
+        .from('trips')
+        .select(`
+          partner_id,
+          partners!left (
+            id,
+            name,
+            logo_url
+          )
+        `)
+        .eq('is_active', true)
+        .not('partner_id', 'is', null)
+
+      // Extract unique partners
+      uniquePartners = availablePartners
+        ?.filter((trip: any) => trip.partners)
+        ?.reduce((acc: any[], trip: any) => {
+          const partner = trip.partners
+          if (!acc.find(p => p.id === partner.id)) {
+            acc.push({
+              id: partner.id,
+              name: partner.name,
+              logo_url: partner.logo_url
+            })
+          }
+          return acc
+        }, [])
+        ?.sort((a: any, b: any) => a.name.localeCompare(b.name)) || []
+
+      // Cache partners for 5 minutes
+      apiCache.set(partnersCacheKey, uniquePartners, 300000)
+    }
+
     // Use optimized fallback logic
-    const result = await fallbackTripsQuery(supabase, user, userRole, page, pageSize, filter, countries, uniqueCountries)
+    const result = await fallbackTripsQuery(supabase, user, userRole, page, pageSize, filter, countries, partners, uniqueCountries, uniquePartners)
     
     // Cache the result for 30 seconds
     if (result) {
@@ -100,15 +139,16 @@ export async function GET(request: NextRequest) {
         const pageSize = parseInt(searchParams.get('pageSize') || '6')
         const filter = searchParams.get('filter') || 'all'
         const countries = searchParams.get('countries')?.split(',').filter(Boolean) || []
-        
+        const partners = searchParams.get('partners')?.split(',').filter(Boolean) || []
+
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('role')
           .eq('id', user.id)
           .single()
-        
+
         const userRole = profile?.role || null
-        
+
         // Get available countries with simple query
         const { data: countriesData } = await supabase
           .from('trips')
@@ -137,8 +177,37 @@ export async function GET(request: NextRequest) {
             return acc
           }, [])
           ?.sort((a: any, b: any) => a.name.localeCompare(b.name)) || []
-        
-        return await fallbackTripsQuery(supabase, user, userRole, page, pageSize, filter, countries, availableCountries)
+
+        // Get available partners with simple query
+        const { data: partnersData } = await supabase
+          .from('trips')
+          .select(`
+            partner_id,
+            partners!left (
+              id,
+              name,
+              logo_url
+            )
+          `)
+          .eq('is_active', true)
+          .not('partner_id', 'is', null)
+
+        const availablePartners = partnersData
+          ?.filter((trip: any) => trip.partners)
+          ?.reduce((acc: any[], trip: any) => {
+            const partner = trip.partners
+            if (!acc.find(p => p.id === partner.id)) {
+              acc.push({
+                id: partner.id,
+                name: partner.name,
+                logo_url: partner.logo_url
+              })
+            }
+            return acc
+          }, [])
+          ?.sort((a: any, b: any) => a.name.localeCompare(b.name)) || []
+
+        return await fallbackTripsQuery(supabase, user, userRole, page, pageSize, filter, countries, partners, availableCountries, availablePartners)
       }
     }
     
@@ -147,7 +216,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Fallback function with original logic but some optimizations
-async function fallbackTripsQuery(supabase: any, user: any, userRole: string | null, page: number, pageSize: number, filter: string, countries: string[], availableCountries: any[]) {
+async function fallbackTripsQuery(supabase: any, user: any, userRole: string | null, page: number, pageSize: number, filter: string, countries: string[], partners: string[], availableCountries: any[], availablePartners: any[]) {
   // Use a more efficient approach - get trips first, then batch process
   let baseQuery = supabase
     .from('trips')
@@ -171,6 +240,11 @@ async function fallbackTripsQuery(supabase: any, user: any, userRole: string | n
     baseQuery = baseQuery.in('country_id', countries)
   }
 
+  // Apply partner filter if specified
+  if (partners.length > 0) {
+    baseQuery = baseQuery.in('partner_id', partners)
+  }
+
   // For 'all' filter or when we can apply direct pagination
   if (filter === 'all') {
     const from = (page - 1) * pageSize
@@ -192,7 +266,8 @@ async function fallbackTripsQuery(supabase: any, user: any, userRole: string | n
       pageSize,
       userRole,
       userId: user.id,
-      availableCountries
+      availableCountries,
+      availablePartners
     })
   }
 
@@ -208,7 +283,8 @@ async function fallbackTripsQuery(supabase: any, user: any, userRole: string | n
       pageSize,
       userRole,
       userId: user.id,
-      availableCountries
+      availableCountries,
+      availablePartners
     })
   }
 
@@ -249,7 +325,8 @@ async function fallbackTripsQuery(supabase: any, user: any, userRole: string | n
     pageSize,
     userRole,
     userId: user.id,
-    availableCountries
+    availableCountries,
+    availablePartners
   })
 }
 

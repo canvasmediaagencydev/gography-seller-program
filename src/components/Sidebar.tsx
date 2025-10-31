@@ -265,25 +265,25 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
         })
       }
 
-      // Add Gamification - requires verification like reports
-      if (userProfile?.status === 'approved') {
-        baseItems.push({
-          icon: <Gamepad2 size={18} />,
-          label: 'Gamification',
-          href: '/dashboard/gamification',
-          isActive: pathname === '/dashboard/gamification',
-          isDisabled: false
-        })
-      } else {
-        baseItems.push({
-          icon: <Gamepad2 size={18} />,
-          label: 'Gamification',
-          href: '/dashboard/gamification',
-          isActive: false,
-          isDisabled: true,
-          disabledText: 'ยืนยันตัวตน'
-        })
-      }
+      // Add Gamification - requires verification like reports (HIDDEN)
+      // if (userProfile?.status === 'approved') {
+      //   baseItems.push({
+      //     icon: <Gamepad2 size={18} />,
+      //     label: 'Gamification',
+      //     href: '/dashboard/gamification',
+      //     isActive: pathname === '/dashboard/gamification',
+      //     isDisabled: false
+      //   })
+      // } else {
+      //   baseItems.push({
+      //     icon: <Gamepad2 size={18} />,
+      //     label: 'Gamification',
+      //     href: '/dashboard/gamification',
+      //     isActive: false,
+      //     isDisabled: true,
+      //     disabledText: 'ยืนยันตัวตน'
+      //   })
+      // }
     }
 
     return baseItems
