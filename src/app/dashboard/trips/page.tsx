@@ -27,7 +27,8 @@ export default function TripsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [selectedCountries, setSelectedCountries] = useState<string[]>([])
-  
+  const [selectedPartners, setSelectedPartners] = useState<string[]>([])
+
   // Server-side pagination state
   const [trips, setTrips] = useState<TripWithRelations[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -38,19 +39,20 @@ export default function TripsPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [availableCountries, setAvailableCountries] = useState<any[]>([])
+  const [availablePartners, setAvailablePartners] = useState<any[]>([])
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [showVerificationModal, setShowVerificationModal] = useState(false)
 
   const pageSize = 6
 
-  const fetchTrips = useCallback(async (page: number = currentPage, filter: string = activeTab, countries: string[] = selectedCountries, isGridUpdate = false) => {
+  const fetchTrips = useCallback(async (page: number = currentPage, filter: string = activeTab, countries: string[] = selectedCountries, partners: string[] = selectedPartners, isGridUpdate = false) => {
     try {
       if (isGridUpdate) {
         setGridLoading(true)
       } else {
         setLoading(true)
       }
-      
+
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: pageSize.toString(),
@@ -62,29 +64,39 @@ export default function TripsPage() {
         params.append('countries', countries.join(','))
       }
 
+      // Add partners filter if any selected
+      if (partners.length > 0) {
+        params.append('partners', partners.join(','))
+      }
+
       const response = await fetch(`/api/trips?${params}`, {
         // Add cache headers for better performance
         headers: {
           'Cache-Control': 'max-age=30'
         }
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch trips')
       }
 
       const data = await response.json()
-      
+
       setTrips(data.trips)
       setTotalCount(data.totalCount)
       setUserId(data.userId)
       setUserRole(data.userRole)
-      
+
       // Set available countries from the first load
       if (data.availableCountries && data.availableCountries.length > 0) {
         setAvailableCountries(data.availableCountries)
       }
-      
+
+      // Set available partners from the first load
+      if (data.availablePartners && data.availablePartners.length > 0) {
+        setAvailablePartners(data.availablePartners)
+      }
+
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -94,23 +106,29 @@ export default function TripsPage() {
         setLoading(false)
       }
     }
-  }, [currentPage, activeTab, selectedCountries])
+  }, [currentPage, activeTab, selectedCountries, selectedPartners])
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
     setCurrentPage(1)
-    fetchTrips(1, tab, selectedCountries, true) // Grid update only
+    fetchTrips(1, tab, selectedCountries, selectedPartners, true) // Grid update only
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    fetchTrips(page, activeTab, selectedCountries, true) // Grid update only
+    fetchTrips(page, activeTab, selectedCountries, selectedPartners, true) // Grid update only
   }
 
   const handleCountriesChange = (countries: string[]) => {
     setSelectedCountries(countries)
     setCurrentPage(1)
-    fetchTrips(1, activeTab, countries, true) // Grid update only
+    fetchTrips(1, activeTab, countries, selectedPartners, true) // Grid update only
+  }
+
+  const handlePartnersChange = (partners: string[]) => {
+    setSelectedPartners(partners)
+    setCurrentPage(1)
+    fetchTrips(1, activeTab, selectedCountries, partners, true) // Grid update only
   }
 
   useEffect(() => {
@@ -155,11 +173,14 @@ export default function TripsPage() {
 
   return (
     <div className="space-y-6 md:px-0 px-4 md:py-0 py-4 min-h-screen mobile-page-content">
-      <TripsHeader 
+      <TripsHeader
         totalTrips={totalCount}
         selectedCountries={selectedCountries}
         onCountriesChange={handleCountriesChange}
         availableCountries={availableCountries}
+        selectedPartners={selectedPartners}
+        onPartnersChange={handlePartnersChange}
+        availablePartners={availablePartners}
       />
       
       {showTabs && (
