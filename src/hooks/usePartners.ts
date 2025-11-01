@@ -17,7 +17,7 @@ interface UsePartnersResult {
   updatePartner: (id: string, data: PartnerFormData) => Promise<Partner>
   deletePartner: (id: string) => Promise<void>
   getPartnerById: (id: string) => Promise<Partner>
-  getPartnerStats: (id: string) => Promise<PartnerWithStats['stats']>
+  getPartnerStats: (id: string) => Promise<Omit<PartnerWithStats, keyof Partner>>
 }
 
 export function usePartners(): UsePartnersResult {

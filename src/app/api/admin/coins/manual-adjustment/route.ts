@@ -52,26 +52,74 @@ export async function POST(request: NextRequest) {
     // Use admin client to add/deduct coins
     const adminSupabase = createAdminClient()
 
+    // Get current balance
+    const { data: currentBalance, error: balanceError } = await adminSupabase
+      .from('seller_coins')
+      .select('redeemable_balance')
+      .eq('seller_id', seller_id)
+      .single()
+
+    if (balanceError) {
+      console.error('Error fetching current balance:', balanceError)
+      return NextResponse.json({ error: 'Failed to fetch current balance' }, { status: 500 })
+    }
+
+    const balance_before = currentBalance?.redeemable_balance || 0
+    const balance_after = balance_before + amount
+
+    // Ensure balance doesn't go negative
+    if (balance_after < 0) {
+      return NextResponse.json({
+        error: `Cannot deduct ${Math.abs(amount)} coins. Seller only has ${balance_before} coins available.`
+      }, { status: 400 })
+    }
+
     const transactionType = amount > 0 ? 'bonus' : 'adjustment'
 
-    const { data: transactionId, error: adjustmentError } = await adminSupabase.rpc('add_coin_transaction', {
-      p_seller_id: seller_id,
-      p_transaction_type: transactionType,
-      p_source_type: 'admin',
-      p_source_id: null as any,
-      p_amount: amount,
-      p_description: description,
-      p_metadata: {
-        adjusted_by: user.id,
-        adjusted_by_email: profile.email || '',
-        reason: reason || '',
-        manual_adjustment: true
-      }
-    })
+    // Insert the coin transaction with balance tracking
+    const { data: transaction, error: adjustmentError } = await adminSupabase
+      .from('coin_transactions')
+      .insert({
+        seller_id,
+        transaction_type: transactionType,
+        source_type: 'admin',
+        source_id: null,
+        amount,
+        balance_before,
+        balance_after,
+        description,
+        metadata: {
+          adjusted_by: user.id,
+          adjusted_by_email: profile.email || '',
+          reason: reason || '',
+          manual_adjustment: true
+        }
+      })
+      .select('id')
+      .single()
 
     if (adjustmentError) {
       console.error('Error adjusting coins:', adjustmentError)
       return NextResponse.json({ error: 'Failed to adjust coins: ' + adjustmentError.message }, { status: 500 })
+    }
+
+    const transactionId = transaction?.id
+
+    // Update seller_coins balance
+    const { error: updateError } = await adminSupabase
+      .from('seller_coins')
+      .update({
+        redeemable_balance: balance_after,
+        updated_at: new Date().toISOString()
+      })
+      .eq('seller_id', seller_id)
+
+    if (updateError) {
+      console.error('Error updating seller balance:', updateError)
+      // Transaction is already recorded, but balance update failed
+      return NextResponse.json({
+        error: 'Transaction recorded but balance update failed. Please check manually.'
+      }, { status: 500 })
     }
 
     // Get updated balance
@@ -89,7 +137,7 @@ export async function POST(request: NextRequest) {
         full_name: seller.full_name,
         email: seller.email
       },
-      new_balance: updatedBalance?.balance || 0
+      new_balance: updatedBalance?.redeemable_balance || 0
     }, { status: 201 })
 
   } catch (error) {

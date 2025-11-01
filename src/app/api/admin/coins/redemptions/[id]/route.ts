@@ -72,24 +72,67 @@ export async function PATCH(
       updateData.approved_at = new Date().toISOString()
       updateData.approved_by = user.id
 
-      // Deduct coins from seller balance using the add_coin_transaction function
-      const { error: deductError } = await adminSupabase.rpc('add_coin_transaction', {
-        p_seller_id: redemption.seller_id,
-        p_transaction_type: 'redeem',
-        p_source_type: 'admin',
-        p_source_id: id,
-        p_amount: -redemption.coin_amount,
-        p_description: `Coin redemption approved: ${redemption.coin_amount} coins to ${redemption.cash_amount} THB`,
-        p_metadata: {
-          redemption_id: id,
-          cash_amount: redemption.cash_amount,
-          conversion_rate: redemption.conversion_rate
-        }
-      })
+      // Get current balance
+      const { data: currentBalance, error: balanceError } = await adminSupabase
+        .from('seller_coins')
+        .select('redeemable_balance')
+        .eq('seller_id', redemption.seller_id)
+        .single()
+
+      if (balanceError) {
+        console.error('Error fetching current balance:', balanceError)
+        return NextResponse.json({ error: 'Failed to fetch current balance' }, { status: 500 })
+      }
+
+      const balance_before = currentBalance?.redeemable_balance || 0
+      const balance_after = balance_before - redemption.coin_amount
+
+      // Ensure balance doesn't go negative
+      if (balance_after < 0) {
+        return NextResponse.json({
+          error: `Cannot deduct ${redemption.coin_amount} coins. Seller only has ${balance_before} coins available.`
+        }, { status: 400 })
+      }
+
+      // Insert redemption transaction
+      const { error: deductError } = await adminSupabase
+        .from('coin_transactions')
+        .insert({
+          seller_id: redemption.seller_id,
+          transaction_type: 'redeem',
+          source_type: 'admin',
+          source_id: id,
+          amount: -redemption.coin_amount,
+          balance_before,
+          balance_after,
+          description: `Coin redemption approved: ${redemption.coin_amount} coins to ${redemption.cash_amount} THB`,
+          metadata: {
+            redemption_id: id,
+            cash_amount: redemption.cash_amount,
+            conversion_rate: redemption.conversion_rate
+          }
+        })
 
       if (deductError) {
         console.error('Error deducting coins:', deductError)
         return NextResponse.json({ error: 'Failed to deduct coins: ' + deductError.message }, { status: 500 })
+      }
+
+      // Update seller_coins balance
+      const { error: updateBalanceError } = await adminSupabase
+        .from('seller_coins')
+        .update({
+          redeemable_balance: balance_after,
+          total_redeemed: redemption.coin_amount,
+          updated_at: new Date().toISOString()
+        })
+        .eq('seller_id', redemption.seller_id)
+
+      if (updateBalanceError) {
+        console.error('Error updating seller balance:', updateBalanceError)
+        return NextResponse.json({
+          error: 'Transaction recorded but balance update failed. Please check manually.'
+        }, { status: 500 })
       }
     }
 
