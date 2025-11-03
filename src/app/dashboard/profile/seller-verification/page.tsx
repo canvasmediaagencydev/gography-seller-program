@@ -425,9 +425,9 @@ export default function SellerVerificationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* Professional Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm md:bg-gray-50 md:shadow-none md:border-0">
+      <div className="bg-white border-b border-gray-200 shadow-sm md:bg-gray-50 md:shadow-none md:border-0 rounded-2xl">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
           <Button
             variant="ghost"
