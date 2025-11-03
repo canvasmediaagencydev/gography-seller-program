@@ -154,16 +154,16 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
       </div>
     )
   }
 
   return (
-    <div className="w-full bg-gray-50 pb-20 md:pb-6">
+    <div className="w-full  pb-20 md:pb-6">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm md:bg-gray-50 md:shadow-none md:border-0">
+      <div className="bg-white border-b border-gray-200 shadow-sm md:bg-gray-50 md:shadow-none md:border-0 rounded-2xl">
         <div className="flex items-center justify-between p-4 max-w-4xl mx-auto">
           <Button
             variant="ghost"
