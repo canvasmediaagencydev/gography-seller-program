@@ -210,8 +210,8 @@ export default function AddLineOAPage() {
                   </label>
                 </div>
 
-                {/* Action Buttons - Compact */}
-                <div className="space-y-2">
+                {/* Action Buttons - Compact with bottom padding for mobile navbar */}
+                <div className="space-y-2 pb-20 md:pb-0">
                   <button
                     onClick={handleComplete}
                     disabled={!isChecked}
