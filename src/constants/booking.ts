@@ -9,6 +9,13 @@ export const CONTACT_INFO = {
   }
 } as const
 
+export const LINE_OA = {
+  id: '@paydeeme',
+  url: 'https://line.me/ti/p/@paydeeme',
+  displayName: 'PayDeeMe',
+  qrImagePath: '/LineOA.png' // Path to QR code image in public folder
+} as const
+
 export const SUPPORT_MESSAGES = {
   title: 'ต้องการความช่วยเหลือ?',
   booking: {

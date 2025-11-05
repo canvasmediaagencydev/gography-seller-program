@@ -393,15 +393,13 @@ export default function SellerVerificationPage() {
       })
       window.dispatchEvent(profileUpdateEvent)
 
-      // Success - show toast and redirect
-      toast.success('ส่งข้อมูลเรียบร้อย! รอการอนุมัติจากทีมงาน')
+      // Success - show toast and redirect to LINE OA page
+      toast.success('ส่งข้อมูลเรียบร้อย!')
 
-      // Add slight delay before redirect for better UX
+      // Redirect to LINE OA page
       setTimeout(() => {
-        router.replace('/dashboard/profile')
-        // Force a hard refresh to ensure profile data is updated
-        window.location.href = '/dashboard/profile'
-      }, 1000)
+        router.push('/dashboard/profile/add-line-oa')
+      }, 500)
 
     } catch (err: any) {
       console.error('Verification submission error:', err)
