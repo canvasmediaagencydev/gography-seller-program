@@ -28,7 +28,7 @@ export default function AddLineOAPage() {
   }
 
   return (
-    <div className="h-screen overflow-hidden">
+    <div className="h-screen ">
       {/* Full Height Container with Overflow Control */}
       <div className="h-full overflow-y-auto pt-10">
         <div className="container mx-auto px-4 py-4 md:py-6 lg:py-8">
