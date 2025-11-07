@@ -8,9 +8,9 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, fullName, phone } = body
+    const { userId, fullName, phone } = body
 
-    if (!email || !fullName || !phone) {
+    if (!userId || !fullName || !phone) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -22,12 +22,17 @@ export async function POST(request: NextRequest) {
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('email')
-      .eq('id', email)
+      .eq('id', userId)
       .single()
+
+    if (!profile || !profile.email) {
+      console.error('User profile not found or email missing')
+      return NextResponse.json({ success: true })
+    }
 
     // Send LINE notification (this is non-blocking and won't fail the request)
     await notifySellerProfileUpdate({
-      email: profile?.email || email,
+      email: profile.email,
       fullName,
       phone,
       updateType: 'profile_completed'

@@ -105,16 +105,6 @@ export function useAuthForm(): UseAuthFormReturn {
             return
           }
 
-          // Send LINE notification to admin (non-blocking)
-          fetch('/api/notifications/line/new-seller', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: authData.user.email,
-              registrationMethod: 'email'
-            })
-          }).catch(err => console.error('Failed to send LINE notification:', err))
-
           toast.success('ลงทะเบียนสำเร็จ รอการอนุมัติจากแอดมิน')
           setIsRedirecting(true)
           router.push(getRedirectPath(role))
