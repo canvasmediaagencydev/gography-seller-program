@@ -64,8 +64,13 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/auth/login', '/auth/register', '/auth/callback', '/book', '/api/docs', '/api-docs']
+  const publicRoutes = ['/auth/login', '/auth/register', '/auth/callback', '/book', '/api/docs', '/api-docs', '/api/line/webhook', '/api/notifications/line']
   const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route))
+
+  // Skip middleware for LINE webhook and notifications
+  if (url.pathname.startsWith('/api/line/') || url.pathname.startsWith('/api/notifications/line/')) {
+    return supabaseResponse
+  }
 
   if (!user && !isPublicRoute && url.pathname !== '/') {
     // Redirect unauthenticated users to login

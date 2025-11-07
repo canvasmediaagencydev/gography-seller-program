@@ -393,6 +393,17 @@ export default function SellerVerificationPage() {
       })
       window.dispatchEvent(profileUpdateEvent)
 
+      // Send LINE notification to admin (non-blocking)
+      fetch('/api/notifications/line/profile-completed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userProfile.id,
+          fullName: fullName,
+          phone: phone
+        })
+      }).catch(err => console.error('Failed to send LINE notification:', err))
+
       // Success - show toast and redirect to LINE OA page
       toast.success('ส่งข้อมูลเรียบร้อย!')
 
