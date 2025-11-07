@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { notifyNewSellerRegistration } from '@/lib/line-notify'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       // If profile doesn't exist (Google signup), create one
       if (!profile) {
         const fullName = data.user.user_metadata?.full_name || data.user.user_metadata?.name || ''
-        
+
         await supabase
           .from('user_profiles')
           .insert({
@@ -38,7 +39,14 @@ export async function GET(request: NextRequest) {
             role: role,
             status: 'pending'
           })
-        
+
+        // Send LINE notification to admin (non-blocking)
+        notifyNewSellerRegistration({
+          email: data.user.email || '',
+          fullName: fullName,
+          registrationMethod: 'google'
+        }).catch(err => console.error('Failed to send LINE notification:', err))
+
         // For new users (registration), use role-based redirect
         finalRedirectPath = role === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
       } else {
