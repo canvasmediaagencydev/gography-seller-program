@@ -91,13 +91,18 @@ src/
 3. **Booking System**: Complete booking workflow with status management
 4. **Commission Tracking**: Automated commission calculation and payment tracking
 5. **Referral System**: Seller referral tracking and commission attribution
-6. **Coin & Reward System**: Virtual currency for seller incentives (NEW!)
+6. **Coin & Reward System**: Virtual currency for seller incentives
    - Earn coins from bookings, campaigns, and referrals
    - Real-time balance updates across all devices
    - Campaign badges on trip cards
    - Cash redemption workflow
    - Admin management dashboard
-7. **Performance Optimizations**: API caching, database indexes, batch queries
+7. **LINE Notifications**: Automated notifications to admin via LINE (NEW!)
+   - Notifies when new sellers register
+   - Supports both email and Google OAuth registrations
+   - Configurable recipient (individual user or group)
+   - See `LINE_NOTIFICATION_SETUP.md` for setup instructions
+8. **Performance Optimizations**: API caching, database indexes, batch queries
 
 ## Development Guidelines
 
@@ -145,8 +150,10 @@ Critical database indexes are documented in `TRIPS_API_OPTIMIZATION_GUIDE.md`. T
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (for admin operations)
 - `NEXT_PUBLIC_SITE_URL` (for production deployment)
+- `LINE_CHANNEL_ACCESS_TOKEN` (for LINE notifications, optional)
+- `LINE_ADMIN_USER_ID` or `LINE_ADMIN_GROUP_ID` (for LINE notifications, optional)
 
-**Note**: No `.env.example` file exists in the project. Create `.env.local` with the above variables and fill in your Supabase project credentials.
+**Note**: No `.env.example` file exists in the project. Create `.env.local` with the above variables and fill in your Supabase project credentials. For LINE notification setup, see `LINE_NOTIFICATION_SETUP.md`.
 
 ### Cache System
 The project uses an in-memory cache (`@/lib/cache.ts`) for API performance. Cache keys include user ID to prevent data leaks between users.
