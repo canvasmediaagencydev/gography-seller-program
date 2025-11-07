@@ -398,7 +398,7 @@ export default function SellerVerificationPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: userProfile.id,
+          userId: userProfile.id,
           fullName: fullName,
           phone: phone
         })
