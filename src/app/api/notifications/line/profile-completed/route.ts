@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { notifySellerProfileUpdate } from '@/lib/line-notify'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
  * API endpoint to send LINE notification when a seller completes their profile verification
@@ -17,22 +18,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user email from user_profiles
+    // Get user email from Supabase Auth
     const supabase = await createClient()
+
+    // Try to get email from user_profiles first
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('email')
       .eq('id', userId)
       .single()
 
-    if (!profile || !profile.email) {
-      console.error('User profile not found or email missing')
+    let email = profile?.email
+
+    // If no email in profile, get from auth.users using admin client
+    if (!email) {
+      const adminClient = createAdminClient()
+      const { data: authData } = await adminClient.auth.admin.getUserById(userId)
+      email = authData?.user?.email
+    }
+
+    if (!email) {
+      console.error('User email not found')
       return NextResponse.json({ success: true })
     }
 
     // Send LINE notification (this is non-blocking and won't fail the request)
     await notifySellerProfileUpdate({
-      email: profile.email,
+      email: email,
       fullName,
       phone,
       updateType: 'profile_completed'

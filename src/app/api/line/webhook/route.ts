@@ -69,20 +69,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Handle join events (when bot is added to group)
+      // Handle join events (when bot is added to group) - just log, don't send message
       if (event.type === 'join' && event.source.type === 'group') {
         const groupId = event.source.groupId
         console.log('🎉 Bot joined group! GROUP ID:', groupId)
-
-        await lineClient.pushMessage({
-          to: groupId,
-          messages: [
-            {
-              type: 'text',
-              text: `🎉 ยินดีต้อนรับ!\n\nฉันจะส่งการแจ้งเตือนเมื่อมีผู้สมัคร Seller ใหม่มาที่กลุ่มนี้\n\n📋 Group ID:\n${groupId}\n\nกรุณาคัดลอก Group ID ไปใส่ใน .env.local:\nLINE_ADMIN_GROUP_ID=${groupId}`
-            }
-          ]
-        })
+        console.log(`Set this in .env.local: LINE_ADMIN_GROUP_ID=${groupId}`)
       }
     }
 
