@@ -37,36 +37,10 @@ export async function POST(request: NextRequest) {
         const userId = event.source.userId
         console.log('👤 USER ID:', userId)
         console.log('Copy this to LINE_ADMIN_USER_ID in .env.local')
-
-        // Send confirmation message back
-        if (event.type === 'message') {
-          await lineClient.replyMessage({
-            replyToken: event.replyToken,
-            messages: [
-              {
-                type: 'text',
-                text: `✅ ได้รับข้อความแล้ว!\n\n📋 User ID ของคุณคือ:\n${userId}\n\nกรุณาคัดลอกไปใส่ใน .env.local:\nLINE_ADMIN_USER_ID=${userId}`
-              }
-            ]
-          })
-        }
       } else if (event.source.type === 'group') {
         const groupId = event.source.groupId
         console.log('👥 GROUP ID:', groupId)
         console.log('Copy this to LINE_ADMIN_GROUP_ID in .env.local')
-
-        // Send confirmation message to group
-        if (event.type === 'message') {
-          await lineClient.replyMessage({
-            replyToken: event.replyToken,
-            messages: [
-              {
-                type: 'text',
-                text: `✅ ตั้งค่าสำเร็จ!\n\n📋 Group ID ของกลุ่มนี้คือ:\n${groupId}\n\nกรุณาคัดลอกไปใส่ใน .env.local:\nLINE_ADMIN_GROUP_ID=${groupId}\n\nหลังจากนั้นรีสตาร์ทเซิร์ฟเวอร์ แล้วระบบจะส่งแจ้งเตือนมาที่กลุ่มนี้เมื่อมีผู้สมัคร Seller ใหม่`
-              }
-            ]
-          })
-        }
       }
 
       // Handle join events (when bot is added to group) - just log, don't send message
