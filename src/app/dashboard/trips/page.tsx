@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { TripWithRelations } from '../../../types/trip'
 import { TripsHeader } from '../../../components/trips/TripsHeader'
 import { TripTabs } from '../../../components/trips/TripTabs'
@@ -12,6 +12,8 @@ import { Pagination } from '../../../components/ui/Pagination'
 import { TabType } from '../../../hooks/useTripFilters'
 import VerificationModal from '@/components/VerificationModal'
 import { createClient } from '@/lib/supabase/client'
+import { useTrips, tripKeys } from '@/hooks/use-trips'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface UserProfile {
   id: string
@@ -28,113 +30,86 @@ export default function TripsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('all')
   const [selectedCountries, setSelectedCountries] = useState<string[]>([])
   const [selectedPartners, setSelectedPartners] = useState<string[]>([])
-
-  // Server-side pagination state
-  const [trips, setTrips] = useState<TripWithRelations[]>([])
-  const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [gridLoading, setGridLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [userRole, setUserRole] = useState<string | null>(null)
-  const [availableCountries, setAvailableCountries] = useState<any[]>([])
-  const [availablePartners, setAvailablePartners] = useState<any[]>([])
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [showVerificationModal, setShowVerificationModal] = useState(false)
 
   const pageSize = 6
+  const queryClient = useQueryClient()
 
-  const fetchTrips = useCallback(async (page: number = currentPage, filter: string = activeTab, countries: string[] = selectedCountries, partners: string[] = selectedPartners, isGridUpdate = false) => {
-    try {
-      if (isGridUpdate) {
-        setGridLoading(true)
-      } else {
-        setLoading(true)
-      }
+  // Use TanStack Query for trips data
+  const { data, isLoading, error, isFetching } = useTrips({
+    page: currentPage,
+    pageSize,
+    filter: activeTab,
+    countries: selectedCountries,
+    partners: selectedPartners,
+  })
 
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
-        filter: filter
-      })
-
-      // Add countries filter if any selected
-      if (countries.length > 0) {
-        params.append('countries', countries.join(','))
-      }
-
-      // Add partners filter if any selected
-      if (partners.length > 0) {
-        params.append('partners', partners.join(','))
-      }
-
-      const response = await fetch(`/api/trips?${params}`, {
-        // Add cache headers for better performance
-        headers: {
-          'Cache-Control': 'max-age=30'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch trips')
-      }
-
-      const data = await response.json()
-
-      setTrips(data.trips)
-      setTotalCount(data.totalCount)
-      setUserId(data.userId)
-      setUserRole(data.userRole)
-
-      // Set available countries from the first load
-      if (data.availableCountries && data.availableCountries.length > 0) {
-        setAvailableCountries(data.availableCountries)
-      }
-
-      // Set available partners from the first load
-      if (data.availablePartners && data.availablePartners.length > 0) {
-        setAvailablePartners(data.availablePartners)
-      }
-
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      if (isGridUpdate) {
-        setGridLoading(false)
-      } else {
-        setLoading(false)
-      }
-    }
-  }, [currentPage, activeTab, selectedCountries, selectedPartners])
+  const trips = data?.trips || []
+  const totalCount = data?.totalCount || 0
+  const userId = data?.userId || null
+  const userRole = data?.userRole || null
+  const availableCountries = data?.availableCountries || []
+  const availablePartners = data?.availablePartners || []
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
     setCurrentPage(1)
-    fetchTrips(1, tab, selectedCountries, selectedPartners, true) // Grid update only
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    fetchTrips(page, activeTab, selectedCountries, selectedPartners, true) // Grid update only
   }
 
   const handleCountriesChange = (countries: string[]) => {
     setSelectedCountries(countries)
     setCurrentPage(1)
-    fetchTrips(1, activeTab, countries, selectedPartners, true) // Grid update only
   }
 
   const handlePartnersChange = (partners: string[]) => {
     setSelectedPartners(partners)
     setCurrentPage(1)
-    fetchTrips(1, activeTab, selectedCountries, partners, true) // Grid update only
   }
 
   useEffect(() => {
-    fetchTrips()
     loadUserProfile()
   }, [])
+
+  // OPTIMIZED: Prefetch next page for instant navigation
+  useEffect(() => {
+    const totalPages = Math.ceil(totalCount / pageSize)
+
+    if (currentPage < totalPages) {
+      queryClient.prefetchQuery({
+        queryKey: tripKeys.list({
+          page: currentPage + 1,
+          pageSize,
+          filter: activeTab,
+          countries: selectedCountries,
+          partners: selectedPartners,
+        }),
+        queryFn: async () => {
+          const params = new URLSearchParams({
+            page: (currentPage + 1).toString(),
+            pageSize: pageSize.toString(),
+            filter: activeTab,
+          })
+
+          if (selectedCountries.length > 0) {
+            params.append('countries', selectedCountries.join(','))
+          }
+          if (selectedPartners.length > 0) {
+            params.append('partners', selectedPartners.join(','))
+          }
+
+          const response = await fetch(`/api/trips?${params}`)
+          if (!response.ok) throw new Error('Failed to fetch trips')
+          return response.json()
+        },
+      })
+    }
+  }, [currentPage, totalCount, pageSize, activeTab, selectedCountries, selectedPartners, queryClient])
 
   const loadUserProfile = async () => {
     const supabase = createClient()
@@ -163,12 +138,12 @@ export default function TripsPage() {
   const showTabs = userRole === 'seller'
 
   // Initial loading - show full page loading
-  if (loading && !userId) {
+  if (isLoading && !userId) {
     return <LoadingSystem variant="grid" />
   }
 
   if (error) {
-    return <ErrorSystem variant="fullscreen" message={error} />
+    return <ErrorSystem variant="fullscreen" message={error instanceof Error ? error.message : 'An error occurred'} />
   }
 
   return (
@@ -182,7 +157,7 @@ export default function TripsPage() {
         onPartnersChange={handlePartnersChange}
         availablePartners={availablePartners}
       />
-      
+
       {showTabs && (
         <TripTabs
           activeTab={activeTab}
@@ -193,12 +168,12 @@ export default function TripsPage() {
         />
       )}
 
-      {/* Grid Area - Shows skeleton when gridLoading is true */}
+      {/* Grid Area - Shows skeleton when isFetching is true */}
       <div className="max-w-[1440px] md:px-10 mx-auto">
-        {gridLoading ? (
+        {isFetching && currentPage !== 1 ? (
           <LoadingSystem variant="grid" />
         ) : trips && trips.length > 0 ? (
-          <TripsGrid 
+          <TripsGrid
             trips={trips}
             viewMode={viewMode}
             userId={userId}
