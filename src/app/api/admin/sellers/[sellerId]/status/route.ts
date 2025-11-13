@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { notifySellerApproval, extractSellerId, parseFullName } from '@/lib/email-notify'
 
 export async function PATCH(
   request: NextRequest,
@@ -90,6 +91,53 @@ export async function PATCH(
       reason,
       timestamp: new Date().toISOString()
     })
+
+    // Send email notification if status is approved
+    if (status === 'approved') {
+      try {
+        // Get seller details including email from auth.users
+        const { data: authUser, error: authUserError } = await adminClient.auth.admin.getUserById(sellerId)
+
+        // Get seller profile for full_name
+        const { data: sellerProfile, error: profileError } = await adminClient
+          .from('user_profiles')
+          .select('full_name')
+          .eq('id', sellerId)
+          .single()
+
+        if (!authUserError && authUser?.user?.email && !profileError && sellerProfile?.full_name) {
+          const sellerEmail = authUser.user.email
+          const fullName = sellerProfile.full_name
+
+          // Parse full name into first and last name
+          const { firstName, lastName } = parseFullName(fullName)
+
+          // Extract last 5 characters of user_id
+          const sellerIdShort = extractSellerId(sellerId)
+
+          // Send email notification (silent fail)
+          await notifySellerApproval(sellerEmail, firstName, lastName, sellerIdShort)
+
+          console.log('📧 Email notification sent to:', sellerEmail, {
+            firstName,
+            lastName,
+            sellerIdShort
+          })
+        } else {
+          console.warn('⚠️ Could not send email notification: Missing seller email or full_name', {
+            hasAuthUser: !!authUser,
+            hasEmail: !!authUser?.user?.email,
+            hasProfile: !!sellerProfile,
+            hasFullName: !!sellerProfile?.full_name,
+            authUserError: authUserError?.message,
+            profileError: profileError?.message
+          })
+        }
+      } catch (emailError) {
+        // Silent fail - log error but don't block approval
+        console.error('❌ Email notification failed (silent):', emailError instanceof Error ? emailError.message : 'Unknown error')
+      }
+    }
 
     return NextResponse.json({
       success: true,
