@@ -1,16 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { CoinsIcon } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-
-interface CoinBalance {
-  locked_balance: number
-  redeemable_balance: number
-  total_earned: number
-  total_redeemed: number
-}
+import { useCoinBalance } from '@/hooks/use-coins'
+import { useQueryClient } from '@tanstack/react-query'
+import { coinKeys } from '@/hooks/use-coins'
 
 interface CoinBalanceIndicatorProps {
   userId: string
@@ -23,63 +18,28 @@ export function CoinBalanceIndicator({
   variant = 'sidebar',
   showLabel = true
 }: CoinBalanceIndicatorProps) {
-  const [balance, setBalance] = useState<CoinBalance | null>(null)
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const { data: balanceData, isLoading: loading } = useCoinBalance()
+
+  const balance = balanceData?.balance || {
+    locked_balance: 0,
+    redeemable_balance: 0,
+    total_earned: 0,
+    total_redeemed: 0
+  }
 
   useEffect(() => {
-    fetchBalance()
-
-    // Refresh balance every 30 seconds
-    const interval = setInterval(fetchBalance, 30000)
-
-    // Listen for coin balance updates
+    // Listen for coin balance updates and invalidate query
     const handleCoinUpdate = () => {
-      fetchBalance()
+      queryClient.invalidateQueries({ queryKey: coinKeys.balance() })
     }
 
     window.addEventListener('coinBalanceUpdated', handleCoinUpdate)
 
     return () => {
-      clearInterval(interval)
       window.removeEventListener('coinBalanceUpdated', handleCoinUpdate)
     }
-  }, [userId])
-
-  const fetchBalance = async () => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('seller_coins')
-        .select('locked_balance, redeemable_balance, total_earned, total_redeemed')
-        .eq('seller_id', userId)
-        .single()
-
-      if (error) {
-        // If no record exists yet, balance is 0
-        if (error.code === 'PGRST116') {
-          setBalance({
-            locked_balance: 0,
-            redeemable_balance: 0,
-            total_earned: 0,
-            total_redeemed: 0
-          })
-        } else {
-          console.error('Error fetching coin balance:', error)
-        }
-      } else {
-        setBalance((data as any) || {
-          locked_balance: 0,
-          redeemable_balance: 0,
-          total_earned: 0,
-          total_redeemed: 0
-        })
-      }
-    } catch (err) {
-      console.error('Error fetching coin balance:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [queryClient])
 
   if (loading) {
     if (variant === 'sidebar') {
@@ -117,7 +77,7 @@ export function CoinBalanceIndicator({
           {showLabel && <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">Total Coins</span>}
           <div className="flex items-baseline gap-1">
             <span className="text-base font-bold text-amber-600 dark:text-amber-500">
-              {((balance?.locked_balance || 0) + (balance?.redeemable_balance || 0)).toLocaleString()}
+              {((balance.locked_balance || 0) + (balance.redeemable_balance || 0)).toLocaleString()}
             </span>
             <span className="text-xs text-amber-500/70">coins</span>
           </div>
@@ -151,7 +111,7 @@ export function CoinBalanceIndicator({
           )}
           <div className="flex items-baseline gap-1.5">
             <span className="text-xl font-bold text-amber-600 dark:text-amber-500 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
-              {((balance?.locked_balance || 0) + (balance?.redeemable_balance || 0)).toLocaleString()}
+              {((balance.locked_balance || 0) + (balance.redeemable_balance || 0)).toLocaleString()}
             </span>
             <span className="text-xs font-semibold text-amber-500/70 dark:text-amber-600">
               coins
@@ -178,7 +138,7 @@ export function CoinBalanceIndicator({
       <CoinsIcon className="h-4 w-4 text-yellow-500" />
       {showLabel && <span className="text-sm text-muted-foreground">Coins:</span>}
       <span className="font-bold text-yellow-600 dark:text-yellow-500">
-        {((balance?.locked_balance || 0) + (balance?.redeemable_balance || 0)).toLocaleString()}
+        {((balance.locked_balance || 0) + (balance.redeemable_balance || 0)).toLocaleString()}
       </span>
     </Link>
   )
