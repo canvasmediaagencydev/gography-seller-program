@@ -69,10 +69,11 @@ const NavButton = memo(function NavButton({
     return (
       <div
         key={index}
-        className="flex flex-col items-center justify-center text-gray-300 cursor-not-allowed"
+        className="flex items-center justify-center text-gray-300 cursor-not-allowed py-2"
       >
-        {item.icon}
-        <span className="text-xs mt-1 font-medium">{item.label}</span>
+        <div className="w-12 h-12 flex items-center justify-center opacity-40 [&>svg]:w-6 [&>svg]:h-6">
+          {item.icon}
+        </div>
       </div>
     )
   }
@@ -82,18 +83,26 @@ const NavButton = memo(function NavButton({
       <button
         key={index}
         onClick={handleClick}
-        className={`flex flex-col items-center justify-center transition-colors ${
-          item.active
-            ? 'text-primary-blue'
-            : item.needsAction 
-            ? 'text-red-600 hover:text-red-700' 
-            : 'text-gray-600 hover:text-primary-blue'
+        className={`relative flex items-center justify-center py-2 px-1 transition-all duration-300 active:scale-95 ${
+          item.needsAction && !item.active ? 'text-red-500' : ''
         }`}
       >
-        {item.icon}
-        <span className={`text-xs mt-1 font-medium ${
-          item.needsAction ? 'font-bold' : ''
-        }`}>{item.label}</span>
+        {item.active ? (
+          /* Active Pill with Icon + Label */
+          <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-gradient-to-r from-[#2c6ba8] to-[#4a8fcf] shadow-lg shadow-blue-500/30 animate-in zoom-in-95 duration-300 text-white [&>svg]:w-5 [&>svg]:h-5 [&>svg]:flex-shrink-0">
+            {item.icon}
+            <span className="text-xs font-semibold whitespace-nowrap">
+              {item.label}
+            </span>
+          </div>
+        ) : (
+          /* Inactive - Icon Only */
+          <div className={`w-12 h-12 flex items-center justify-center transition-transform duration-200 hover:scale-110 [&>svg]:w-6 [&>svg]:h-6 ${
+            item.needsAction ? 'text-red-500' : 'text-gray-400'
+          }`}>
+            {item.icon}
+          </div>
+        )}
       </button>
     )
   }
@@ -102,14 +111,22 @@ const NavButton = memo(function NavButton({
     <button
       key={index}
       onClick={handleClick}
-      className={`flex flex-col items-center justify-center transition-colors ${
-        item.active
-          ? 'text-primary-blue'
-          : 'text-gray-600 hover:text-primary-blue'
-      }`}
+      className="relative flex items-center justify-center py-2 px-1 transition-all duration-300 active:scale-95"
     >
-      {item.icon}
-      <span className="text-xs mt-1 font-medium">{item.label}</span>
+      {item.active ? (
+        /* Active Pill with Icon + Label */
+        <div className="flex items-center gap-1.5 px-3 py-2.5 rounded-full bg-gradient-to-r from-[#2c6ba8] to-[#4a8fcf] shadow-lg shadow-blue-500/30 animate-in zoom-in-95 duration-300 text-white [&>svg]:w-5 [&>svg]:h-5 [&>svg]:flex-shrink-0">
+          {item.icon}
+          <span className="text-xs font-semibold whitespace-nowrap">
+            {item.label}
+          </span>
+        </div>
+      ) : (
+        /* Inactive - Icon Only */
+        <div className="w-12 h-12 flex items-center justify-center transition-transform duration-200 hover:scale-110 text-gray-400 [&>svg]:w-6 [&>svg]:h-6">
+          {item.icon}
+        </div>
+      )}
     </button>
   )
 })
@@ -121,7 +138,7 @@ interface MobileBottomNavProps {
 const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUserProfile }: MobileBottomNavProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const [userProfile, setUserProfile] = React.useState(initialUserProfile)
 
   // Update local state when props change
@@ -219,8 +236,12 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
   }, [pathname, userProfile?.status, userProfile?.role, verificationInfo.needsAction])
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 mobile-nav">
-      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-5'} h-16`}>
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav">
+      {/* Simple White Background */}
+      <div className="absolute inset-0 bg-white border-t border-gray-200 shadow-lg" />
+
+      {/* Navigation Items */}
+      <div className={`relative grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-5'} h-20 pb-safe px-2`}>
         {navItems.map((item, index) => (
           <NavButton
             key={`nav-${index}-${item.href}`}
