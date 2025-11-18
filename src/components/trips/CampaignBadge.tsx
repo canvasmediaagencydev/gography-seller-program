@@ -1,56 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { GiftIcon, Sparkles } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-
-interface Campaign {
-  id: string
-  title: string
-  coin_amount: number
-  campaign_type: string
-}
+import { useTripCampaign } from '@/hooks/use-campaigns'
 
 interface CampaignBadgeProps {
   tripId: string
 }
 
 export function CampaignBadge({ tripId }: CampaignBadgeProps) {
-  const [campaign, setCampaign] = useState<Campaign | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { campaign, isLoading } = useTripCampaign(tripId)
 
-  useEffect(() => {
-    fetchActiveCampaign()
-  }, [tripId])
-
-  const fetchActiveCampaign = async () => {
-    try {
-      const supabase = createClient()
-      const now = new Date().toISOString()
-
-      // ดึง campaigns ที่ active และเกี่ยวข้องกับ trip นี้
-      const { data, error } = await supabase
-        .from('coin_bonus_campaigns')
-        .select('id, title, coin_amount, campaign_type')
-        .eq('is_active', true)
-        .lte('start_date', now)
-        .gte('end_date', now)
-        .or(`target_trip_id.eq.${tripId},campaign_type.eq.general`)
-        .order('coin_amount', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (!error && data) {
-        setCampaign(data)
-      }
-    } catch (err) {
-      console.error('Error fetching campaign:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading || !campaign) {
+  if (isLoading || !campaign) {
     return null
   }
 
