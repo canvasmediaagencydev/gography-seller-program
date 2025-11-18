@@ -19,7 +19,8 @@ export async function notifySellerApproval(
     // Get environment variables
     const apiKey = process.env.EMAIL_API_KEY;
     const apiSecret = process.env.EMAIL_API_SECRET;
-    const templateId = process.env.Template_ID;
+    // Hardcoded template ID
+    const templateId = '25111109-3640-8d1d-aede-aa62a09e23f2';
     const senderEmail = process.env.EMAIL_SENDER_ADDRESS;
     const senderName = process.env.EMAIL_SENDER_NAME;
 
