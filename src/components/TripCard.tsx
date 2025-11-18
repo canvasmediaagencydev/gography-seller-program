@@ -6,7 +6,6 @@ import SeatIndicator from './ui/SeatIndicator'
 import { CampaignBadge } from './trips/CampaignBadge'
 import { useTripData } from '../hooks/useTripData'
 import { useTripSchedules } from '../hooks/useTripSchedules'
-import { useTripPrefetch } from '../hooks/use-trip-prefetch'
 import { TripCardProps } from '../types/trip'
 import { createClient } from '@/lib/supabase/client'
 import { Tables } from '../../database.types'
@@ -18,9 +17,6 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
     const [selectedSchedule, setSelectedSchedule] = useState<Tables<'trip_schedules'> | null>(trip.next_schedule || null)
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const { duration, commission, dateRange, deadlineInfo, availableSeats, mySales } = useTripData(trip)
-
-    // OPTIMIZED: Prefetch trip details on hover for instant navigation
-    const { prefetchTrip } = useTripPrefetch()
 
     // Get real-time schedules with available seats
     // OPTIMIZED: Pass realtimeVersion from parent to trigger refetches
@@ -117,8 +113,6 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
     return (
         <div
             className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-sm mx-auto relative"
-            onMouseEnter={() => prefetchTrip(trip.id)}
-            onTouchStart={() => prefetchTrip(trip.id)}
         >
             {/* Cover Image */}
             <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
