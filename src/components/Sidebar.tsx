@@ -1,12 +1,13 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2, Building2 } from 'lucide-react';
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2, Building2, PlayCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import SidebarButtonDisabled from '@/components/ui/SidebarButtonDisabled'
 import { CoinBalanceIndicator } from '@/components/coins/CoinBalanceIndicator'
+import { HowToSellVideoModal } from '@/components/HowToSellVideoModal'
 import Image from 'next/image'
 
 interface UserProfile {
@@ -95,6 +96,7 @@ const getVerificationStatus = (userProfile: UserProfile | null) => {
 const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(initialProfile || null)
   const [loading, setLoading] = useState(false)
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -416,6 +418,17 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
             />
           )
         ))}
+
+        {/* How to Sell Video Button - Only for approved sellers */}
+        {userProfile?.role === 'seller' && userProfile?.status === 'approved' && (
+          <button
+            onClick={() => setIsVideoModalOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-lg font-medium transition-all duration-75 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          >
+            <PlayCircle size={18} />
+            <span className="text-left">วิธีการขาย</span>
+          </button>
+        )}
       </nav>
 
       {/* Profile and Logout */}
@@ -449,6 +462,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           </span>
         </button>
       </div>
+
+      {/* Video Modal */}
+      <HowToSellVideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+      />
     </div>
   )
 })
