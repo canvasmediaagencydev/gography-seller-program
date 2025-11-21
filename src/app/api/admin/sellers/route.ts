@@ -37,6 +37,11 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') // 'all', 'pending', 'approved', 'rejected'
+    const search = searchParams.get('search') || ''
+    const registrationStartDate = searchParams.get('registrationStartDate')
+    const registrationEndDate = searchParams.get('registrationEndDate')
+    const approvalStartDate = searchParams.get('approvalStartDate')
+    const approvalEndDate = searchParams.get('approvalEndDate')
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
@@ -54,7 +59,6 @@ export async function GET(request: NextRequest) {
         commission_goal,
         avatar_url,
         id_card_url,
-        document_url,
         documents_urls,
         id_card_uploaded_at,
         avatar_uploaded_at,
@@ -69,6 +73,33 @@ export async function GET(request: NextRequest) {
     // Add status filter if specified
     if (status && status !== 'all') {
       query = query.eq('status', status)
+    }
+
+    // Add search filter (search in full_name, email, referral_code)
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,referral_code.ilike.%${search}%`)
+    }
+
+    // Add registration date filters
+    if (registrationStartDate) {
+      query = query.gte('created_at', registrationStartDate)
+    }
+    if (registrationEndDate) {
+      // Add one day to include the end date
+      const endDate = new Date(registrationEndDate)
+      endDate.setDate(endDate.getDate() + 1)
+      query = query.lt('created_at', endDate.toISOString())
+    }
+
+    // Add approval date filters
+    if (approvalStartDate) {
+      query = query.gte('approved_at', approvalStartDate)
+    }
+    if (approvalEndDate) {
+      // Add one day to include the end date
+      const endDate = new Date(approvalEndDate)
+      endDate.setDate(endDate.getDate() + 1)
+      query = query.lt('approved_at', endDate.toISOString())
     }
 
     // Add pagination
@@ -86,7 +117,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get total count for pagination
+    // Get total count for pagination (with same filters)
     let countQuery = adminClient
       .from('user_profiles')
       .select('id', { count: 'exact', head: true })
@@ -95,6 +126,25 @@ export async function GET(request: NextRequest) {
     if (status && status !== 'all') {
       countQuery = countQuery.eq('status', status)
     }
+    if (search) {
+      countQuery = countQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,referral_code.ilike.%${search}%`)
+    }
+    if (registrationStartDate) {
+      countQuery = countQuery.gte('created_at', registrationStartDate)
+    }
+    if (registrationEndDate) {
+      const endDate = new Date(registrationEndDate)
+      endDate.setDate(endDate.getDate() + 1)
+      countQuery = countQuery.lt('created_at', endDate.toISOString())
+    }
+    if (approvalStartDate) {
+      countQuery = countQuery.gte('approved_at', approvalStartDate)
+    }
+    if (approvalEndDate) {
+      const endDate = new Date(approvalEndDate)
+      endDate.setDate(endDate.getDate() + 1)
+      countQuery = countQuery.lt('approved_at', endDate.toISOString())
+    }
 
     const { count, error: countError } = await countQuery
 
@@ -102,9 +152,49 @@ export async function GET(request: NextRequest) {
       console.error('Count error:', countError)
     }
 
+    // Get statistics (total sellers by status) - with same filters applied
+    let statsQuery = adminClient
+      .from('user_profiles')
+      .select('status')
+      .eq('role', 'seller')
+
+    // Apply same filters to statistics
+    if (search) {
+      statsQuery = statsQuery.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,referral_code.ilike.%${search}%`)
+    }
+    if (registrationStartDate) {
+      statsQuery = statsQuery.gte('created_at', registrationStartDate)
+    }
+    if (registrationEndDate) {
+      const endDate = new Date(registrationEndDate)
+      endDate.setDate(endDate.getDate() + 1)
+      statsQuery = statsQuery.lt('created_at', endDate.toISOString())
+    }
+    if (approvalStartDate) {
+      statsQuery = statsQuery.gte('approved_at', approvalStartDate)
+    }
+    if (approvalEndDate) {
+      const endDate = new Date(approvalEndDate)
+      endDate.setDate(endDate.getDate() + 1)
+      statsQuery = statsQuery.lt('approved_at', endDate.toISOString())
+    }
+
+    const { data: statsData, error: statsError } = await statsQuery
+
+    const statistics = {
+      total: statsData?.length || 0,
+      pending: statsData?.filter(s => s.status === 'pending').length || 0,
+      approved: statsData?.filter(s => s.status === 'approved').length || 0,
+      rejected: statsData?.filter(s => s.status === 'rejected').length || 0,
+      approvalRate: statsData?.length
+        ? Math.round((statsData.filter(s => s.status === 'approved').length / statsData.length) * 100)
+        : 0
+    }
+
     return NextResponse.json({
       success: true,
       data: sellers,
+      statistics,
       pagination: {
         total: count || 0,
         limit,
