@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import SellerDetailsModal from '@/components/SellerDetailsModal'
+import SellerStats from './components/SellerStats'
+import SellerFilters from './components/SellerFilters'
 import { MdOutlineMail } from "react-icons/md";
 import { IoCallOutline } from "react-icons/io5";
 import { LuTag } from "react-icons/lu";
@@ -37,7 +39,30 @@ export default function SellersManagement() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const [error, setError] = useState('')
-  
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [registrationStartDate, setRegistrationStartDate] = useState('')
+  const [registrationEndDate, setRegistrationEndDate] = useState('')
+  const [approvalStartDate, setApprovalStartDate] = useState('')
+  const [approvalEndDate, setApprovalEndDate] = useState('')
+  const [profileCompletenessFilter, setProfileCompletenessFilter] = useState<'all' | 'complete' | 'incomplete'>('all')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [totalItems, setTotalItems] = useState(0)
+
+  // Statistics state
+  const [statistics, setStatistics] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    approvalRate: 0
+  })
+
   // Modal states
   const [selectedSeller, setSelectedSeller] = useState<UserProfile | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
@@ -45,35 +70,59 @@ export default function SellersManagement() {
   const router = useRouter()
   const supabase = createClient()
 
+  // Debounced search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1) // Reset to first page when filters change
+      fetchSellers()
+    }, 300) // Debounce 300ms
+
+    return () => clearTimeout(timer)
+  }, [filter, searchTerm, registrationStartDate, registrationEndDate, approvalStartDate, approvalEndDate, itemsPerPage, profileCompletenessFilter])
+
+  // Fetch when page changes
   useEffect(() => {
     fetchSellers()
-  }, [filter])
+  }, [currentPage])
 
   const fetchSellers = async () => {
     try {
+      setLoading(true)
       setError('')
-      
-      // Use RPC function to get sellers with emails from auth.users
-      const { data, error } = await supabase
-        .rpc('get_sellers_with_emails')
 
-      if (error) {
-        console.error('RPC Error:', error)
-        setError(`เกิดข้อผิดพลาด: ${error.message}`)
+      // Build query parameters
+      const params = new URLSearchParams()
+      params.append('status', filter)
+      params.append('limit', itemsPerPage.toString())
+      params.append('offset', ((currentPage - 1) * itemsPerPage).toString())
+      if (searchTerm) params.append('search', searchTerm)
+      if (registrationStartDate) params.append('registrationStartDate', registrationStartDate)
+      if (registrationEndDate) params.append('registrationEndDate', registrationEndDate)
+      if (approvalStartDate) params.append('approvalStartDate', approvalStartDate)
+      if (approvalEndDate) params.append('approvalEndDate', approvalEndDate)
+
+      // Use API route instead of RPC
+      const response = await fetch(`/api/admin/sellers?${params.toString()}`)
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'เกิดข้อผิดพลาดในการโหลดข้อมูล')
         return
       }
 
-      // Filter by status if needed (data is array of sellers)
-      let filteredData = data || []
-      
-      // Filter out admin users - show only sellers
-      filteredData = filteredData.filter((user) => user.role === 'seller')
-      
-      if (filter !== 'all' && Array.isArray(filteredData)) {
-        filteredData = filteredData.filter((seller) => seller.status === filter)
+      let filteredSellers = result.data || []
+
+      // Client-side filter for profile completeness (only for pending status)
+      if (filter === 'pending' && profileCompletenessFilter !== 'all') {
+        filteredSellers = filteredSellers.filter(seller => {
+          const isComplete = seller.full_name && seller.phone
+          return profileCompletenessFilter === 'complete' ? isComplete : !isComplete
+        })
       }
 
-      setSellers(filteredData as UserProfile[])
+      setSellers(filteredSellers)
+      setStatistics(result.statistics || statistics)
+      setTotalItems(result.pagination?.total || 0)
     } catch (err) {
       console.error('Fetch Error:', err)
       setError('เกิดข้อผิดพลาดในการโหลดข้อมูล')
@@ -81,6 +130,39 @@ export default function SellersManagement() {
       setLoading(false)
     }
   }
+
+  const handleClearFilters = () => {
+    setSearchTerm('')
+    setRegistrationStartDate('')
+    setRegistrationEndDate('')
+    setApprovalStartDate('')
+    setApprovalEndDate('')
+    setProfileCompletenessFilter('all')
+    setCurrentPage(1)
+  }
+
+  // Reset profile completeness filter when switching tabs
+  useEffect(() => {
+    setProfileCompletenessFilter('all')
+  }, [filter])
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems)
+
+  // Calculate filtered statistics for display
+  const getFilteredStatistics = () => {
+    if (filter === 'pending' && profileCompletenessFilter !== 'all') {
+      const filteredCount = sellers.length
+      return {
+        ...statistics,
+        pending: filteredCount
+      }
+    }
+    return statistics
+  }
+
+  const displayStatistics = getFilteredStatistics()
 
   const handleStatusChange = async (sellerId: string, newStatus: 'approved' | 'rejected') => {
     setActionLoading(sellerId)
@@ -158,38 +240,53 @@ export default function SellersManagement() {
     setIsDetailsModalOpen(false)
   }
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue"></div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="p-6">
-      <div className="mb-6">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">จัดการ Sellers</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          จัดการและอนุมัติ seller ที่สมัครเข้าระบบ
+        </p>
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="text-red-700 text-sm">
             {error}
           </div>
         </div>
       )}
 
+      {/* Statistics Dashboard */}
+      <SellerStats statistics={statistics} />
+
+      {/* Filters */}
+      <SellerFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        registrationStartDate={registrationStartDate}
+        setRegistrationStartDate={setRegistrationStartDate}
+        registrationEndDate={registrationEndDate}
+        setRegistrationEndDate={setRegistrationEndDate}
+        approvalStartDate={approvalStartDate}
+        setApprovalStartDate={setApprovalStartDate}
+        approvalEndDate={approvalEndDate}
+        setApprovalEndDate={setApprovalEndDate}
+        onRefresh={fetchSellers}
+        onClearFilters={handleClearFilters}
+        loading={loading}
+        resultCount={sellers.length}
+      />
+
       {/* Filter tabs */}
-      <div className="mb-6">
+      <div className="flex items-center justify-between">
         <nav className="flex space-x-8">
           {[
-            { key: 'all', label: 'ทั้งหมด' },
-            { key: 'pending', label: 'รอการอนุมัติ' },
-            { key: 'approved', label: 'อนุมัติแล้ว' },
-            { key: 'rejected', label: 'ถูกปฏิเสธ' }
+            { key: 'all', label: 'ทั้งหมด', count: displayStatistics.total },
+            { key: 'pending', label: 'รอการอนุมัติ', count: displayStatistics.pending },
+            { key: 'approved', label: 'อนุมัติแล้ว', count: displayStatistics.approved },
+            { key: 'rejected', label: 'ถูกปฏิเสธ', count: displayStatistics.rejected }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -200,16 +297,115 @@ export default function SellersManagement() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              <span className={`ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                filter === tab.key
+                  ? 'bg-primary-blue text-white'
+                  : 'bg-gray-200 text-gray-600'
+              }`}>
+                {tab.count}
+              </span>
             </button>
           ))}
         </nav>
+
+        {/* Profile Completeness Filter - Only show for pending tab */}
+        {filter === 'pending' && (
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue"
+            >
+              <svg className="mr-2 h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              {profileCompletenessFilter === 'all' && 'ทั้งหมด'}
+              {profileCompletenessFilter === 'complete' && 'ข้อมูลครบ'}
+              {profileCompletenessFilter === 'incomplete' && 'ข้อมูลไม่ครบ'}
+              <svg className="ml-2 h-4 w-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+
+            {/* Dropdown menu */}
+            {isDropdownOpen && (
+              <>
+                {/* Overlay to close dropdown when clicking outside */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+
+                <div className="absolute right-0 z-20 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                  <div className="py-1" role="menu">
+                    <button
+                      onClick={() => {
+                        setProfileCompletenessFilter('all')
+                        setIsDropdownOpen(false)
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center ${
+                        profileCompletenessFilter === 'all'
+                          ? 'bg-primary-blue text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <svg className="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                      ทั้งหมด
+                    </button>
+                    <button
+                      onClick={() => {
+                        setProfileCompletenessFilter('complete')
+                        setIsDropdownOpen(false)
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center ${
+                        profileCompletenessFilter === 'complete'
+                          ? 'bg-primary-blue text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <svg className="mr-3 h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      ข้อมูลครบถ้วน
+                    </button>
+                    <button
+                      onClick={() => {
+                        setProfileCompletenessFilter('incomplete')
+                        setIsDropdownOpen(false)
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center ${
+                        profileCompletenessFilter === 'incomplete'
+                          ? 'bg-primary-blue text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      <svg className="mr-3 h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      ข้อมูลไม่ครบถ้วน
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Sellers table */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {sellers.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
+      {/* Sellers List */}
+      {loading ? (
+        <div className="bg-white shadow overflow-hidden sm:rounded-md p-12">
+          <div className="flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mb-4"></div>
+            <p className="text-gray-500 text-sm">กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          {sellers.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
             {sellers.map((seller) => {
               const isProfileComplete = seller.full_name && seller.phone
               const canApprove = isProfileComplete && seller.status === 'pending'
@@ -358,10 +554,113 @@ export default function SellersManagement() {
             </p>
           </div>
         )}
-      </div>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && sellers.length > 0 && (
+        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-b-lg">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ก่อนหน้า
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ถัดไป
+            </button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-gray-700">
+                แสดง <span className="font-medium">{startItem}</span> ถึง <span className="font-medium">{endItem}</span> จาก{' '}
+                <span className="font-medium">{totalItems}</span> รายการ
+              </p>
+              <div className="flex items-center gap-2">
+                <label htmlFor="itemsPerPage" className="text-sm text-gray-700">
+                  แสดงต่อหน้า:
+                </label>
+                <select
+                  id="itemsPerPage"
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="border-gray-300 rounded-md text-sm focus:ring-primary-blue focus:border-primary-blue"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Previous</span>
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNumber
+                  if (totalPages <= 5) {
+                    pageNumber = i + 1
+                  } else if (currentPage <= 3) {
+                    pageNumber = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + i
+                  } else {
+                    pageNumber = currentPage - 2 + i
+                  }
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        currentPage === pageNumber
+                          ? 'z-10 bg-primary-blue border-primary-blue text-white'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  )
+                })}
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="sr-only">Next</span>
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Seller Details Modal */}
-      <SellerDetailsModal 
+      <SellerDetailsModal
         isOpen={isDetailsModalOpen}
         onClose={closeDetailsModal}
         seller={selectedSeller}
