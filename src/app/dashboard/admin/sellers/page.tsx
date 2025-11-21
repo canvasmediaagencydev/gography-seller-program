@@ -114,7 +114,7 @@ export default function SellersManagement() {
 
       // Client-side filter for profile completeness (only for pending status)
       if (filter === 'pending' && profileCompletenessFilter !== 'all') {
-        filteredSellers = filteredSellers.filter(seller => {
+        filteredSellers = filteredSellers.filter((seller: UserProfile) => {
           const isComplete = seller.full_name && seller.phone
           return profileCompletenessFilter === 'complete' ? isComplete : !isComplete
         })
