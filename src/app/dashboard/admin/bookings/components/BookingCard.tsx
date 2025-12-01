@@ -549,25 +549,27 @@ export default function BookingCard({ booking, onStatusUpdate, onPaymentStatusUp
       </CardContent>
     </Card>
 
-    {/* Payment Modal */}
-    <PaymentModal
-      isOpen={showPaymentModal}
-      onClose={() => setShowPaymentModal(false)}
-      seller={booking.seller!}
-      commissionAmount={commissionAmount}
-      bookingId={booking.id}
-      paymentType={paymentType}
-      onPaymentComplete={async () => {
-        console.log('Payment completed, refreshing booking data...')
-        // Call parent refresh function to reload data
-        if (onRefresh) {
-          await onRefresh(booking.id)
-        }
-        // Also trigger a state update
-        setShowPaymentModal(false)
-        toast.success('บันทึกการจ่ายค่าคอมมิชชั่นเรียบร้อยแล้ว')
-      }}
-    />
+    {/* Payment Modal - only render if seller exists */}
+    {booking.seller && (
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        seller={booking.seller}
+        commissionAmount={commissionAmount}
+        bookingId={booking.id}
+        paymentType={paymentType}
+        onPaymentComplete={async () => {
+          console.log('Payment completed, refreshing booking data...')
+          // Call parent refresh function to reload data
+          if (onRefresh) {
+            await onRefresh(booking.id)
+          }
+          // Also trigger a state update
+          setShowPaymentModal(false)
+          toast.success('บันทึกการจ่ายค่าคอมมิชชั่นเรียบร้อยแล้ว')
+        }}
+      />
+    )}
     </>
   )
 }
