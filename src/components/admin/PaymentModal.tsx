@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -49,14 +49,7 @@ export default function PaymentModal({
 
   const supabase = createClient()
 
-  // Fetch bank account when modal opens
-  useEffect(() => {
-    if (isOpen && seller.id) {
-      fetchBankAccount()
-    }
-  }, [isOpen, seller.id])
-
-  const fetchBankAccount = async () => {
+  const fetchBankAccount = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
@@ -79,7 +72,14 @@ export default function PaymentModal({
     } finally {
       setLoading(false)
     }
-  }
+  }, [seller.id, supabase])
+
+  // Fetch bank account when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchBankAccount()
+    }
+  }, [isOpen, fetchBankAccount])
 
   const handlePayment = async () => {
     try {
