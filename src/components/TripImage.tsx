@@ -10,9 +10,17 @@ interface TripImageProps {
   priority?: boolean
 }
 
+// Check if URL is from Supabase storage (skip Next.js optimization to avoid timeout)
+const isSupabaseUrl = (url: string): boolean => {
+  return url.includes('supabase.co/storage')
+}
+
 export default function TripImage({ src, alt, className, priority = false }: TripImageProps) {
   const [imageError, setImageError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Use unoptimized for Supabase URLs to avoid Next.js image optimization timeout
+  const shouldSkipOptimization = isSupabaseUrl(src)
 
   if (imageError) {
     return (
@@ -31,6 +39,7 @@ export default function TripImage({ src, alt, className, priority = false }: Tri
         src={src}
         alt={alt}
         fill
+        unoptimized={shouldSkipOptimization}
         className="object-cover transition-opacity duration-300"
         style={{ opacity: isLoading ? 0 : 1 }}
         priority={priority}
