@@ -105,17 +105,8 @@ export async function GET(request: NextRequest) {
 
     const commissionGoal = profile?.commission_goal || 50000 // Default goal 50,000 THB
 
-    // Calculate progress to goal (for current month only)
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-    const { data: monthlyCommissions } = await supabase
-      .from('commission_payments')
-      .select('amount')
-      .eq('seller_id', user.id)
-      .eq('status', 'paid')
-      .gte('created_at', monthStart)
-
-    const currentMonthCommission = monthlyCommissions?.reduce((sum, c) => sum + (c.amount || 0), 0) || 0
-    const progress = commissionGoal > 0 ? Math.min((currentMonthCommission / commissionGoal) * 100, 100) : 0
+    // Calculate progress to goal using total paid commission (same as คอมมิชชั่นรวม)
+    const progress = commissionGoal > 0 ? Math.min((paidCommissions / commissionGoal) * 100, 100) : 0
 
     const response: DashboardStatsResponse = {
       stats: {
@@ -125,7 +116,7 @@ export async function GET(request: NextRequest) {
         pendingCommission: pendingCommissions
       },
       commissionGoal: {
-        current: currentMonthCommission,
+        current: paidCommissions,
         goal: commissionGoal,
         progress
       }
