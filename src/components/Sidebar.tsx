@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2, Building2, PlayCircle } from 'lucide-react';
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2, Building2, PlayCircle, Trophy } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
@@ -180,8 +180,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     return pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips'
   }, [pathname, userProfile?.role])
 
-  const isReportsActive = useMemo(() => 
+  const isReportsActive = useMemo(() =>
     pathname === '/dashboard/reports', [pathname]
+  )
+
+  const isRankActive = useMemo(() =>
+    pathname === '/dashboard/rank', [pathname]
   )
 
   const isProfileActive = useMemo(() => 
@@ -267,6 +271,15 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
         })
       }
 
+      // Leaderboard / Rank page - visible to all sellers
+      baseItems.push({
+        icon: <Trophy size={18} />,
+        label: 'อันดับ',
+        href: '/dashboard/rank',
+        isActive: isRankActive,
+        isDisabled: false
+      })
+
       // Add Gamification - requires verification like reports (HIDDEN)
       // if (userProfile?.status === 'approved') {
       //   baseItems.push({
@@ -289,7 +302,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     }
 
     return baseItems
-  }, [userProfile?.role, userProfile?.status, pathname, isDashboardActive, isTripsActive, isReportsActive])
+  }, [userProfile?.role, userProfile?.status, pathname, isDashboardActive, isTripsActive, isReportsActive, isRankActive])
 
   if (!userProfile) {
     return (

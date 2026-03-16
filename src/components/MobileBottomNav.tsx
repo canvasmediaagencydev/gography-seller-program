@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import React, { memo, useCallback, useMemo, useTransition } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, CoinsIcon } from 'lucide-react'
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, CoinsIcon, Trophy } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -209,6 +209,12 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
         href: '/dashboard/reports',
         active: pathname === '/dashboard/reports',
         disabled: userProfile?.status !== 'approved'
+      },
+      {
+        icon: <Trophy className="w-5 h-5" />,
+        label: 'อันดับ',
+        href: '/dashboard/rank',
+        active: pathname === '/dashboard/rank'
       }
     ]
 
@@ -241,7 +247,7 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
       <div className="absolute inset-0 bg-white border-t border-gray-200 shadow-lg" />
 
       {/* Navigation Items */}
-      <div className={`relative grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-5'} h-20 pb-safe px-2`}>
+      <div className={`relative grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-6'} h-20 pb-safe px-2`}>
         {navItems.map((item, index) => (
           <NavButton
             key={`nav-${index}-${item.href}`}
