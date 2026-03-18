@@ -9,6 +9,9 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+/.claude
+/.playwright-mcp
+docs
 
 # testing
 /coverage
@@ -43,9 +46,10 @@ next-env.d.ts
 /folder-structure.md
 /supabase-info.md
 
-/.claude
-/.bmad-core
+
+.bmad-core
 
 CLAUDE.md*
 
 .mcp.json
+/tests
