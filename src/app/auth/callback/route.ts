@@ -39,11 +39,12 @@ export async function GET(request: NextRequest) {
             status: 'pending'
           })
 
-        // For new users (registration), use role-based redirect
-        finalRedirectPath = role === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
+        // For new users (registration), redirect to seller dashboard
+        finalRedirectPath = '/dashboard/trips'
       } else {
-        // For existing users (login), use their existing role
-        finalRedirectPath = profile.role === 'admin' ? '/dashboard/admin/sellers' : '/dashboard/trips'
+        // For existing users (login), redirect to seller dashboard
+        // (Admin users will be blocked by middleware and redirected to login)
+        finalRedirectPath = '/dashboard/trips'
       }
 
       // Always use the origin that the user came from to avoid redirect loops

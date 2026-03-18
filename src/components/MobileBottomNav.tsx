@@ -162,11 +162,6 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
     }
   }, [])
 
-  // Don't show for admin users
-  if (userProfile?.role === 'admin') {
-    return null
-  }
-
   // Memoize verification info to prevent recalculation
   const verificationInfo = useMemo(() => 
     getVerificationStatus(userProfile), 
@@ -218,28 +213,25 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
       }
     ]
 
-    // Profile item - only for sellers (not admin)
-    if (userProfile?.role !== 'admin') {
-      // Seller: Profile with verification status
-      baseItems.push({
-        icon: verificationInfo.needsAction ? (
-          <div className="relative">
-            <UserCircle className="w-5 h-5" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-          </div>
-        ) : (
+    // Profile item with verification status
+    baseItems.push({
+      icon: verificationInfo.needsAction ? (
+        <div className="relative">
           <UserCircle className="w-5 h-5" />
-        ),
-        label: verificationInfo.needsAction ? 'ยืนยันตัวตน' : 'โปรไฟล์',
-        href: '/dashboard/profile',
-        active: pathname === '/dashboard/profile',
-        isProfile: true,
-        needsAction: verificationInfo.needsAction
-      })
-    }
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+        </div>
+      ) : (
+        <UserCircle className="w-5 h-5" />
+      ),
+      label: verificationInfo.needsAction ? 'ยืนยันตัวตน' : 'โปรไฟล์',
+      href: '/dashboard/profile',
+      active: pathname === '/dashboard/profile',
+      isProfile: true,
+      needsAction: verificationInfo.needsAction
+    })
 
     return baseItems
-  }, [pathname, userProfile?.status, userProfile?.role, verificationInfo.needsAction])
+  }, [pathname, userProfile?.status, verificationInfo.needsAction])
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav">
@@ -247,7 +239,7 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
       <div className="absolute inset-0 bg-white border-t border-gray-200 shadow-lg" />
 
       {/* Navigation Items */}
-      <div className={`relative grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-6'} h-20 pb-safe px-2`}>
+      <div className="relative grid grid-cols-6 h-20 pb-safe px-2">
         {navItems.map((item, index) => (
           <NavButton
             key={`nav-${index}-${item.href}`}

@@ -17,14 +17,11 @@ export default function InstantNavigator() {
     
     // Aggressive route prefetching
     const routes = [
-      '/dashboard/admin',
-      '/dashboard/admin/sellers', 
-      '/dashboard/admin/trips',
-      '/dashboard/admin/bookings',
-      '/dashboard/admin/customers',
       '/dashboard',
       '/dashboard/trips',
-      '/dashboard/reports'
+      '/dashboard/reports',
+      '/dashboard/rank',
+      '/dashboard/coins'
     ]
     
     // Immediate prefetch without delay
