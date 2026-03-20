@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, memo, useCallback, useMemo } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, Gamepad2, Building2 } from 'lucide-react';
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, LogOut, ShieldCheck, AlertTriangle, Clock, CheckCircle, CoinsIcon, PlayCircle, Trophy, Sparkles, Gamepad2, Building2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
@@ -182,7 +182,15 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     pathname === '/dashboard/reports', [pathname]
   )
 
-  const isProfileActive = useMemo(() => 
+  const isRankActive = useMemo(() =>
+    pathname === '/dashboard/rank', [pathname]
+  )
+
+  const isActivityActive = useMemo(() =>
+    pathname === '/dashboard/activity', [pathname]
+  )
+
+  const isProfileActive = useMemo(() =>
     pathname === '/dashboard/profile', [pathname]
   )
 
@@ -286,8 +294,26 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       // }
     }
 
+    // Leaderboard + Activity — sellers only
+    if (userProfile?.role !== 'admin') {
+      baseItems.push({
+        icon: <Trophy size={18} />,
+        label: 'อันดับ',
+        href: '/dashboard/rank',
+        isActive: isRankActive,
+        isDisabled: false
+      })
+      baseItems.push({
+        icon: <Sparkles size={18} />,
+        label: 'กิจกรรม',
+        href: '/dashboard/activity',
+        isActive: isActivityActive,
+        isDisabled: false
+      })
+    }
+
     return baseItems
-  }, [userProfile?.role, userProfile?.status, pathname, isDashboardActive, isTripsActive, isReportsActive])
+  }, [userProfile?.role, userProfile?.status, pathname, isDashboardActive, isTripsActive, isReportsActive, isRankActive, isActivityActive])
 
   if (!userProfile) {
     return (

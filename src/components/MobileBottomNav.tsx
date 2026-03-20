@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import React, { memo, useCallback, useMemo, useTransition } from 'react'
-import { LayoutGrid, PlaneTakeoff, Users, UserCircle, CoinsIcon } from 'lucide-react'
+import { LayoutGrid, PlaneTakeoff, Users, UserCircle, CoinsIcon, Sparkles } from 'lucide-react'
 
 interface UserProfile {
   id: string
@@ -51,14 +51,14 @@ const getVerificationStatus = (userProfile: UserProfile | null) => {
 }
 
 // Memoized navigation button component
-const NavButton = memo(function NavButton({ 
-  item, 
-  index, 
-  onNavigate 
-}: { 
+const NavButton = memo(function NavButton({
+  item,
+  index,
+  onNavigate
+}: {
   item: NavItem
-  index: number 
-  onNavigate: (href: string) => void 
+  index: number
+  onNavigate: (href: string) => void
 }) {
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -85,8 +85,8 @@ const NavButton = memo(function NavButton({
         className={`flex flex-col items-center justify-center transition-colors ${
           item.active
             ? 'text-primary-blue'
-            : item.needsAction 
-            ? 'text-red-600 hover:text-red-700' 
+            : item.needsAction
+            ? 'text-red-600 hover:text-red-700'
             : 'text-gray-600 hover:text-primary-blue'
         }`}
       >
@@ -139,7 +139,7 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
 
     // Listen for custom profile update events
     window.addEventListener('profileUpdated', handleProfileUpdate)
-    
+
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate)
     }
@@ -151,15 +151,15 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
   }
 
   // Memoize verification info to prevent recalculation
-  const verificationInfo = useMemo(() => 
-    getVerificationStatus(userProfile), 
+  const verificationInfo = useMemo(() =>
+    getVerificationStatus(userProfile),
     [userProfile?.full_name, userProfile?.phone, userProfile?.status]
   )
 
   // Fast navigation with startTransition
   const handleNavigate = useCallback((href: string) => {
     if (pathname === href) return // Don't navigate if already on page
-    
+
     startTransition(() => {
       router.push(href)
     })
@@ -192,6 +192,12 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
         href: '/dashboard/reports',
         active: pathname === '/dashboard/reports',
         disabled: userProfile?.status !== 'approved'
+      },
+      {
+        icon: <Sparkles className="w-5 h-5" />,
+        label: 'กิจกรรม',
+        href: '/dashboard/activity',
+        active: pathname === '/dashboard/activity'
       }
     ]
 
@@ -220,7 +226,7 @@ const MobileBottomNav = memo(function MobileBottomNav({ userProfile: initialUser
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 mobile-nav">
-      <div className={`grid ${userProfile?.role === 'admin' ? 'grid-cols-3' : 'grid-cols-5'} h-16`}>
+      <div className="grid grid-cols-6 h-16">
         {navItems.map((item, index) => (
           <NavButton
             key={`nav-${index}-${item.href}`}
