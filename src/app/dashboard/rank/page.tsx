@@ -54,34 +54,35 @@ export default function RankPage() {
     <div className="min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 md:pb-10">
 
-        {/* Hero Banner — matches reports/coins page style */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl mb-8">
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        {/* Hero Banner — Premium Dark Gradient */}
+        <div className="relative overflow-hidden bg-[#091321] rounded-[2rem] shadow-2xl shadow-blue-900/20 mb-8 border border-white/10">
+          {/* Animated Orbs & Noise */}
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[70%] bg-[#176daf] rounded-full mix-blend-screen filter blur-[100px] opacity-50 animate-pulse-slow" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[80%] bg-[#11284a] rounded-full mix-blend-screen filter blur-[120px] opacity-60" />
+          <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
 
           <div className="relative px-6 py-8 sm:px-8 sm:py-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <span className="text-2xl leading-none">🏆</span>
+              <div className="flex items-center gap-4">
+                <div className="p-3.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-inner max-w-fit">
+                  <span className="text-3xl leading-none filter drop-shadow-md">🏆</span>
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white">Leaderboard</h1>
-                  <p className="text-blue-100 text-sm mt-1">จัดอันดับและแข่งขัน Seller</p>
+                  <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Leaderboard</h1>
+                  <p className="text-blue-200/80 text-sm mt-1 font-medium">จัดอันดับและแข่งขัน Seller</p>
                 </div>
               </div>
 
               {/* Period Filter */}
-              <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20 self-start sm:self-auto">
+              <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xl rounded-2xl p-1.5 border border-white/10 self-start sm:self-auto shadow-inner">
                 {PERIOD_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => handlePeriodChange(opt.value)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
                       period === opt.value
-                        ? 'bg-white text-blue-600 shadow-lg'
-                        : 'text-white/90 hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-[#2c6ba8] to-[#4a8fcf] text-white shadow-lg shadow-blue-500/30 ring-1 ring-white/20 scale-100'
+                        : 'text-blue-100/70 hover:bg-white/10 hover:text-white scale-95 hover:scale-100'
                     }`}
                   >
                     {opt.label}
@@ -93,15 +94,15 @@ export default function RankPage() {
         </div>
 
         {/* Metric tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+        <div className="flex gap-2.5 mb-8 overflow-x-auto pb-2 hide-scrollbar">
           {METRIC_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => handleMetricChange(opt.value)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
+              className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-sm font-bold whitespace-nowrap transition-all duration-300 border focus:outline-none ${
                 metric === opt.value
-                  ? 'bg-white border-gray-200 text-gray-900 shadow-sm'
-                  : 'bg-white/60 border-transparent text-gray-500 hover:bg-white hover:border-gray-100 hover:shadow-sm'
+                  ? 'bg-gradient-to-r from-[#091321] to-[#11284a] border-[#11284a] text-white shadow-xl shadow-[#11284a]/20 scale-105 transform origin-left ring-2 ring-[#2c6ba8]/30 ring-offset-1 ring-offset-[#f8fafc]'
+                  : 'bg-white/80 backdrop-blur-lg border-gray-200 text-gray-500 hover:bg-white hover:border-gray-300 hover:text-gray-900 shadow-sm hover:shadow active:scale-95'
               }`}
             >
               <span className="text-base leading-none">{opt.emoji}</span>

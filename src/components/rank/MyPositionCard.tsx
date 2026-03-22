@@ -99,7 +99,7 @@ export function MyPositionCard({
   const config = getRankConfig(rank)
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden p-6 flex flex-col h-full">
+    <div className="group relative bg-white/80 backdrop-blur-2xl rounded-[2rem] shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 border border-white overflow-hidden p-6 sm:p-8 flex flex-col h-full">
       {/* Decorative corner circle */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
@@ -116,7 +116,7 @@ export function MyPositionCard({
 
       {/* Rank number */}
       <div className="flex items-baseline gap-2 mb-4 relative">
-        <span className={`text-5xl font-bold tracking-tight leading-none ${config.color}`}>
+        <span className={`text-6xl sm:text-7xl font-black tracking-tighter leading-none filter drop-shadow-md ${config.color}`}>
           #{rank}
         </span>
         {config.medal && (
@@ -142,11 +142,13 @@ export function MyPositionCard({
                 อีก {formatGap(nextRankGap, metric)}
               </span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-slate-100/80 rounded-full h-3 overflow-hidden shadow-inner">
               <div
-                className={`h-2 rounded-full bg-gradient-to-r ${config.progressGradient} transition-all duration-700`}
+                className={`h-full rounded-full bg-gradient-to-r ${config.progressGradient} transition-all duration-1000 ease-out relative overflow-hidden`}
                 style={{ width: `${progress}%` }}
-              />
+              >
+                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+              </div>
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
               <p className="text-xs text-gray-400">ความคืบหน้า</p>

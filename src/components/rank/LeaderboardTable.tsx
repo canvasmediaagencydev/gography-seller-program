@@ -82,10 +82,10 @@ export function LeaderboardTable({
   const medals = ['🥇', '🥈', '🥉']
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white/80 backdrop-blur-2xl rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white overflow-hidden">
 
       {/* Header bar — matches site table header pattern */}
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-5 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-slate-50/80 to-slate-100/80 backdrop-blur-md px-6 py-5 border-b border-gray-200/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg">
@@ -124,14 +124,14 @@ export function LeaderboardTable({
                   return (
                     <tr
                       key={entry.rank}
-                      className={`transition-colors ${
+                      className={`transition-all duration-300 ${
                         entry.isSelf
-                          ? 'bg-blue-50/70 border-l-[3px] border-l-[#2c6ba8]'
+                          ? 'bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border-l-[4px] border-l-[#176daf] shadow-sm relative z-10 scale-[1.002]'
                           : isTop3
-                            ? `${top3Bg} hover:brightness-95`
+                            ? `${top3Bg} hover:bg-slate-100/50`
                             : idx % 2 !== 0
-                              ? 'bg-slate-50/50 hover:bg-slate-50'
-                              : 'bg-white hover:bg-slate-50/50'
+                              ? 'bg-slate-50/50 hover:bg-slate-100/50'
+                              : 'bg-white/60 hover:bg-slate-100/50'
                       }`}
                     >
                       {/* Rank */}
@@ -150,9 +150,9 @@ export function LeaderboardTable({
                       {/* Seller */}
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 flex items-center justify-center ${
+                          <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 flex items-center justify-center ${
                             entry.isSelf
-                              ? 'ring-2 ring-[#2c6ba8] ring-offset-1'
+                              ? 'ring-2 ring-[#2c6ba8] ring-offset-2'
                               : 'border border-gray-200'
                           }`}>
                             {entry.avatarUrl ? (
@@ -169,7 +169,7 @@ export function LeaderboardTable({
                                 {entry.sellerName}
                               </p>
                               {entry.isSelf && (
-                                <span className="text-[10px] font-semibold text-[#2c6ba8] bg-blue-100 rounded px-1.5 py-0.5 leading-none flex-shrink-0">
+                                <span className="text-[10px] font-bold text-white bg-gradient-to-r from-[#2c6ba8] to-[#176daf] rounded px-2 py-0.5 leading-none flex-shrink-0 shadow-sm">
                                   คุณ
                                 </span>
                               )}

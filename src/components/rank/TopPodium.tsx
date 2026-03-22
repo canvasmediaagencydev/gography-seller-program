@@ -30,31 +30,31 @@ const PODIUM_CONFIG: Record<PodiumPosition, {
   avatarRingClass: string
   isFirst: boolean
 }> = {
-  0: {
-    blockH: 'h-20',
-    avatarSize: 56,
+  0: { // 1st
+    blockH: 'h-24 sm:h-28',
+    avatarSize: 72,
     rankLabel: '#1',
-    blockStyle: { background: 'linear-gradient(to bottom, #f59e0b, #d97706)' },
-    blockText: 'text-amber-100',
-    avatarRingClass: 'ring-2 ring-amber-400 ring-offset-2 ring-offset-white',
+    blockStyle: { background: 'linear-gradient(135deg, #fceabb 0%, #f8b500 100%)', boxShadow: 'inset 0 -12px 24px rgba(0,0,0,0.15), 0 12px 24px rgba(245,158,11,0.25)' },
+    blockText: 'text-amber-900 drop-shadow-md text-lg',
+    avatarRingClass: 'ring-4 ring-amber-400/60 ring-offset-2 ring-offset-white shadow-[0_0_40px_rgba(245,158,11,0.6)]',
     isFirst: true,
   },
-  1: {
-    blockH: 'h-14',
-    avatarSize: 48,
+  1: { // 2nd
+    blockH: 'h-16 sm:h-20',
+    avatarSize: 56,
     rankLabel: '#2',
-    blockStyle: { background: 'linear-gradient(to bottom, #9ca3af, #6b7280)' },
-    blockText: 'text-gray-100',
-    avatarRingClass: 'ring-2 ring-gray-300 ring-offset-2 ring-offset-white',
+    blockStyle: { background: 'linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%)', boxShadow: 'inset 0 -10px 20px rgba(0,0,0,0.15), 0 10px 20px rgba(148,163,184,0.2)' },
+    blockText: 'text-slate-800 drop-shadow-sm text-base',
+    avatarRingClass: 'ring-4 ring-slate-300/60 ring-offset-2 ring-offset-white shadow-lg shadow-slate-400/30',
     isFirst: false,
   },
-  2: {
-    blockH: 'h-10',
-    avatarSize: 42,
+  2: { // 3rd
+    blockH: 'h-12 sm:h-14',
+    avatarSize: 50,
     rankLabel: '#3',
-    blockStyle: { background: 'linear-gradient(to bottom, #fb923c, #ea580c)' },
-    blockText: 'text-orange-100',
-    avatarRingClass: 'ring-2 ring-orange-300 ring-offset-2 ring-offset-white',
+    blockStyle: { background: 'linear-gradient(135deg, #fdc830 0%, #f37335 100%)', boxShadow: 'inset 0 -8px 16px rgba(0,0,0,0.15), 0 8px 16px rgba(243,115,53,0.2)' },
+    blockText: 'text-orange-900 drop-shadow-sm text-sm',
+    avatarRingClass: 'ring-4 ring-orange-400/60 ring-offset-2 ring-offset-white shadow-lg shadow-orange-500/30',
     isFirst: false,
   },
 }
@@ -72,19 +72,19 @@ function PodiumSlot({ entry, position, metric }: PodiumSlotProps) {
   return (
     <div className="flex flex-col items-center flex-1 min-w-0">
       {/* Crown spacer for alignment */}
-      <div className="h-7 flex items-center justify-center mb-1.5">
+      <div className="h-8 flex items-center justify-center mb-2">
         {config.isFirst && entry && (
-          <span className="text-2xl leading-none">👑</span>
+          <span className="text-3xl leading-none animate-bounce" style={{ filter: 'drop-shadow(0 4px 6px rgba(245,158,11,0.5))' }}>👑</span>
         )}
       </div>
 
       {/* Avatar */}
       <div
-        className={`rounded-full overflow-hidden bg-slate-100 flex-shrink-0 flex items-center justify-center ${
+        className={`rounded-full overflow-hidden bg-slate-100 flex-shrink-0 flex items-center justify-center z-10 transition-transform hover:scale-105 duration-300 ${
           entry?.isSelf
-            ? 'ring-2 ring-[#2c6ba8] ring-offset-2 ring-offset-white'
+            ? 'ring-4 ring-[#2c6ba8] ring-offset-2 ring-offset-white shadow-xl shadow-blue-500/40'
             : config.avatarRingClass
-        } ${config.isFirst ? 'shadow-lg shadow-amber-500/25' : ''}`}
+        } ${config.isFirst ? 'shadow-2xl' : ''}`}
         style={{ width: sz, height: sz }}
       >
         {entry?.avatarUrl ? (
@@ -103,25 +103,25 @@ function PodiumSlot({ entry, position, metric }: PodiumSlotProps) {
 
       {/* Name & value */}
       <div className="text-center mt-2 px-1 min-w-0 w-full space-y-0.5">
-        <p className={`font-semibold text-gray-800 truncate leading-snug ${config.isFirst ? 'text-sm' : 'text-xs'}`}>
+        <p className={`font-bold text-gray-900 truncate leading-tight ${config.isFirst ? 'text-base sm:text-lg' : 'text-sm'}`}>
           {entry ? entry.sellerName : '—'}
         </p>
         {entry && (
-          <p className={`text-gray-500 ${config.isFirst ? 'text-xs' : 'text-[11px]'}`}>
+          <p className={`font-medium tracking-tight text-gray-500 ${config.isFirst ? 'text-sm' : 'text-xs'}`}>
             {formatValue(entry.value, metric)}
           </p>
         )}
         {entry?.isSelf && (
-          <p className="text-[10px] text-[#2c6ba8] font-medium">(คุณ)</p>
+          <p className="text-[11px] text-[#2c6ba8] font-bold bg-blue-50 inline-block px-2 py-0.5 rounded-full">(คุณ)</p>
         )}
       </div>
 
-      {/* Podium block */}
       <div
-        className={`w-full ${config.blockH} mt-3 rounded-t-xl flex items-center justify-center shadow-sm`}
+        className={`w-full ${config.blockH} mt-3 rounded-t-2xl flex items-center justify-center transition-all duration-500 relative overflow-hidden`}
         style={config.blockStyle}
       >
-        <span className={`text-xs font-bold ${config.blockText}`}>{config.rankLabel}</span>
+        <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
+        <span className={`font-black ${config.blockText}`}>{config.rankLabel}</span>
       </div>
     </div>
   )
@@ -151,7 +151,7 @@ export function TopPodium({ leaderboard, metric, isLoading }: TopPodiumProps) {
   if (top3.length === 0) return null
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden p-6 flex flex-col h-full">
+    <div className="group relative bg-white/80 backdrop-blur-2xl rounded-[2rem] shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-amber-500/10 transition-all duration-500 border border-white overflow-hidden p-6 sm:p-8 flex flex-col h-full">
       {/* Decorative corner circle */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-yellow-500/10 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
