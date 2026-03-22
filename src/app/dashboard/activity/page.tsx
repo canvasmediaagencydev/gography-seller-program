@@ -275,10 +275,10 @@ const completionPct = Math.round((completedCount / totalActivities) * 100)
 // ─── Status config ──────────────────────────────────────────────────────────
 
 const STATUS_CFG = {
-  available:   { label: 'พร้อมทำ',          dot: 'bg-blue-500',    text: 'text-blue-700',   bg: 'bg-blue-50',   border: 'border-blue-200' },
-  in_progress: { label: 'กำลังดำเนินการ',   dot: 'bg-amber-500',   text: 'text-amber-700',  bg: 'bg-amber-50',  border: 'border-amber-200' },
-  completed:   { label: 'สำเร็จแล้ว',       dot: 'bg-emerald-500', text: 'text-emerald-700',bg: 'bg-emerald-50',border: 'border-emerald-200' },
-  locked:      { label: 'ยังไม่พร้อม',      dot: 'bg-slate-300',   text: 'text-slate-500',  bg: 'bg-slate-50',  border: 'border-slate-200' },
+  available:   { label: 'พร้อมทำ',          dot: 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]',    text: 'text-blue-700',   bg: 'bg-blue-50/80 backdrop-blur-sm',   border: 'border-blue-200' },
+  in_progress: { label: 'กำลังดำเนินการ',   dot: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]',   text: 'text-amber-700',  bg: 'bg-amber-50/80 backdrop-blur-sm',  border: 'border-amber-200' },
+  completed:   { label: 'สำเร็จแล้ว',       dot: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]', text: 'text-emerald-700',bg: 'bg-emerald-50/80 backdrop-blur-sm',border: 'border-emerald-200' },
+  locked:      { label: 'ยังไม่พร้อม',      dot: 'bg-slate-300',   text: 'text-slate-500',  bg: 'bg-slate-50/80 backdrop-blur-sm',  border: 'border-slate-200' },
 }
 
 type Filter = 'all' | Status
@@ -295,8 +295,8 @@ const FILTERS: { value: Filter; label: string }[] = [
 function StatusPill({ status }: { status: Status }) {
   const c = STATUS_CFG[status]
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${c.bg} ${c.text} ${c.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1.25 rounded-full text-[11px] font-bold border ${c.bg} ${c.text} ${c.border} shadow-sm transition-all duration-300`}>
+      <span className={`w-2 h-2 rounded-full ${c.dot} animate-pulse-slow`} />
       {c.label}
     </span>
   )
@@ -329,176 +329,184 @@ function ActivityModal({ activity, onClose }: { activity: Activity; onClose: () 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={activity.title}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-[8px]"
         onClick={onClose}
-        style={{ animation: 'fadeIn 0.2s ease' }}
+        style={{ animation: 'fade-in 0.3s ease-out forwards' }}
       />
 
       {/* Modal panel */}
       <div
-        className="relative w-full sm:max-w-lg bg-white sm:rounded-2xl shadow-2xl overflow-hidden max-h-[95dvh] flex flex-col"
-        style={{ animation: 'slideUp 0.25s cubic-bezier(0.32,0.72,0,1)' }}
+        className="relative w-full sm:max-w-[540px] bg-white sm:rounded-[32px] rounded-t-[32px] shadow-[0_24px_64px_-12px_rgba(0,0,0,0.3)] overflow-hidden max-h-[90dvh] flex flex-col transform-gpu"
+        style={{ animation: 'slide-up-scale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' }}
       >
         {/* ── Cover ────────────────────────────────── */}
-        <div className={`relative h-48 flex-shrink-0 bg-gradient-to-br ${activity.coverFrom} ${activity.coverTo}
-          ${isLocked || isCompleted ? 'grayscale-[30%] opacity-80' : ''}`}
+        <div className={`relative h-56 flex-shrink-0 bg-gradient-to-br ${activity.coverFrom} ${activity.coverTo} overflow-hidden
+          ${isLocked ? 'grayscale-[50%] bg-blend-multiply opacity-90' : isCompleted ? 'opacity-90' : ''}`}
         >
-          {/* Shimmer */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 -translate-x-full"
-              style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent)', animation: 'shimmer 2.5s infinite' }}
-            />
-          </div>
-          {/* Skeleton lines */}
-          <div className="absolute bottom-0 left-0 right-0 p-5 space-y-2">
-            <div className="h-2.5 rounded-full bg-white/20 w-1/2" />
-            <div className="h-2 rounded-full bg-white/15 w-1/3" />
-          </div>
+          {/* Glass Overlay Effects */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent z-10" />
+          
+          {/* Animated Glow Orbs */}
+          {!isLocked && (
+             <div className="absolute inset-0 overflow-hidden opacity-50">
+               <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[150%] bg-white/20 blur-3xl rounded-full transform rotate-45" />
+               <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[150%] bg-white/10 blur-3xl rounded-full transform -rotate-45" />
+             </div>
+          )}
 
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/30 backdrop-blur-md border border-white/20
-              flex items-center justify-center text-white hover:bg-black/50 transition-colors duration-150 cursor-pointer"
+            className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full bg-black/20 backdrop-blur-xl border border-white/20
+              flex items-center justify-center text-white/90 hover:bg-black/40 hover:text-white hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer shadow-lg"
             aria-label="ปิด"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 text-white font-bold" />
           </button>
 
           {/* Coin badge */}
-          <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20">
-            <Coins className="w-3.5 h-3.5 text-amber-300" />
-            <span className="text-sm font-bold text-white">+{activity.reward} coins</span>
+          <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg group-hover:scale-105 transition-transform">
+            <Coins className="w-4 h-4 text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)]" />
+            <span className="text-[13px] font-bold text-white tracking-wide">+{activity.reward} coins</span>
           </div>
 
           {/* Icon */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center z-20">
+            <div className={`w-20 h-20 rounded-3xl bg-white/90 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(0,0,0,0.3)] flex items-center justify-center border border-white/40 transform group-hover:scale-110 transition-transform duration-500
+              ${!isLocked && !isCompleted ? `shadow-[0_0_30px_rgba(255,255,255,0.4)] ring-4 ring-white/20` : ''}`}
+            >
               {isLocked
-                ? <Lock className="w-7 h-7 text-slate-400" />
+                ? <Lock className="w-9 h-9 text-slate-400" />
                 : isCompleted
-                  ? <Icon className="w-7 h-7 text-slate-400" />
-                  : <Icon className={`w-7 h-7 ${activity.textColor}`} />
+                  ? <Icon className="w-9 h-9 text-emerald-500" />
+                  : <Icon className={`w-9 h-9 ${activity.textColor} drop-shadow-md`} />
               }
             </div>
           </div>
-
-          {/* Completed checkmark */}
-          {isCompleted && (
-            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-500/90 backdrop-blur-sm">
-              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-              <span className="text-[11px] font-bold text-white">สำเร็จแล้ว</span>
-            </div>
-          )}
         </div>
 
         {/* ── Scrollable body ───────────────────────── */}
-        <div className="overflow-y-auto flex-1 overscroll-contain">
-          <div className="p-5 space-y-5">
+        <div className="overflow-y-auto flex-1 overscroll-contain bg-slate-50/50">
+          <div className="p-6 sm:p-8 space-y-7">
 
             {/* Header */}
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                  {activity.category}
-                </p>
-                <h2 className="text-xl font-bold text-slate-800 leading-snug">{activity.title}</h2>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 mb-3">
+                  <Star className="w-3 h-3 text-slate-500" />
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none">
+                    {activity.category}
+                  </p>
+                </div>
+                <h2 className="text-2xl font-black text-slate-800 leading-tight tracking-tight">{activity.title}</h2>
               </div>
-              <StatusPill status={activity.status} />
+              <div className="mt-1">
+                <StatusPill status={activity.status} />
+              </div>
             </div>
 
             {/* Full description */}
-            <p className="text-sm text-slate-600 leading-relaxed">{activity.fullDescription}</p>
+            <p className="text-[15px] text-slate-600 leading-relaxed">{activity.fullDescription}</p>
 
             {/* Progress (in_progress) */}
             {isInProgress && activity.progress && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 space-y-2">
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 shadow-inner space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-amber-800">ความคืบหน้า</span>
-                  <span className="text-xs font-bold text-amber-800">{pct}%</span>
+                  <span className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-amber-600" /> ความคืบหน้า
+                  </span>
+                  <div className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold shadow-sm">
+                    {pct}%
+                  </div>
                 </div>
-                <div className="h-2 rounded-full bg-amber-200 overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-700"
-                    style={{ width: `${pct}%` }} />
+                <div className="h-3 rounded-full bg-amber-200/50 overflow-hidden shadow-inner p-0.5">
+                  <div className="h-full rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 relative overflow-hidden"
+                    style={{ width: `${pct}%` }}>
+                      {/* Animated stripes inside progress */}
+                      <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.2)_50%,rgba(255,255,255,.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress_1s_linear_infinite]" />
+                  </div>
                 </div>
-                <p className="text-xs text-amber-700">{activity.progress.label}</p>
+                <p className="text-xs font-medium text-amber-700/80">{activity.progress.label}</p>
               </div>
             )}
 
             {/* Completed info */}
             {isCompleted && activity.completedAt && (
-              <div className="flex items-center gap-2 p-3.5 rounded-xl bg-emerald-50 border border-emerald-100">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+              <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50 shadow-sm relative overflow-hidden">
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl" />
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 shadow-inner border border-emerald-200">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600 drop-shadow-sm" />
+                </div>
                 <div>
-                  <p className="text-xs font-semibold text-emerald-800">กิจกรรมนี้สำเร็จแล้ว</p>
-                  <p className="text-xs text-emerald-600">เสร็จเมื่อ {activity.completedAt}</p>
+                  <p className="text-sm font-bold text-emerald-900 mb-0.5">กิจกรรมนี้สำเร็จแล้ว</p>
+                  <p className="text-[13px] font-medium text-emerald-700/80">เสร็จเมื่อ {activity.completedAt}</p>
                 </div>
               </div>
             )}
 
             {/* Divider */}
-            <div className="border-t border-slate-100" />
+            <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent my-2" />
 
             {/* How to */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <ListChecks className="w-3.5 h-3.5 text-blue-600" />
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-[10px] bg-blue-50 flex items-center justify-center shadow-inner">
+                  <ListChecks className="w-4 h-4 text-[#176daf]" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-700">วิธีทำ</h3>
+                <h3 className="text-base font-bold text-slate-800 tracking-tight">วิธีทำ</h3>
               </div>
-              <ol className="space-y-2">
+              <ol className="space-y-3.5">
                 {activity.howTo.map((step, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#176daf]/10 text-[#176daf] text-[11px] font-bold flex items-center justify-center mt-0.5">
+                  <li key={i} className="flex items-start gap-3.5 group">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#176daf]/10 text-[#176daf] text-xs font-bold flex items-center justify-center mt-0.5 border border-[#176daf]/20 group-hover:bg-[#176daf] group-hover:text-white transition-colors duration-300 shadow-sm">
                       {i + 1}
                     </span>
-                    <span className="text-xs text-slate-600 leading-relaxed">{step}</span>
+                    <span className="text-[14px] text-slate-600 leading-relaxed font-medium pt-1">{step}</span>
                   </li>
                 ))}
               </ol>
             </div>
 
             {/* Conditions */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-[10px] bg-amber-50 flex items-center justify-center shadow-inner">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-700">เงื่อนไข</h3>
+                <h3 className="text-base font-bold text-slate-800 tracking-tight">เงื่อนไข</h3>
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {activity.conditions.map((cond, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
-                    <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-slate-300 mt-1.5" />
-                    <span className="text-xs text-slate-500 leading-relaxed">{cond}</span>
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-2 h-2 rounded-full bg-slate-300 mt-2 shadow-inner" />
+                    <span className="text-[14px] text-slate-500 leading-relaxed">{cond}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Meta info */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">ระยะเวลา</span>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-md hover:bg-white transition-all duration-300">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Clock className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">ระยะเวลา</span>
                 </div>
-                <p className="text-sm font-semibold text-slate-700">{activity.duration}</p>
+                <p className="text-[14px] font-bold text-slate-700">{activity.duration}</p>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">จำนวนครั้ง</span>
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:shadow-md hover:bg-white transition-all duration-300">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <RotateCcw className="w-4 h-4 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">จำนวนครั้ง</span>
                 </div>
-                <p className="text-sm font-semibold text-slate-700">{activity.limitPerSeller}</p>
+                <p className="text-[14px] font-bold text-slate-700">{activity.limitPerSeller}</p>
               </div>
             </div>
 
@@ -506,47 +514,47 @@ function ActivityModal({ activity, onClose }: { activity: Activity; onClose: () 
         </div>
 
         {/* ── Footer CTA ────────────────────────────── */}
-        <div className="flex-shrink-0 p-4 border-t border-slate-100 bg-white">
+        <div className="flex-shrink-0 p-5 sm:px-8 sm:py-6 bg-white border-t border-slate-100 rounded-b-[32px] z-10 shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
           {/* Reward summary */}
-          <div className="flex items-center justify-between mb-3 px-1">
-            <span className="text-xs text-slate-400">รางวัลที่ได้รับ</span>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                  <Coins className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span className="text-base font-bold text-amber-600 tabular-nums">+{activity.reward} coins</span>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[13px] font-bold text-slate-500">รางวัลที่ได้รับ</span>
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100">
+                <Coins className="w-4 h-4 text-amber-500" />
+                <span className="text-lg font-black text-amber-600 tabular-nums tracking-tight">+{activity.reward} coins</span>
               </div>
-              <span className="text-xs text-slate-400">≈ ฿{activity.reward}</span>
+              <span className="text-xs font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">≈ ฿{activity.reward}</span>
             </div>
           </div>
 
           {/* Action button */}
           {isCompleted ? (
-            <div className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-emerald-50 border border-emerald-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span className="text-sm font-semibold text-emerald-700">ได้รับ Coins แล้ว</span>
+            <div className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/60 shadow-inner">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <span className="text-[15px] font-bold text-emerald-700">ได้รับ Coins แล้ว</span>
             </div>
           ) : isLocked ? (
-            <div className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl bg-slate-50 border border-slate-200 shadow-inner">
               <Lock className="w-4 h-4 text-slate-400" />
-              <span className="text-sm font-medium text-slate-400">ทำกิจกรรมก่อนหน้าให้สำเร็จก่อน</span>
+              <span className="text-[14px] font-bold text-slate-500">ทำกิจกรรมก่อนหน้าให้สำเร็จก่อน</span>
             </div>
           ) : isInProgress ? (
-            <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
-              bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm
-              hover:from-amber-600 hover:to-orange-600 active:scale-[0.98] transition-all duration-150 cursor-pointer
-              shadow-md shadow-amber-200">
-              <Clock className="w-4 h-4" />
-              กำลังดำเนินการอยู่
+            <button className="w-full relative overflow-hidden flex items-center justify-center gap-2.5 py-4 rounded-2xl
+              bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-[15px]
+              hover:from-amber-400 hover:to-orange-400 hover:shadow-[0_8px_25px_rgba(245,158,11,0.4)]
+              active:scale-[0.98] transition-all duration-300 cursor-pointer shadow-lg group">
+              <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:animate-shine" />
+              <Clock className="w-5 h-5 drop-shadow-md" />
+              <span className="drop-shadow-sm">กำลังดำเนินการอยู่</span>
             </button>
           ) : (
-            <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
-              bg-[#176daf] text-white font-semibold text-sm
-              hover:bg-[#1460a0] active:scale-[0.98] transition-all duration-150 cursor-pointer
-              shadow-md shadow-blue-200">
-              รับกิจกรรมนี้
-              <ArrowRight className="w-4 h-4" />
+            <button className="w-full relative overflow-hidden flex items-center justify-center gap-2.5 py-4 rounded-2xl
+              bg-[#176daf] text-white font-bold text-[15px]
+              hover:bg-[#1f7cc4] hover:shadow-[0_8px_25px_rgba(23,109,175,0.4)]
+              active:scale-[0.98] transition-all duration-300 cursor-pointer shadow-lg group">
+              <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:animate-shine" />
+              <span className="drop-shadow-sm">รับกิจกรรมนี้</span>
+              <ArrowRight className="w-5 h-5 drop-shadow-md group-hover:translate-x-1 transition-transform" />
             </button>
           )}
         </div>
@@ -562,87 +570,89 @@ function ActivityCard({ activity, onOpen }: { activity: Activity; onOpen: () => 
   const isLocked     = activity.status === 'locked'
   const isCompleted  = activity.status === 'completed'
   const isInProgress = activity.status === 'in_progress'
+  const isAvailable  = activity.status === 'available'
   const pct = activity.progress
     ? Math.round((activity.progress.current / activity.progress.total) * 100)
     : 0
 
   return (
     <article
-      className={`group relative flex flex-col bg-white rounded-2xl border overflow-hidden transition-all duration-200
+      className={`group relative flex flex-col bg-white rounded-3xl border overflow-hidden transition-all duration-500 ease-out
         ${isLocked
-          ? 'border-slate-100 opacity-60 cursor-not-allowed'
+          ? 'border-slate-100/60 opacity-60 cursor-not-allowed bg-slate-50/50 grayscale-[20%]'
           : isCompleted
-            ? 'border-slate-100 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5'
-            : 'border-slate-200 shadow-sm cursor-pointer hover:shadow-lg hover:-translate-y-1 hover:border-slate-300'
+            ? 'border-slate-200 shadow-sm cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:border-slate-300'
+            : isAvailable || isInProgress
+              ? 'border-slate-200/80 shadow-md cursor-pointer hover:shadow-[0_12px_40px_-10px_rgba(23,109,175,0.2)] hover:-translate-y-1.5 hover:border-blue-300/50 hover:ring-2 hover:ring-blue-100 z-10'
+              : ''
         }`}
       onClick={isLocked ? undefined : onOpen}
     >
-      {/* ── Cover skeleton ────────────────── */}
-      <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${activity.coverFrom} ${activity.coverTo}
-        ${isLocked || isCompleted ? 'opacity-60 grayscale-[40%]' : ''}`}
+      {/* Glow effect on hover for available ones */}
+      {(isAvailable || isInProgress) && (
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      )}
+
+      {/* ── Cover Area ────────────────── */}
+      <div className={`relative h-48 sm:h-52 overflow-hidden bg-gradient-to-br ${activity.coverFrom} ${activity.coverTo}
+        ${isLocked ? 'opacity-80' : isCompleted ? 'opacity-90' : ''}`}
       >
-        {/* Shimmer sweep */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 -translate-x-full"
-            style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent)', animation: 'shimmer 2.2s infinite' }}
-          />
-        </div>
-        {/* Skeleton content lines */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
-          <div className="h-2.5 rounded-full bg-white/20 w-3/5" />
-          <div className="h-2 rounded-full bg-white/15 w-2/5" />
-        </div>
-        {/* Noise texture */}
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}
-        />
+        {/* Soft Glass Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/30 z-10" />
+
+        {/* Ambient Gradient Glows inside Cover */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-2xl rounded-full mix-blend-overlay group-hover:scale-150 transition-transform duration-700" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 blur-2xl rounded-full mix-blend-overlay" />
+
         {/* Coin badge */}
-        <div className="absolute top-3 left-3 z-10">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20">
-            <Coins className="w-3.5 h-3.5 text-amber-300" />
-            <span className="text-xs font-bold text-white tabular-nums">+{activity.reward}</span>
+        <div className="absolute top-4 left-4 z-20">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.1)] group-hover:bg-white/30 transition-colors">
+            <Coins className="w-4 h-4 text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.8)]" />
+            <span className="text-xs font-black text-white tabular-nums tracking-wide">+{activity.reward}</span>
           </div>
         </div>
+        
         {/* Status badge */}
-        <div className="absolute top-3 right-3 z-10">
+        <div className="absolute top-4 right-4 z-20">
           <StatusPill status={activity.status} />
         </div>
+
         {/* Center icon */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className={`w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-sm shadow-xl flex items-center justify-center
-            ${!isLocked && !isCompleted ? 'group-hover:scale-110 transition-transform duration-300' : ''}`}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className={`relative w-16 h-16 rounded-[20px] bg-white/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.15)] flex items-center justify-center border border-white/60
+            ${!isLocked && !isCompleted ? 'group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 ease-out' : 'transition-transform duration-300'}
+            `}
           >
+            {/* Inner shimmer */}
+            <div className="absolute inset-0 rounded-[20px] overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <div className="w-full h-full bg-gradient-to-tr from-transparent via-white/40 to-transparent transform -translate-x-full group-hover:animate-shine" />
+            </div>
+
             {isLocked
-              ? <Lock className="w-6 h-6 text-slate-400" />
+              ? <Lock className="w-7 h-7 text-slate-400" />
               : isCompleted
-                ? <Icon className="w-6 h-6 text-slate-400" />
-                : <Icon className={`w-6 h-6 ${activity.textColor}`} />
+                ? <CheckCircle2 className="w-8 h-8 text-emerald-500 relative z-10 drop-shadow-sm" />
+                : <Icon className={`w-8 h-8 ${activity.textColor} relative z-10 drop-shadow-md`} />
             }
           </div>
         </div>
-        {/* Completed badge */}
-        {isCompleted && (
-          <div className="absolute inset-0 flex items-end justify-end p-3">
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-500/90 backdrop-blur-sm">
-              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-              <span className="text-[11px] font-bold text-white">สำเร็จแล้ว</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Content ──────────────────────── */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
+      <div className="flex flex-col flex-1 p-5 gap-3.5 relative z-20 bg-white">
         <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{activity.category}</p>
-          <h3 className={`text-sm font-bold leading-snug
-            ${isLocked ? 'text-slate-400' : isCompleted ? 'text-slate-500' : 'text-slate-800'}`}
+          <div className="flex items-center gap-1.5 mb-2">
+            <Star className="w-3 h-3 text-amber-500" />
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">{activity.category}</p>
+          </div>
+          <h3 className={`text-[17px] font-black leading-snug tracking-tight
+            ${isLocked ? 'text-slate-500' : isCompleted ? 'text-slate-600' : 'text-slate-800'}`}
           >
             {activity.title}
           </h3>
         </div>
 
-        <p className={`text-xs leading-relaxed line-clamp-2 flex-1
+        <p className={`text-[13px] leading-[1.6] line-clamp-2 flex-1 font-medium
           ${isLocked || isCompleted ? 'text-slate-400' : 'text-slate-500'}`}
         >
           {activity.description}
@@ -650,59 +660,63 @@ function ActivityCard({ activity, onOpen }: { activity: Activity; onOpen: () => 
 
         {/* Progress */}
         {isInProgress && activity.progress && (
-          <div className="space-y-1.5">
-            <div className="flex justify-between">
-              <span className="text-[11px] font-medium text-amber-700">{activity.progress.label}</span>
-              <span className="text-[11px] font-bold text-amber-700">{pct}%</span>
+          <div className="space-y-2 py-1">
+            <div className="flex justify-between items-end">
+              <span className="text-[11px] font-bold text-amber-700/80 uppercase tracking-wide">{activity.progress.label}</span>
+              <span className="text-[12px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">{pct}%</span>
             </div>
-            <div className="h-1.5 rounded-full bg-amber-100 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400 transition-all duration-700"
-                style={{ width: `${pct}%` }} />
+            <div className="h-2 rounded-full bg-slate-100 overflow-hidden shadow-inner p-0.5 border border-slate-200/50">
+              <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 relative overflow-hidden"
+                style={{ width: `${pct}%` }}>
+                 <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.2)_50%,rgba(255,255,255,.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress_1s_linear_infinite]" />
+              </div>
             </div>
           </div>
         )}
 
         {/* Completed date */}
         {isCompleted && activity.completedAt && (
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600/80 bg-emerald-50/50 px-3 py-2 rounded-lg border border-emerald-100/50">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             เสร็จเมื่อ {activity.completedAt}
           </div>
         )}
 
         {/* Footer */}
-        <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0
-              ${isCompleted ? 'bg-emerald-100' : isLocked ? 'bg-slate-100' : 'bg-amber-100'}`}
+        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-inner border
+              ${isCompleted ? 'bg-emerald-50 border-emerald-100' : isLocked ? 'bg-slate-50 border-slate-100' : 'bg-amber-50 border-amber-100'}`}
             >
-              <Coins className={`w-3.5 h-3.5 ${isCompleted ? 'text-emerald-500' : isLocked ? 'text-slate-400' : 'text-amber-500'}`} />
+              <Coins className={`w-4 h-4 ${isCompleted ? 'text-emerald-500' : isLocked ? 'text-slate-400' : 'text-amber-500 drop-shadow-sm'}`} />
             </div>
-            <span className={`text-sm font-bold tabular-nums
+            <span className={`text-[15px] font-black tabular-nums tracking-tight
               ${isCompleted ? 'text-emerald-600' : isLocked ? 'text-slate-400' : 'text-amber-600'}`}
             >
               {isCompleted ? '' : '+'}{activity.reward}
-              <span className="text-[11px] font-medium text-slate-400 ml-1">coins</span>
+              <span className="text-xs font-semibold text-slate-400 ml-1">coins</span>
             </span>
           </div>
 
           {isCompleted ? (
-            <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
               <CheckCircle2 className="w-3.5 h-3.5" />รับแล้ว
             </div>
           ) : isLocked ? (
-            <div className="flex items-center gap-1 text-xs font-medium text-slate-400">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full shadow-inner border border-slate-200/50">
               <Lock className="w-3.5 h-3.5" />ล็อกอยู่
             </div>
           ) : (
             <button
               onClick={(e) => { e.stopPropagation(); onOpen() }}
-              className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-semibold
-                bg-[#176daf] text-white hover:bg-[#1460a0] active:scale-[0.97]
-                transition-all duration-150 shadow-sm shadow-blue-200/60 cursor-pointer
-                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#176daf]"
+              className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold
+                bg-[#176daf] text-white hover:bg-[#1a5b8f] active:scale-[0.97]
+                transition-all duration-300 shadow-[0_4px_12px_rgba(23,109,175,0.3)] hover:shadow-[0_6px_16px_rgba(23,109,175,0.4)] cursor-pointer
+                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#176daf]
+                overflow-hidden relative"
             >
-              ดูรายละเอียด<ChevronRight className="w-3.5 h-3.5" />
+              <div className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover/btn:animate-shine" />
+              ดูรายละเอียด<ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>
           )}
         </div>
@@ -724,64 +738,118 @@ export default function ActivityPage() {
   return (
     <div className="min-h-dvh bg-slate-50">
       <style>{`
-        @keyframes shimmer  { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
-        @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
-        @keyframes slideUp  { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(200%)} }
+        @keyframes fade-in { from{opacity:0} to{opacity:1} }
+        @keyframes slide-up-scale { 
+          0%{transform: translateY(30px) scale(0.95); opacity:0;} 
+          100%{transform: translateY(0) scale(1); opacity:1;} 
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        @keyframes progress {
+          0% { background-position: 0 0; }
+          100% { background-position: 1rem 0; }
+        }
+        @keyframes shine {
+          100% { transform: translateX(100%); }
+        }
+        .animate-pulse-slow {
+          animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
       `}</style>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-10 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 md:pb-12 space-y-8">
 
-        {/* ── Hero ─────────────────────────────────────────────────────── */}
-        <section className="relative overflow-hidden rounded-2xl"
-          style={{ background: 'linear-gradient(135deg,#0f1b2d 0%,#176daf 100%)' }}
+        {/* ── Premium Hero ─────────────────────────────────────────────────────── */}
+        <section className="relative overflow-hidden rounded-[32px] shadow-[0_20px_40px_-15px_rgba(23,109,175,0.4)] border border-blue-400/20"
+          style={{ background: 'linear-gradient(135deg, #091321 0%, #11284a 50%, #176daf 100%)' }}
         >
-          <div className="absolute inset-0 opacity-[0.04]"
-            style={{ backgroundImage: 'repeating-linear-gradient(0deg,#fff 0px,#fff 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,#fff 0px,#fff 1px,transparent 1px,transparent 40px)' }}
+          {/* Noise Texture */}
+          <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}
           />
-          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-blue-400/10 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 left-10 w-48 h-48 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
+          
+          {/* Animated Glow Orbs & Light leaks */}
+          <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-blue-400/20 blur-[100px] pointer-events-none" style={{ animation: 'float-slow 8s ease-in-out infinite' }} />
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-amber-500/15 blur-[80px] pointer-events-none" style={{ animation: 'float-slow 10s ease-in-out infinite reverse' }} />
+          <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full bg-cyan-400/10 blur-[60px] pointer-events-none mix-blend-screen" />
 
-          <div className="relative px-6 py-8 sm:px-10 sm:py-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+          {/* Grid Pattern Overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] opacity-40 pointer-events-none" />
+
+          <div className="relative px-6 py-10 sm:px-12 sm:py-14 z-10">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10">
               <div className="flex-1 min-w-0">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 mb-5">
-                  <Flame className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-xs font-semibold text-white/80 tracking-wide">ACTIVITY CENTER</span>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-6 shadow-sm">
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span className="text-[11px] font-black text-white/90 tracking-[0.2em] uppercase">Seller Privileges</span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-2">ศูนย์กิจกรรม</h1>
-                <p className="text-blue-200/80 text-sm leading-relaxed max-w-md mb-7">ทำกิจกรรมเพื่อสะสม Coins แลกเป็นเงินสด ยิ่งทำมาก ยิ่งได้มาก</p>
-                <div className="max-w-sm space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-blue-200/70 font-medium">ความคืบหน้าโดยรวม</span>
-                    <span className="text-white font-bold">{completedCount}/{totalActivities} กิจกรรม</span>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-4 tracking-tight drop-shadow-md">
+                  ศูนย์รวม<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">กิจกรรม</span>
+                </h1>
+                <p className="text-blue-100/80 text-[15px] sm:text-[17px] font-medium leading-relaxed max-w-xl mb-8">
+                  ชวนคุณมาอัปสเปคโปรไฟล์ ทำภารกิจสุดท้าทายเพื่อสะสม Coins 
+                  แล้วเปลี่ยนความพยายามเป็นเงินสด 
+                  <span className="text-amber-300 ml-1">ยิ่งทำมาก ยิ่งคุ้มค่า!</span>
+                </p>
+                
+                {/* Master Progress */}
+                <div className="max-w-md p-5 rounded-2xl bg-black/20 backdrop-blur-md border border-white/10 shadow-inner">
+                  <div className="flex justify-between text-sm mb-3">
+                    <span className="text-white/80 font-bold flex items-center gap-2">
+                       <Target className="w-4 h-4 text-emerald-400" /> ความคืบหน้าของภารกิจทั้งหมด
+                    </span>
+                    <span className="text-white font-black">{completedCount} <span className="text-white/50">/ {totalActivities}</span></span>
                   </div>
-                  <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-300 transition-all duration-700"
-                      style={{ width: `${completionPct}%` }} />
+                  <div className="h-2.5 rounded-full bg-white/10 overflow-hidden mb-2 shadow-inner">
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 relative"
+                      style={{ width: `${completionPct}%` }}>
+                        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,.2)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.2)_50%,rgba(255,255,255,.2)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[progress_1s_linear_infinite]" />
+                    </div>
                   </div>
-                  <p className="text-[11px] text-blue-200/50">{completionPct}% สำเร็จแล้ว</p>
+                  <p className="text-xs font-medium text-white/50 text-right">{completionPct}% สำเร็จแล้ว</p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-[220px]">
-                <div className="flex-1 lg:flex-none flex items-center gap-4 px-5 py-4 rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-900/30 flex items-center justify-center flex-shrink-0">
-                    <Coins className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-blue-200/60 font-medium mb-0.5">Coins ที่ได้รับแล้ว</p>
-                    <p className="text-2xl font-bold text-white tabular-nums">{coinsEarned}</p>
-                    <p className="text-[11px] text-amber-300/80">≈ ฿{coinsEarned.toLocaleString()}</p>
+              {/* Glass Stats Cards Setup */}
+              <div className="flex flex-col sm:flex-row gap-4 xl:w-[480px]">
+                {/* Earned Card */}
+                <div className="flex-1 group relative p-6 rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:bg-white/[0.15]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative flex flex-col gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-500/30 flex items-center justify-center border border-white/30">
+                      <Coins className="w-6 h-6 text-white drop-shadow-sm" />
+                    </div>
+                    <div>
+                      <p className="text-[13px] text-white/70 font-bold mb-1 tracking-wide uppercase">Coins ที่ได้รับแล้ว</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-4xl font-black text-white tabular-nums tracking-tight">{coinsEarned}</p>
+                        <span className="text-amber-300 font-bold text-sm">≈ ฿{coinsEarned.toLocaleString()}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 lg:flex-none flex items-center gap-4 px-5 py-4 rounded-xl bg-white/10 border border-white/15 backdrop-blur-sm">
-                  <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-5 h-5 text-blue-200" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-blue-200/60 font-medium mb-0.5">รอรับได้อีก</p>
-                    <p className="text-2xl font-bold text-white tabular-nums">{coinsAvailable}</p>
-                    <p className="text-[11px] text-blue-200/60">coins จากกิจกรรมที่ยังทำได้</p>
+
+                {/* Available Card */}
+                <div className="flex-1 group relative p-6 rounded-[24px] bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] overflow-hidden transition-all duration-300 hover:bg-white/[0.15]">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative flex flex-col gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner backdrop-blur-md">
+                      <TrendingUp className="w-6 h-6 text-cyan-300 drop-shadow-sm" />
+                    </div>
+                    <div>
+                      <p className="text-[13px] text-white/70 font-bold mb-1 tracking-wide uppercase">รอรับได้อีก</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-4xl font-black text-white tabular-nums tracking-tight">{coinsAvailable}</p>
+                        <span className="text-cyan-300 font-bold text-sm">coins</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -790,43 +858,49 @@ export default function ActivityPage() {
         </section>
 
         {/* ── Quick stats ───────────────────────────────────────────────── */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { icon: Award,       iconColor: 'text-[#176daf]',   iconBg: 'bg-blue-50',   label: 'กิจกรรมทั้งหมด',  value: totalActivities,                                          unit: 'กิจกรรม', sub: 'รวมทุกประเภท' },
-            { icon: CheckCircle2,iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50',label: 'สำเร็จแล้ว',       value: completedCount,                                           unit: 'กิจกรรม', sub: `${completionPct}% ของทั้งหมด` },
-            { icon: Zap,         iconColor: 'text-amber-600',   iconBg: 'bg-amber-50',  label: 'พร้อมทำตอนนี้',   value: ACTIVITIES.filter(a => a.status === 'available').length,  unit: 'กิจกรรม', sub: 'ไม่ต้องรอ ทำได้เลย' },
-            { icon: Coins,       iconColor: 'text-amber-600',   iconBg: 'bg-amber-50',  label: 'Coins สะสมแล้ว',  value: coinsEarned,                                              unit: 'coins',   sub: `≈ ฿${coinsEarned.toLocaleString()}` },
+            { icon: Award,       iconColor: 'text-[#176daf]',   iconBg: 'bg-blue-50/80 ring-1 ring-blue-100',   label: 'กิจกรรมทั้งหมด',  value: totalActivities,                                          unit: 'รายการ', sub: 'รวมทุกประเภท' },
+            { icon: CheckCircle2,iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50/80 ring-1 ring-emerald-100',label: 'ทำสำเร็จแล้ว',       value: completedCount,                                           unit: 'รายการ', sub: `${completionPct}% ของทั้งหมด` },
+            { icon: Zap,         iconColor: 'text-amber-600',   iconBg: 'bg-amber-50/80 ring-1 ring-amber-100',  label: 'พร้อมทำตอนนี้',   value: ACTIVITIES.filter(a => a.status === 'available').length,  unit: 'รายการ', sub: 'ไม่ต้องรอ ลุยเลย!' },
+            { icon: Coins,       iconColor: 'text-amber-600',   iconBg: 'bg-amber-50/80 ring-1 ring-amber-100',  label: 'Coins สะสมแล้ว',  value: coinsEarned,                                              unit: 'coins',   sub: `รวมมูลค่า ฿${coinsEarned.toLocaleString()}` },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 flex items-start gap-4 transition-shadow duration-200 hover:shadow-sm">
-              <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${s.iconBg}`}>
-                <s.icon className={`w-5 h-5 ${s.iconColor}`} />
+            <div key={s.label} className="group bg-white rounded-3xl border border-slate-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-5 px-6 flex items-center gap-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-slate-300 cursor-default">
+              <div className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center ${s.iconBg} shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                <s.icon className={`w-6 h-6 ${s.iconColor}`} />
               </div>
-              <div className="min-w-0">
-                <p className="text-xs text-slate-400 font-medium mb-1 leading-none">{s.label}</p>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-slate-800 tabular-nums">{s.value}</span>
-                  <span className="text-xs text-slate-400">{s.unit}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] text-slate-500 font-bold tracking-wide uppercase mb-1 leading-none">{s.label}</p>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-2xl font-black text-slate-800 tabular-nums">{s.value}</span>
+                  <span className="text-[13px] font-bold text-slate-400">{s.unit}</span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-0.5">{s.sub}</p>
+                <p className="text-[12px] font-medium text-slate-400 mt-0.5 truncate">{s.sub}</p>
               </div>
             </div>
           ))}
         </section>
 
         {/* ── Activity grid ─────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <section className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-slate-800">รายการกิจกรรม</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {filtered.length} กิจกรรม{filter !== 'all' && ` · ${FILTERS.find(f => f.value === filter)?.label}`}
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                <Flame className="w-6 h-6 text-[#176daf]" /> รายการกิจกรรม
+              </h2>
+              <p className="text-[14px] font-medium text-slate-500 mt-1">
+                แสดงผล {filtered.length} รายการ {filter !== 'all' && <span className="text-[#176daf]">({FILTERS.find(f => f.value === filter)?.label})</span>}
               </p>
             </div>
-            <div className="flex items-center gap-1 p-1 bg-white border border-slate-100 rounded-xl shadow-xs overflow-x-auto">
+            
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-1.5 p-1.5 bg-white border border-slate-200 rounded-[20px] shadow-sm overflow-x-auto hide-scrollbar">
               {FILTERS.map(tab => (
                 <button key={tab.value} onClick={() => setFilter(tab.value)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer
-                    ${filter === tab.value ? 'bg-[#176daf] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
+                  className={`px-4 py-2.5 rounded-2xl text-[13px] font-bold whitespace-nowrap transition-all duration-300 cursor-pointer
+                    ${filter === tab.value 
+                      ? 'bg-[#176daf] text-white shadow-[0_4px_12px_rgba(23,109,175,0.3)]' 
+                      : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}
                 >
                   {tab.label}
                 </button>
@@ -835,15 +909,15 @@ export default function ActivityPage() {
           </div>
 
           {filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-100 py-20 text-center">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                <Zap className="w-6 h-6 text-slate-400" />
+            <div className="bg-white rounded-[32px] border border-slate-200 py-24 text-center shadow-sm">
+              <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <Zap className="w-8 h-8 text-slate-300" />
               </div>
-              <p className="text-sm font-semibold text-slate-600">ไม่มีกิจกรรมในหมวดนี้</p>
-              <p className="text-xs text-slate-400 mt-1">ลองเลือกหมวดอื่น</p>
+              <p className="text-lg font-bold text-slate-700">ไม่มีกิจกรรมในหมวดหมู่นี้</p>
+              <p className="text-sm font-medium text-slate-400 mt-1">ลองเปลี่ยนตัวกรองด้านบนเพื่อดูหมวดหมู่อื่นๆ</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filtered.map(activity => (
                 <ActivityCard key={activity.id} activity={activity} onOpen={() => openModal(activity)} />
               ))}
@@ -851,7 +925,9 @@ export default function ActivityPage() {
           )}
         </section>
 
-        <p className="text-center text-xs text-slate-400 pb-2">1 coin = ฿1 · กิจกรรมใหม่จะถูกเพิ่มทุกเดือน</p>
+        <p className="text-center text-[13px] font-medium text-slate-400 pb-4 flex items-center justify-center gap-2">
+          <Sparkles className="w-4 h-4 text-amber-400" /> อัตราแลกเปลี่ยน 1 coin = ฿1 · มีกิจกรรมใหม่ส่งตรงให้คุณทุกเดือน
+        </p>
       </div>
 
       {/* ── Modal ─────────────────────────────────────────────────────── */}
