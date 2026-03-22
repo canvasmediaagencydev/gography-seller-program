@@ -70,6 +70,21 @@ src/
 │   └── performance.ts       # Performance monitoring utilities
 ├── types/                   # TypeScript definitions (currently empty)
 └── middleware.ts            # Next.js middleware for auth & route protection
+
+docs/                        # Project documentation
+├── features/                # Feature guides and setup documentation
+│   ├── COIN_SYSTEM_GUIDE.md
+│   ├── COIN_SYSTEM_FLOW.md
+│   ├── GAMIFICATION_SETUP_GUIDE.md
+│   └── LINE_NOTIFICATION_SETUP.md
+├── development/             # Development tasks and optimizations
+│   ├── ADMIN_BOOKINGS_OPTIMIZATION.md
+│   ├── PERFORMANCE_TASKS.md
+│   ├── COIN_SYSTEM_TASKS.md
+│   └── LOCKED_REDEEMABLE_COINS_TASKS.md
+├── api/                     # API integration guides
+│   └── ThaiBulkSMS_Email_API_Guide.md
+└── README.md                # Documentation index
 ```
 
 ### Database Architecture
@@ -143,7 +158,7 @@ src/
 ## Important Notes
 
 ### Database Performance
-Critical database indexes are documented in `TRIPS_API_OPTIMIZATION_GUIDE.md`. These must be created in Supabase SQL Editor for optimal performance.
+Critical database indexes and optimization guides are documented in the `docs/development/` folder. These must be created in Supabase SQL Editor for optimal performance.
 
 ### Environment Variables Required
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -153,7 +168,7 @@ Critical database indexes are documented in `TRIPS_API_OPTIMIZATION_GUIDE.md`. T
 - `LINE_CHANNEL_ACCESS_TOKEN` (for LINE notifications, optional)
 - `LINE_ADMIN_USER_ID` or `LINE_ADMIN_GROUP_ID` (for LINE notifications, optional)
 
-**Note**: No `.env.example` file exists in the project. Create `.env.local` with the above variables and fill in your Supabase project credentials. For LINE notification setup, see `LINE_NOTIFICATION_SETUP.md`.
+**Note**: No `.env.example` file exists in the project. Create `.env.local` with the above variables and fill in your Supabase project credentials. For LINE notification setup, see `docs/features/LINE_NOTIFICATION_SETUP.md`.
 
 ### Cache System
 The project uses an in-memory cache (`@/lib/cache.ts`) for API performance. Cache keys include user ID to prevent data leaks between users.
@@ -162,7 +177,7 @@ The project uses an in-memory cache (`@/lib/cache.ts`) for API performance. Cach
 Complex commission calculations are handled server-side with proper tracking of seller attributions and referral bonuses.
 
 ### Coin System (NEW!)
-A comprehensive virtual currency and reward system for sellers. See `COIN_SYSTEM_GUIDE.md` for complete documentation.
+A comprehensive virtual currency and reward system for sellers. See `docs/features/COIN_SYSTEM_GUIDE.md` for complete documentation.
 
 **Key Routes**:
 - **Seller**: `/dashboard/coins` - View balance, transactions, and redeem coins

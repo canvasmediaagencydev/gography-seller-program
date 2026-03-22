@@ -64,8 +64,13 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/auth/login', '/auth/register', '/auth/callback', '/book', '/api/docs', '/api-docs']
+  const publicRoutes = ['/auth/login', '/auth/register', '/auth/callback', '/book', '/api/docs', '/api-docs', '/api/line/webhook', '/api/notifications/line']
   const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route))
+
+  // Skip middleware for LINE webhook and notifications
+  if (url.pathname.startsWith('/api/line/') || url.pathname.startsWith('/api/notifications/line/')) {
+    return supabaseResponse
+  }
 
   if (!user && !isPublicRoute && url.pathname !== '/') {
     // Redirect unauthenticated users to login
@@ -73,18 +78,15 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && userProfile) {
-    // Redirect authenticated users away from auth pages
-    if (isPublicRoute) {
-      if (userProfile.role === 'admin') {
-        return NextResponse.redirect(new URL('/dashboard/admin/sellers', request.url))
-      } else {
-        return NextResponse.redirect(new URL('/dashboard/trips', request.url))
-      }
+    // Admin users should not use seller site
+    if (userProfile.role === 'admin') {
+      await supabase.auth.signOut()
+      return NextResponse.redirect(new URL('/auth/login?error=Please use the admin portal', request.url))
     }
 
-    // Admin route protection
-    if (url.pathname.startsWith('/dashboard/admin') && userProfile.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Redirect authenticated sellers away from auth pages
+    if (isPublicRoute) {
+      return NextResponse.redirect(new URL('/dashboard/trips', request.url))
     }
 
     // Seller report access control - only approved sellers can access

@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import SidebarButton from '@/components/ui/SidebarButton'
 import SidebarButtonDisabled from '@/components/ui/SidebarButtonDisabled'
 import { CoinBalanceIndicator } from '@/components/coins/CoinBalanceIndicator'
+import { HowToSellVideoModal } from '@/components/HowToSellVideoModal'
 import Image from 'next/image'
 
 interface UserProfile {
@@ -95,6 +96,7 @@ const getVerificationStatus = (userProfile: UserProfile | null) => {
 const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProps) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(initialProfile || null)
   const [loading, setLoading] = useState(false)
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -104,7 +106,6 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Force fresh data by adding cache-busting timestamp
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('id, full_name, phone, role, status, referral_code, avatar_url')
@@ -112,7 +113,6 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
         .single()
 
       if (profile) {
-        console.log('Profile data refreshed:', profile)
         setUserProfile(profile)
       }
     } catch (error) {
@@ -130,14 +130,10 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   // Listen for profile updates
   useEffect(() => {
     const handleProfileUpdate = () => {
-      console.log('Profile updated, refreshing sidebar data...')
       fetchUserProfile()
     }
 
-    // Listen for custom profile update events
     window.addEventListener('profileUpdated', handleProfileUpdate)
-    
-    // Also listen for focus events to refresh data
     window.addEventListener('focus', handleProfileUpdate)
 
     return () => {
@@ -146,16 +142,14 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
     }
   }, [fetchUserProfile])
 
-  // Auto-refresh profile data every 30 seconds for sellers
+  // Auto-refresh profile data every 30 seconds
   useEffect(() => {
-    if (userProfile?.role === 'seller') {
-      const interval = setInterval(() => {
-        fetchUserProfile()
-      }, 30000) // 30 seconds
+    const interval = setInterval(() => {
+      fetchUserProfile()
+    }, 30000)
 
-      return () => clearInterval(interval)
-    }
-  }, [userProfile?.role, fetchUserProfile])
+    return () => clearInterval(interval)
+  }, [fetchUserProfile])
 
   const handleLogout = useCallback(async () => {
     setLoading(true)
@@ -165,20 +159,17 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   }, [supabase, router])
 
   // Memoize verification status to prevent recalculation
-  const verificationInfo = useMemo(() => 
-    getVerificationStatus(userProfile), 
+  const verificationInfo = useMemo(() =>
+    getVerificationStatus(userProfile),
     [userProfile?.full_name, userProfile?.phone, userProfile?.status]
   )
 
-  // Memoize active route checks for better performance
-  const isTripsActive = useMemo(() => {
-    if (userProfile?.role === 'admin') {
-      return pathname.includes('/dashboard/admin/trips') && pathname !== '/dashboard/admin/trips/create'
-    }
-    return pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips'
-  }, [pathname, userProfile?.role])
+  const isTripsActive = useMemo(() =>
+    pathname.includes('/dashboard/trips') || pathname === '/dashboard/trips',
+    [pathname]
+  )
 
-  const isReportsActive = useMemo(() => 
+  const isReportsActive = useMemo(() =>
     pathname === '/dashboard/reports', [pathname]
   )
 
@@ -189,121 +180,61 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
   const isActivityActive = useMemo(() =>
     pathname === '/dashboard/activity', [pathname]
   )
-
   const isProfileActive = useMemo(() =>
     pathname === '/dashboard/profile', [pathname]
   )
 
-  const isDashboardActive = useMemo(() => {
-    if (userProfile?.role === 'admin') {
-      return pathname === '/dashboard/admin'
-    }
-    return pathname === '/dashboard'
-  }, [pathname, userProfile?.role])
+  const isDashboardActive = useMemo(() =>
+    pathname === '/dashboard', [pathname]
+  )
 
-  // Memoize navigation items
+  // Seller navigation items
   const navigationItems: NavigationItem[] = useMemo(() => {
-    const baseItems: NavigationItem[] = [
+    const items: NavigationItem[] = [
       {
         icon: <LayoutGrid size={18} />,
         label: 'Dashboard',
-        href: userProfile?.role === 'admin' ? '/dashboard/admin' : '/dashboard',
+        href: '/dashboard',
         isActive: isDashboardActive
       },
       {
         icon: <PlaneTakeoff size={18} />,
-        label: userProfile?.role === 'admin' ? 'จัดการทริป' : 'ทริป',
-        href: userProfile?.role === 'admin' ? '/dashboard/admin/trips' : '/dashboard/trips',
+        label: 'ทริป',
+        href: '/dashboard/trips',
         isActive: isTripsActive
       }
     ]
 
-    // Add role-specific items
-    if (userProfile?.role === 'admin') {
-      baseItems.push(
-        {
-          icon: <Building2 size={18} />,
-          label: 'Partners',
-          href: '/dashboard/admin/partners',
-          isActive: pathname.includes('/dashboard/admin/partners')
-        },
-        {
-          icon: <Users size={18} />,
-          label: 'ผู้ขาย',
-          href: '/dashboard/admin/sellers',
-          isActive: pathname === '/dashboard/admin/sellers'
-        },
-        {
-          icon: <Users size={18} />,
-          label: 'การจอง',
-          href: '/dashboard/admin/bookings',
-          isActive: pathname === '/dashboard/admin/bookings'
-        },
-        {
-          icon: <Users size={18} />,
-          label: 'ลูกค้า',
-          href: '/dashboard/admin/customers',
-          isActive: pathname === '/dashboard/admin/customers'
-        },
-        {
-          icon: <CoinsIcon size={18} />,
-          label: 'Coins Management',
-          href: '/dashboard/admin/coins',
-          isActive: pathname === '/dashboard/admin/coins'
-        }
-      )
+    // Reports - only accessible to approved sellers
+    if (userProfile?.status === 'approved') {
+      items.push({
+        icon: <Users size={18} />,
+        label: 'รายงาน',
+        href: '/dashboard/reports',
+        isActive: isReportsActive,
+        isDisabled: false
+      })
     } else {
-      // For sellers, show reports or disabled reports based on verification status
-      if (userProfile?.status === 'approved') {
-        baseItems.push({
-          icon: <Users size={18} />,
-          label: 'รายงาน',
-          href: '/dashboard/reports',
-          isActive: isReportsActive,
-          isDisabled: false
-        })
-      } else {
-        baseItems.push({
-          icon: <Users size={18} />,
-          label: 'รายงาน',
-          href: '/dashboard/reports',
-          isActive: false,
-          isDisabled: true,
-          disabledText: 'ยืนยันตัวเพื่อใช้งาน'
-        })
-      }
-
-      // Add Gamification - requires verification like reports (HIDDEN)
-      // if (userProfile?.status === 'approved') {
-      //   baseItems.push({
-      //     icon: <Gamepad2 size={18} />,
-      //     label: 'Gamification',
-      //     href: '/dashboard/gamification',
-      //     isActive: pathname === '/dashboard/gamification',
-      //     isDisabled: false
-      //   })
-      // } else {
-      //   baseItems.push({
-      //     icon: <Gamepad2 size={18} />,
-      //     label: 'Gamification',
-      //     href: '/dashboard/gamification',
-      //     isActive: false,
-      //     isDisabled: true,
-      //     disabledText: 'ยืนยันตัวตน'
-      //   })
-      // }
+      items.push({
+        icon: <Users size={18} />,
+        label: 'รายงาน',
+        href: '/dashboard/reports',
+        isActive: false,
+        isDisabled: true,
+        disabledText: 'ยืนยันตัวเพื่อใช้งาน'
+      })
     }
 
     // Leaderboard + Activity — sellers only
     if (userProfile?.role !== 'admin') {
-      baseItems.push({
+      items.push({
         icon: <Trophy size={18} />,
         label: 'อันดับ',
         href: '/dashboard/rank',
         isActive: isRankActive,
         isDisabled: false
       })
-      baseItems.push({
+      items.push({
         icon: <Sparkles size={18} />,
         label: 'กิจกรรม',
         href: '/dashboard/activity',
@@ -312,7 +243,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       })
     }
 
-    return baseItems
+    return items
   }, [userProfile?.role, userProfile?.status, pathname, isDashboardActive, isTripsActive, isReportsActive, isRankActive, isActivityActive])
 
   if (!userProfile) {
@@ -330,9 +261,8 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center space-x-3">
-          {/* logo img svg */}
           <a
-            href={userProfile.role === 'admin' ? '/dashboard/admin' : '/dashboard'}
+            href="/dashboard"
             className="flex items-center gap-3 group"
           >
             <Image
@@ -344,9 +274,7 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
               className="h-8 w-8 object-contain"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-xl text-gray-600 truncate">
-                {userProfile.role === 'admin' ? 'Admin Panel' : 'Seller Dashboard'}
-              </p>
+              <p className="text-xl text-gray-600 truncate">Seller Dashboard</p>
             </div>
           </a>
         </div>
@@ -369,57 +297,48 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
                 <UserCircle className="w-6 h-6 text-gray-500" />
               </div>
             )}
-            {/* Show verification indicator only for sellers */}
-            {userProfile.role !== 'admin' && verificationInfo.pulse && (
+            {verificationInfo.pulse && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
             )}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-medium text-gray-900 truncate">
-              {userProfile.role === 'admin' 
-                ? (userProfile.full_name || 'Admin User')
-                : (userProfile.full_name || 'ยังไม่ได้ระบุชื่อ')
-              }
+              {userProfile.full_name || 'ยังไม่ได้ระบุชื่อ'}
             </h3>
-            {/* Show verification status only for sellers */}
-            {userProfile.role !== 'admin' && (
-              <div className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
-                  <verificationInfo.icon 
-                    className={`w-3 h-3 ${
-                      verificationInfo.color === 'green' ? 'text-green-500' :
-                      verificationInfo.color === 'yellow' ? 'text-primary-yellow' :
-                      verificationInfo.color === 'red' ? 'text-red-500' :
-                      'text-primary-blue'
-                    }`} 
-                  />
-                  <p className={`text-xs ${
-                    verificationInfo.color === 'green' ? 'text-green-600' :
+            <div className="flex flex-col space-y-1">
+              <div className="flex items-center space-x-2">
+                <verificationInfo.icon
+                  className={`w-3 h-3 ${
+                    verificationInfo.color === 'green' ? 'text-green-500' :
                     verificationInfo.color === 'yellow' ? 'text-primary-yellow' :
-                    verificationInfo.color === 'red' ? 'text-red-600' :
+                    verificationInfo.color === 'red' ? 'text-red-500' :
                     'text-primary-blue'
-                  }`}>
-                    {verificationInfo.subtext || verificationInfo.text}
-                  </p>
-                </div>
-                {/* Show ID when seller is approved */}
-                {userProfile.status === 'approved' && (
-                  <p className="text-xs text-gray-500">
-                    ID: {userProfile.id.slice(-5)}
-                  </p>
-                )}
+                  }`}
+                />
+                <p className={`text-xs ${
+                  verificationInfo.color === 'green' ? 'text-green-600' :
+                  verificationInfo.color === 'yellow' ? 'text-primary-yellow' :
+                  verificationInfo.color === 'red' ? 'text-red-600' :
+                  'text-primary-blue'
+                }`}>
+                  {verificationInfo.subtext || verificationInfo.text}
+                </p>
               </div>
-            )}
+              {/* Show ID when seller is approved */}
+              {userProfile.status === 'approved' && (
+                <p className="text-xs text-gray-500">
+                  ID: {userProfile.id.slice(-5)}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Coin Balance Indicator - Only for sellers */}
-      {userProfile.role !== 'admin' && (
-        <div className="px-6 pt-4">
-          <CoinBalanceIndicator userId={userProfile.id} variant="sidebar" />
-        </div>
-      )}
+      {/* Coin Balance Indicator */}
+      <div className="px-6 pt-4">
+        <CoinBalanceIndicator userId={userProfile.id} variant="sidebar" />
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
@@ -442,27 +361,35 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
             />
           )
         ))}
+
+        {/* How to Sell Video Button - Only for approved sellers */}
+        {userProfile?.status === 'approved' && (
+          <button
+            onClick={() => setIsVideoModalOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-lg font-medium transition-all duration-75 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          >
+            <PlayCircle size={18} />
+            <span className="text-left">วิธีการขาย</span>
+          </button>
+        )}
       </nav>
 
       {/* Profile and Logout */}
       <div className="p-6 border-t border-gray-100 space-y-2">
-        {/* Profile button - only show for sellers */}
-        {userProfile.role !== 'admin' && (
-          <SidebarButton
-            icon={verificationInfo.pulse ? (
-              <div className="relative">
-                <UserCircle size={18} />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
-              </div>
-            ) : (
+        <SidebarButton
+          icon={verificationInfo.pulse ? (
+            <div className="relative">
               <UserCircle size={18} />
-            )}
-            label={verificationInfo.text}
-            href="/dashboard/profile"
-            isActive={isProfileActive}
-            prefetch={true}
-          />
-        )}
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+            </div>
+          ) : (
+            <UserCircle size={18} />
+          )}
+          label={verificationInfo.text}
+          href="/dashboard/profile"
+          isActive={isProfileActive}
+          prefetch={true}
+        />
 
         <button
           onClick={handleLogout}
@@ -475,6 +402,12 @@ const Sidebar = memo(function Sidebar({ className, initialProfile }: SidebarProp
           </span>
         </button>
       </div>
+
+      {/* Video Modal */}
+      <HowToSellVideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+      />
     </div>
   )
 })

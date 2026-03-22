@@ -14,7 +14,7 @@ const userRoleCache = new Map<string, { role: UserRole; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export const AUTH_REDIRECTS: AuthRedirectPaths = {
-  admin: '/dashboard/admin/sellers',
+  admin: '/dashboard/trips', // Admin users will be blocked by middleware
   seller: '/dashboard/trips'
 }
 
@@ -22,7 +22,7 @@ export const AUTH_REDIRECTS: AuthRedirectPaths = {
  * Get redirect path based on user role
  */
 export function getRedirectPath(role?: string): string {
-  return role === 'admin' ? AUTH_REDIRECTS.admin : AUTH_REDIRECTS.seller
+  return AUTH_REDIRECTS.seller
 }
 
 /**
