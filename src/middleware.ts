@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/auth/login', '/auth/register', '/auth/callback', '/book', '/api/docs', '/api-docs', '/api/line/webhook', '/api/notifications/line']
+  const publicRoutes = ['/auth/login', '/auth/register', '/auth/callback', '/book', '/share', '/api/docs', '/api-docs', '/api/line/webhook', '/api/notifications/line']
   const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route))
 
   // Skip middleware for LINE webhook and notifications
@@ -84,8 +84,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/auth/login?error=Please use the admin portal', request.url))
     }
 
-    // Redirect authenticated sellers away from auth pages
-    if (isPublicRoute) {
+    // Redirect authenticated sellers away from auth pages (but allow /share pages)
+    if (isPublicRoute && !url.pathname.startsWith('/share')) {
       return NextResponse.redirect(new URL('/dashboard/trips', request.url))
     }
 

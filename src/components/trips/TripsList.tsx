@@ -73,7 +73,7 @@ export function TripsList({ trips, viewType, userId, sellerData }: TripsListProp
             toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
             return
         }
-        const shareUrl = `${window.location.origin}/trips/${trip.id}`
+        const shareUrl = `${window.location.origin}/share/${trip.id}?seller=${sellerData?.referral_code || ''}`
         handleCopy(shareUrl)
     }
 

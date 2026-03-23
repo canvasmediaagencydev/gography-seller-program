@@ -8,7 +8,7 @@ import { useTripData } from '../hooks/useTripData'
 import { useTripSchedules } from '../hooks/useTripSchedules'
 import { TripCardProps } from '../types/trip'
 import { Tables } from '../../database.types'
-import { CalendarDays, Info, Building2, MapPin, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { CalendarDays, Info, Building2, MapPin, Clock, Users, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image'
 
@@ -273,26 +273,44 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
                         </div>
                     </div>
 
-                    {/* Action Button */}
+                    {/* Action Buttons */}
                     {viewType === 'seller' ? (
-                        <button
-                            onClick={() => {
-                                if (sellerStatus !== 'approved') {
-                                    toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
-                                    return
-                                }
-                                if (trip.file_link) {
-                                    window.open(trip.file_link, '_blank')
-                                } else {
-                                    toast.error('ไม่พบไฟล์ข้อมูลทริป')
-                                }
-                            }}
-                            disabled={sellerStatus !== 'approved' || !trip.file_link}
-                            className="w-full bg-primary-blue text-white px-4 py-3.5 rounded-xl hover:bg-blue-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-                        >
-                            <Info size={18} />
-                            <span>ดูรายละเอียดทริป</span>
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    if (sellerStatus !== 'approved') {
+                                        toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถดูข้อมูลทริปได้')
+                                        return
+                                    }
+                                    if (trip.file_link) {
+                                        window.open(trip.file_link, '_blank')
+                                    } else {
+                                        toast.error('ไม่พบไฟล์ข้อมูลทริป')
+                                    }
+                                }}
+                                disabled={sellerStatus !== 'approved' || !trip.file_link}
+                                className="flex-1 bg-primary-blue text-white px-4 py-3.5 rounded-xl hover:bg-blue-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                            >
+                                <Info size={18} />
+                                <span>ดูรายละเอียดทริป</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (sellerStatus !== 'approved') {
+                                        toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
+                                        return
+                                    }
+                                    const shareUrl = `${window.location.origin}/share/${trip.id}?seller=${sellerData?.referral_code || ''}`
+                                    navigator.clipboard.writeText(shareUrl)
+                                    toast.success('คัดลอกลิงก์แชร์แล้ว')
+                                }}
+                                disabled={sellerStatus !== 'approved'}
+                                className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3.5 py-3.5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="แชร์ลิงก์ทริป"
+                            >
+                                <Share2 size={18} />
+                            </button>
+                        </div>
                     ) : (
                         <button
                             disabled={true}
