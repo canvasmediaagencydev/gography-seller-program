@@ -42,14 +42,27 @@ async function getTripData(tripId: string, sellerRef?: string | null) {
 
   let seller = null
   if (sellerRef) {
-    const { data } = await supabase
+    // Try referral_code first, then fallback to id
+    const { data: byCode } = await supabase
       .from('user_profiles')
       .select('id, full_name, referral_code, phone')
       .eq('referral_code', sellerRef)
       .eq('role', 'seller')
       .eq('status', 'approved')
       .single()
-    seller = data
+
+    if (byCode) {
+      seller = byCode
+    } else {
+      const { data: byId } = await supabase
+        .from('user_profiles')
+        .select('id, full_name, referral_code, phone')
+        .eq('id', sellerRef)
+        .eq('role', 'seller')
+        .eq('status', 'approved')
+        .single()
+      seller = byId
+    }
   }
 
   return { trip, nextSchedule, seller }
@@ -106,8 +119,9 @@ export default async function ShareTripPage({
   const countries = trip.countries as { id: string; name: string; flag_emoji: string | null } | null
   const partners = trip.partners as { id: string; name: string; logo_url: string | null } | null
 
+  const sellerIdentifier = seller?.referral_code || seller?.id?.slice(-6) || null
   const lineMessage = seller
-    ? `สนใจทริป: ${trip.title} (รหัสผู้แนะนำ: ${seller.referral_code})`
+    ? `สนใจทริป: ${trip.title} (รหัสผู้แนะนำ: ${sellerIdentifier})`
     : `สนใจทริป: ${trip.title}`
   const lineUrl = `https://line.me/R/oaMessage/@paydeeme/?${encodeURIComponent(lineMessage)}`
 
@@ -226,7 +240,7 @@ export default async function ShareTripPage({
                     {seller.full_name || 'ผู้แนะนำ'}
                   </p>
                   <p className="text-[10px] text-white/25 font-mono tracking-widest mt-0.5">
-                    REF {seller.referral_code}
+                    REF {sellerIdentifier}
                   </p>
                 </div>
               )}

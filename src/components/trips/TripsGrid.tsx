@@ -13,6 +13,7 @@ interface TripsGridProps {
 }
 
 interface SellerData {
+    id: string
     referral_code: string | null
     status: string | null
 }
@@ -29,7 +30,7 @@ export function TripsGrid({ trips, viewType, userId, viewMode }: TripsGridProps)
 
             const { data } = await supabase
                 .from('user_profiles')
-                .select('referral_code, status')
+                .select('id, referral_code, status')
                 .eq('id', userId)
                 .single()
 

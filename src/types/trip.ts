@@ -10,6 +10,7 @@ export interface TripWithRelations extends Tables<'trips'> {
 }
 
 export interface SellerData {
+    id: string
     referral_code: string | null
     status: string | null
 }

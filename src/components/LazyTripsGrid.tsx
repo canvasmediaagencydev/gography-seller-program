@@ -37,7 +37,7 @@ interface LazyTripsGridProps {
   viewType: ViewType
   userId: string | null
   viewMode: ViewMode
-  sellerData?: Record<string, { referral_code: string; status: string }>
+  sellerData?: Record<string, { id: string; referral_code: string; status: string }>
 }
 
 // Virtualized trip item component
@@ -51,7 +51,7 @@ const TripItem = memo(function TripItem({
   trip: TripWithRelations
   viewType: ViewType
   userId: string | null
-  sellerData?: Record<string, { referral_code: string; status: string }>
+  sellerData?: Record<string, { id: string; referral_code: string; status: string }>
   isVisible: boolean
 }) {
   const [shouldRender, setShouldRender] = useState(isVisible)

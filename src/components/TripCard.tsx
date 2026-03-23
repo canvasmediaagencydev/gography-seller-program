@@ -300,7 +300,8 @@ const TripCard = memo(function TripCard({ trip, viewType = 'general', currentSel
                                         toast.error('คุณต้องได้รับการอนุมัติจากผู้ดูแลระบบก่อนจึงจะสามารถแชร์ลิงก์ทริปได้')
                                         return
                                     }
-                                    const shareUrl = `${window.location.origin}/share/${trip.id}?seller=${sellerData?.referral_code || ''}`
+                                    const sellerParam = sellerData?.referral_code || sellerData?.id || ''
+                                    const shareUrl = `${window.location.origin}/share/${trip.id}?seller=${sellerParam}`
                                     navigator.clipboard.writeText(shareUrl)
                                     toast.success('คัดลอกลิงก์แชร์แล้ว')
                                 }}
